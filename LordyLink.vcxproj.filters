@@ -40,11 +40,17 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Filehandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Filehandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>

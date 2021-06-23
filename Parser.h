@@ -1,50 +1,22 @@
 #pragma once
-
-#include <iostream>
-#include <fstream>
-#include <vector>
+#include<string>
 #include <array>
-#include <string>
+#include <vector>
+
+
 
 
 
 class CParser
 {
+
 private:
-
-    std::ifstream hex_file;
-    std::string _path;
-    std::vector<char> hex_container;
-    char record_dataBytes = 0;
-    std::vector<char> tx_data_bytes;
-    size_t length = 0;
-    std::string single_record_string;
-    std::vector<std::string> record_collection;
-
-    bool parseFile();
-    bool sendParsedToUsb();
-    
-
+	std::vector<std::string> string_collection;
+	std::vector <char> bytes_to_send;
+	 
 public:
-
-    bool writeFileToContainer();
-    
-    const size_t return_record_coll_size()const
-    {
-        return record_collection.size();
-    }
-    
-    std::string& record_collection_at(size_t pos)
-    {
-
-        return record_collection.at(pos);
-
-    }
-    
-    bool GetPageContent();
-
-
-
-
+	bool get_strings_from_container(const std::vector<std::string>& collection); // read only
+	bool parse_collection_to_bytes();
+	bool send_bytes_to_uC();
 
 };
