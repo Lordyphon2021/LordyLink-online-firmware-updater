@@ -1,12 +1,13 @@
 #include "LordyLink.h"
-#include "Filehandler.h"
-#include <boost/asio.hpp>
+
+
 #include <qstring.h>
 #include<qlistwidget.h>
 #include <QApplication>
 
+
 using namespace std;
-using namespace boost::asio;
+
 
 
 
@@ -17,39 +18,28 @@ LordyLink::LordyLink(QWidget *parent)
     
     
     ui.setupUi(this);
-    QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), SLOT(downloadFile()));
-    
+    QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), SLOT(download_wrapper()));
+    filehandler = new Filehandler(ui.Q_UpdateFeedback);
     
 }
 
 
-bool LordyLink_derived::downloadFile()
+
+
+
+
+
+void LordyLink::download(Filehandler* filehandler)
 {
-    ui.Q_UpdateFeedback->clear();
-    ui.Q_UpdateFeedback->setText("connecting to server... ");
-    qApp->processEvents();
+    QString location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/lordyphon_proto.txt";
+    QString path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt"; //Replace this with your file
+    filehandler->download(location, path);
     
-    if (p_filehandler->GetPageContent()) {
-        ui.Q_UpdateFeedback->clear();
-        ui.Q_UpdateFeedback->insert("download complete");
-       
-        p_filehandler->writeFileToContainer();
-        DisplayContainerData();
-        
-        return true;
-    }
-    
-    ui.Q_UpdateFeedback->insert("connection error");
-    
-    return false;
 }
 
 
-void LordyLink_derived::DisplayContainerData()
+void LordyLink::download_wrapper()
 {
-    for (size_t i = 0; i < (p_filehandler->return_record_coll_size()); ++i )   {
-        QString qtemp_str = QString::fromStdString(p_filehandler->record_collection_at(i));
-        ui.textEdit->insertPlainText(qtemp_str);
-    }
+    download(filehandler);
 }
 

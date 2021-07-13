@@ -1,148 +1,112 @@
 #include "Filehandler.h"
-#include "boost/asio.hpp"
-
-using namespace std;
-using namespace boost::asio;
 
 
 
 
-bool FileHandler::writeFileToContainer()
+Filehandler::Filehandler(QLineEdit* _line_edit, QObject* parent) : line_edit(_line_edit)
+            , QObject(parent)
+
 {
-    string temp_str;
     
-    file.open("firmware.txt");
-
-    if(file){
-        //file in temp buffer einlesen, in vector schreiben
-        while(getline(file, temp_str)) {
-            record_collection.push_back(temp_str);
-            temp_str.clear();
-        }
-
-        file.close();
-        return true;
-    }
-    return false;
-
+    
+    connect(&manager, &QNetworkAccessManager::finished, this, &Filehandler::finished);
 }
 
-bool FileHandler::GetPageContent() {
-    
-    //LordyLink* ui_local = ui;
-    
-    ofstream firmware;
-    firmware.open("Firmware.txt", ios_base::out);
 
-    try {
-        boost::asio::io_service io_service;
 
-        ip::tcp::resolver resolver(io_service);
-        ip::tcp::resolver::query query("66.96.162.138", "80");
-        ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-        ip::tcp::resolver::iterator end;
-        
-        // Try each endpoint until we successfully establish a connection.
-        ip::tcp::socket socket(io_service);
-        boost::system::error_code error = boost::asio::error::host_not_found;
-        
-        while (error && endpoint_iterator != end) {
-            socket.close();
-            socket.connect(*endpoint_iterator++, error);
-        }
-        if (error) {
-           
-            throw boost::system::system_error(error);
-            return false;
-        }
-        // Form the request. We specify the "Connection: close" header so that the
-        // server will close the socket after transmitting the response. This will
-        // allow us to treat all data up until the EOF as the content.
-        
-        boost::asio::streambuf request;
-        std::ostream request_stream(&request);
-        
-        request_stream << "GET " << "http://stefandeisenberger86881.domain.com/firmware/lordyphon_proto.txt" << " HTTP/1.0\r\n";
-        request_stream << "Host: " << "66.96.162.138" << "\r\n";
-        request_stream << "Accept: */*\r\n";
-        request_stream << "Connection: close\r\n\r\n";
-        
-        // Send the request.
-        write(socket, request);
-        
-        // Read the response status line.
-        boost::asio::streambuf response;
-        boost::asio::read_until(socket, response, "\r\n");
-        
-        // Check that response is OK.
-        std::istream response_stream(&response);
-        std::string http_version;
-        
-        response_stream >> http_version;
-        unsigned int status_code;
-        response_stream >> status_code;
-        std::string status_message;
-        
-        std::getline(response_stream, status_message);
-        if (!response_stream || http_version.substr(0, 5) != "HTTP/") {
-            std::clog << "Invalid response\n";
-            return false;
-        }
-        if (status_code != 200) {
-            std::clog << "Response returned with status code " << status_code << "\n";
-            return false;
-        }
-       
-        // Read the response headers, which are terminated by a blank line.
-        boost::asio::read_until(socket, response, "\r\n\r\n");
-
-        // Process the response headers.
-        std::string header;
-
-        while (std::getline(response_stream, header) && header != "\r")
-            std::clog << header << "\n";
-
-        // Write whatever content we already have to file.
-        if (response.size() > 0) {
-            
-            firmware << &response;
-        }
-        else
-            return false;
-        // Read until EOF, writing data to output as we go.
-        while (true) {
-            size_t n = read(socket, response, boost::asio::transfer_at_least(1), error);
-
-            if (!error)
-            {
-                if (n) {
-                    firmware << &response;
-                    
-                }
-            }
-
-            if (error == boost::asio::error::eof) {
-               
-                return true;
-                break;
-            }
-
-            if (error) {
-               
-                throw boost::system::system_error(error);
-            }
-        }
-    }
-    catch (std::exception& e) {
-        std::clog << "Exception: " << e.what() << endl;
-    }
-
-    firmware.close();
-    return false;
-
+void Filehandler::download(QString location, QString path)
+{
    
 
+    file.setFileName(path);
+    
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        line_edit->clear();
+        line_edit->setText ( file.errorString());
+        qApp->processEvents();
+        return;
+    }
+
+    QUrl url(location);
+    
+    url.setPort(21);
+    url.setUserName("stefandeisenberger86881");
+    url.setPassword("3333Sync!!!");
+   
+  
+
+    QNetworkRequest request = QNetworkRequest(url);
+    QNetworkReply* reply = manager.get(request);
+    wire(reply);
+
+    line_edit->clear();
+    line_edit->setText("connecting...");
+    qApp->processEvents();
+
+}
+
+void Filehandler::readyRead()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    if (reply)
+    {
+        QByteArray data = reply->readAll();
+        file.write(data);
+        
+        qApp->processEvents();
+        line_edit->clear();
+        line_edit->setText(data);
+        qApp->processEvents();
+    }
+    else {
+
+        line_edit->clear();
+        line_edit->setText("readyread error");
+        qApp->processEvents();
+    }
+}
+
+void Filehandler::finished(QNetworkReply* reply)
+{
+    line_edit->clear();
+    line_edit->setText ("done");
+    qApp->processEvents();
+    file.close();
+    reply->close();
 }
 
 
+void Filehandler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+    if (bytesTotal <= 0) {
+        
+        line_edit->clear();
+        line_edit->setText("no data " + bytesReceived);
+        qApp->processEvents();
+        return;
+    }
+   
+   
+}
+
+void Filehandler::error(QNetworkReply::NetworkError code)
+{
+    line_edit->clear();
+    line_edit->setText( "Error: " + code );
+    qApp->processEvents();
+}
+
+void Filehandler::wire(QNetworkReply* reply)
+{
+   
+    connect(reply, &QNetworkReply::readyRead, this, &Filehandler::readyRead);
+    connect(reply, &QNetworkReply::downloadProgress, this, &Filehandler::downloadProgress);
+    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &Filehandler::error);
+    line_edit->clear();
+    line_edit->setText("wiring...");
+    qApp->processEvents();
+
+
+}
 

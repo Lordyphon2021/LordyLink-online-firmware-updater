@@ -1,33 +1,38 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <array>
-#include <string>
 
-//#include "LordyLink.h"
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QFile>
+#include <qlineedit.h>
+#include <QApplication.h>
 
-
-
-class FileHandler
+class Filehandler : public QObject
 {
-private:
-
-    std::ifstream file;
-    std::vector<std::string> record_collection;
-    
-   
-
-  
-    
-
+    Q_OBJECT
 public:
+    Filehandler(QLineEdit* _line_edit, QObject* parent = nullptr);
+    //Filehandler(){}
     
-    const size_t return_record_coll_size() const { return record_collection.size(); }
-    std::string& record_collection_at(size_t pos) { return record_collection.at(pos); }
-    
-    bool GetPageContent();
-    bool writeFileToContainer();
+    void download(QString location, QString path);
 
+signals:
+
+
+
+private slots:
+    void readyRead();
+    void finished(QNetworkReply* reply);
+   
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void error(QNetworkReply::NetworkError code);
+    
+private:
+    QNetworkAccessManager manager;
+    QFile file;
+    QLineEdit* line_edit;
+
+    void wire(QNetworkReply* reply);
 };
+
