@@ -24,10 +24,10 @@ public:
 		checksum8_input = checksum8_from_file;
 		bit_mode = 0;
 	}
-	ChecksumValidator(const std::vector<uint8_t>& input_vec, uint16_t checksum32_from_file)
+	ChecksumValidator(const std::vector<uint8_t>& input_vec, uint16_t checksum16_from_file)
 	{
 		data_vec = input_vec;
-		checksum16_input = checksum32_from_file;
+		checksum16_input = checksum16_from_file;
 		bit_mode = 1;
 	}
 
