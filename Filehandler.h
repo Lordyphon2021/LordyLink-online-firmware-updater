@@ -13,7 +13,7 @@ class Filehandler : public QObject
     Q_OBJECT
 public:
     Filehandler(QLineEdit* _line_edit, QObject* parent = nullptr);
-    //Filehandler(){}
+    
     
     void download(QString location, QString path);
 
@@ -24,7 +24,6 @@ signals:
 private slots:
     void readyRead();
     void finished(QNetworkReply* reply);
-   
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void error(QNetworkReply::NetworkError code);
     

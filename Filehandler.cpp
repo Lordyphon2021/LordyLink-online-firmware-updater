@@ -7,8 +7,6 @@ Filehandler::Filehandler(QLineEdit* _line_edit, QObject* parent) : line_edit(_li
             , QObject(parent)
 
 {
-    
-    
     connect(&manager, &QNetworkAccessManager::finished, this, &Filehandler::finished);
 }
 

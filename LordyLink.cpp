@@ -23,6 +23,12 @@ LordyLink::LordyLink(QWidget *parent)
     
 }
 
+LordyLink::~LordyLink()
+{
+
+    delete filehandler;
+
+}
 
 
 

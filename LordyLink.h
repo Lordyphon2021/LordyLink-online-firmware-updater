@@ -23,9 +23,11 @@ private:
 
 public:
     LordyLink(QWidget *parent = Q_NULLPTR);
+    LordyLink(LordyLink& other) = delete;
+    ~LordyLink();
+     
     Ui::LordyLinkClass ui;
-    
-
+   
    
 
 signals:
@@ -41,7 +43,7 @@ private slots:
 private:
     
    
-    Filehandler* filehandler;
+    Filehandler* filehandler = nullptr;
     QNetworkAccessManager* manager;
    
     void download(Filehandler* filehandler);
