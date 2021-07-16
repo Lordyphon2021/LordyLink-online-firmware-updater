@@ -6,7 +6,7 @@
 
 
 
-class HexToDataBytesParser
+class HexToSerialDataParser
 {
 private:
 
@@ -42,7 +42,7 @@ private:
 
 public:
 
-	HexToDataBytesParser(const std::vector<std::string>& input_vec)   //konstruktor bekommt das gesamte hex-file als vector übergeben
+	HexToSerialDataParser(const std::vector<std::string>& input_vec)   //konstruktor bekommt das gesamte hex-file als vector übergeben
 		: hex_file_vec(input_vec),
 		uC_data()											// standard-konstruktor der nested class, direct member-init
 	{}

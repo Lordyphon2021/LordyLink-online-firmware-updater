@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void HexToDataBytesParser::parse_hex_to_serial_data_bytes()   // diese methode extrahiert zeile für zeile die verschiedenen typen aus dem hex-file und befüllt den uC_data_vec
+void HexToSerialDataParser::parse_hex_to_serial_data_bytes()   // diese methode extrahiert zeile für zeile die verschiedenen typen aus dem hex-file und befüllt den uC_data_vec
 {													  // mit den temporär erzeugten uC_dat objekten
 	vector <uint8_t> temp_bytes;
 	size_t max_nibble_count;
@@ -41,7 +41,7 @@ void HexToDataBytesParser::parse_hex_to_serial_data_bytes()   // diese methode e
 	}
 }
 
-void HexToDataBytesParser::transmit_bytes_to_uC()
+void HexToSerialDataParser::transmit_bytes_to_uC()
 {
 
 	for (auto i : uC_data_vec)
