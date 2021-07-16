@@ -4,9 +4,9 @@
 
 using namespace std;
 
-void HexToDataBytesParser::parse_hex_to_serial_data_bytes()                         // diese methode extrahiert zeile für zeile die verschiedenen typen aus dem hex-file und befüllt den uC_data_vec
+void HexToDataBytesParser::parse_hex_to_serial_data_bytes()   // diese methode extrahiert zeile für zeile die verschiedenen typen aus dem hex-file und befüllt den uC_data_vec
 {													  // mit den temporär erzeugten uC_dat objekten
-	vector<uint8_t> temp_bytes;
+	vector <uint8_t> temp_bytes;
 	size_t max_nibble_count;
 	uint16_t checksum_in_file = 0;
 
@@ -23,18 +23,19 @@ void HexToDataBytesParser::parse_hex_to_serial_data_bytes()                     
 
 		uC_dat* temp_uC_data = new uC_dat(temp_address_count, checksum_in_file, temp_rec_type, temp_bytes);	//temp. uC_dat objekt erzeugen und 
 
-		ChecksumValidator* checksum_checker = new ChecksumValidator(temp_bytes, static_cast<uint8_t>(checksum_in_file));
+		ChecksumValidator* checksum_checker = new ChecksumValidator(temp_bytes, static_cast<uint8_t>(checksum_in_file)); // create ChecksumValidator object
 
-		if (checksum_checker->check_if_valid()) {
-			uC_data_vec.push_back(*temp_uC_data);
+		if (checksum_checker->check_if_valid()) {			//validate checksum (bool method)
+			uC_data_vec.push_back(*temp_uC_data);			//checksum ok, fill vector
 			checksum_checker->display_calc_checksum();
 		}
-		else
-			cout << "checksum error!" << endl;
+		else {
+			cout << "checksum error!" << endl;				//checksum error
+			//todo: error message box
 
-		uint16_t checksum_in_file = 0;
-		temp_bytes.clear();																	// aufräumen
-
+		}
+		
+		temp_bytes.clear();									//reset and cleanup								
 		delete temp_uC_data;
 		delete checksum_checker;
 	}
