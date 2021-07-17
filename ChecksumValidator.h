@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <numeric>
+#include<QMessageBox>
 
 
 class ChecksumValidator

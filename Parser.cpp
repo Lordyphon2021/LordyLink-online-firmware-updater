@@ -31,7 +31,7 @@ void HexToSerialDataParser::parse_hex_to_serial_data_bytes()   // diese methode 
 		}
 		else {
 			cout << "checksum error!" << endl;				//checksum error
-			//todo: error message box
+			QMessageBox::information(this, "Error:", "Checksum not valid");
 
 		}
 		

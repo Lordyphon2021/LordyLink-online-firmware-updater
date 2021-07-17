@@ -105,7 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h" />
-    <ClInclude Include="Parser.h" />
+    <QtMoc Include="Parser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -3,13 +3,14 @@
 #include<iostream>
 #include <vector>
 #include <string>
+#include <QMainWindow>
 
 
 
-class HexToSerialDataParser
+class HexToSerialDataParser : public QMainWindow
 {
 private:
-
+	Q_OBJECT
 	std::vector<std::string>hex_file_vec;  //input-format, wird im konstruktor übergeben
 
 	class uC_dat {    //nested class, eigener datentyp, um alle informationen eines einzelnen records (zeile des hex-files) abzulegen
@@ -43,9 +44,14 @@ private:
 public:
 
 	HexToSerialDataParser(const std::vector<std::string>& input_vec)   //konstruktor bekommt das gesamte hex-file als vector übergeben
-		: hex_file_vec(input_vec),
-		uC_data()											// standard-konstruktor der nested class, direct member-init
-	{}
+		: hex_file_vec(input_vec)
+		
+		, uC_data()	
+		
+		// standard-konstruktor der nested class, direct member-init
+	{
+		QObject(parent);
+	}
 
 
 	void parse_hex_to_serial_data_bytes();                         // diese methode extrahiert zeile für zeile die verschiedenen typen aus dem hex-file und befüllt den uC_data_vec
