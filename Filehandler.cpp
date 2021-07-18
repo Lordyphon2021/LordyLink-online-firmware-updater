@@ -32,10 +32,13 @@ void Filehandler::download(QString location, QString path)
     url.setUserName("stefandeisenberger86881");
     url.setPassword("3333Sync!!!");
    
-  
+    
 
     QNetworkRequest request = QNetworkRequest(url);
     QNetworkReply* reply = manager.get(request);
+    
+    
+    
     wire(reply);
 
     line_edit->clear();
@@ -58,7 +61,7 @@ void Filehandler::readyRead()
         qApp->processEvents();
     }
     else {
-
+        
         line_edit->clear();
         line_edit->setText("readyread error");
         qApp->processEvents();
@@ -90,6 +93,9 @@ void Filehandler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
 void Filehandler::error(QNetworkReply::NetworkError code)
 {
+    error_message.setText("no internet connection!");
+    error_message.exec();
+    
     line_edit->clear();
     line_edit->setText( "Error: " + code );
     qApp->processEvents();

@@ -7,6 +7,7 @@
 #include <QFile>
 #include <qlineedit.h>
 #include <QApplication.h>
+#include <QMessagebox>
 
 class Filehandler : public QObject
 {
@@ -31,7 +32,7 @@ private:
     QNetworkAccessManager manager;
     QFile file;
     QLineEdit* line_edit;
-
+    QMessageBox error_message;
     void wire(QNetworkReply* reply);
 };
 
