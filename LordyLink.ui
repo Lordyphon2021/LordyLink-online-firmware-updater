@@ -29,23 +29,10 @@
       <x>30</x>
       <y>30</y>
       <width>311</width>
-      <height>102</height>
+      <height>172</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item>
       <widget class="QLabel" name="label_2">
        <property name="font">
@@ -68,7 +55,7 @@
         <number>0</number>
        </property>
        <property name="text">
-        <string>status/debug</string>
+        <string>Internet status</string>
        </property>
       </widget>
      </item>
@@ -86,6 +73,35 @@
         <bool>true</bool>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="hardware_connected_label">
+       <property name="font">
+        <font>
+         <family>Lucida Sans Typewriter</family>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::DefaultContextMenu</enum>
+       </property>
+       <property name="accessibleName">
+        <string>0</string>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
+       <property name="text">
+        <string>USB status</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="QUsbStatus"/>
      </item>
      <item>
       <spacer name="verticalSpacer">
@@ -119,8 +135,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>170</y>
+      <x>20</x>
+      <y>330</y>
       <width>311</width>
       <height>21</height>
      </rect>
@@ -166,17 +182,17 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>190</y>
+      <y>360</y>
       <width>311</width>
-      <height>341</height>
+      <height>171</height>
      </rect>
     </property>
    </widget>
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
-      <x>-10</x>
-      <y>140</y>
+      <x>-20</x>
+      <y>270</y>
       <width>381</width>
       <height>20</height>
      </rect>
@@ -201,7 +217,14 @@
     </property>
     <addaction name="actionexit"/>
    </widget>
+   <widget class="QMenu" name="menuusb_ports">
+    <property name="title">
+     <string>usb ports</string>
+    </property>
+    <addaction name="actionshow_status"/>
+   </widget>
    <addaction name="menuAbout"/>
+   <addaction name="menuusb_ports"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -220,6 +243,11 @@
   <action name="actionexit">
    <property name="text">
     <string>exit</string>
+   </property>
+  </action>
+  <action name="actionshow_status">
+   <property name="text">
+    <string>show status</string>
    </property>
   </action>
  </widget>

@@ -7,11 +7,17 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QListWidget>
+#include <QString>
 #include <QUrl>
 #include <QDateTime>
 #include <QFile>
 #include <QDebug>
+#include <QSerialPort.h>
+#include<QIODevice.h>
 #include "Filehandler.h"
+#include "Parser.h"
+#include "Serial.h"
 
 
 class LordyLink : public QMainWindow
@@ -23,8 +29,8 @@ private:
 
 public:
     LordyLink(QWidget *parent = Q_NULLPTR);
-    LordyLink(LordyLink& other) = delete;
-    ~LordyLink();
+   
+  
      
     Ui::LordyLinkClass ui;
    
@@ -35,7 +41,9 @@ signals:
 public slots:
    
     void download_wrapper();
+    void usb_write();
    
+    
 
 private slots:
     
@@ -45,8 +53,11 @@ private:
    
     Filehandler* filehandler = nullptr;
     QNetworkAccessManager* manager;
-   
+    SerialHandler Usb;
     void download(Filehandler* filehandler);
+    
+    
+    
    
 };
 

@@ -1,52 +1,99 @@
 #include "Parser.h"
 #include "ChecksumValidator.h"
+#include <exception>
+
 
 
 using namespace std;
 
-void HexToSerialDataParser::parse_hex_to_serial_data_bytes()   // diese methode extrahiert zeile für zeile die verschiedenen typen aus dem hex-file und befüllt den uC_data_vec
-{													  // mit den temporär erzeugten uC_dat objekten
-	vector <uint8_t> temp_bytes;
-	size_t max_nibble_count;
-	uint16_t checksum_in_file = 0;
 
-	for (auto i : hex_file_vec) {
+//this method iterates through the hexfile-string-vector, (if record checksum is valid) 
+// extracts all elements to user defined type "RecordElements",
+//creates a std::vector<RecordElements>
+//from which the serial data can be retrieved via transmit-method without losing its corresponding metadata.
+//----all values hexadecimal----
 
-		max_nibble_count = stoi(i.substr(1, 2), nullptr, 16);  //wieviele halbe datenbytes sind in record(zeile)?
-		checksum_in_file = stoi(i.substr(9 + max_nibble_count * 2, 2), nullptr, 16); // checksumme auslesen
+bool HexToSerialParser::parse()     
+{															
+	QByteArray temp_data_vec;	//holds the data-section of a single hexfile record
+	size_t nibbles_in_data_section = 0x00;	//how many nibbles (2 nibbles == 1 byte) are in record
+	uint8_t record_type = 0x00;				//type of data in data-section
+	uint16_t address = 0x0000;				//address-offset for flash-memory of microcontroller
+	uint8_t checksum_from_file = 0x00;		//8-bit checksum at end of record
+	uint32_t start_bytes_sum = 0x00;		//bytewise sum of all elements except start byte and checksum, used for checksum verification
+	
+	ChecksumValidator checksum_calculated;
+	
+	try {
 
-		for (size_t rec_pos = 0; rec_pos < max_nibble_count * 2; rec_pos += 2)		//datenbytes der zeile in temp-vector füllen
-			temp_bytes.push_back(static_cast<uint8_t>(stoi(i.substr(9 + rec_pos, 2), nullptr, 16)));
+		for (auto it : hex_file_vec) {
+			
+			//parse string to individual elements
+			nibbles_in_data_section = static_cast<uint8_t>(stoi(it.substr(1, 2)), nullptr, 16);
+			record_type = stoi(it.substr(7, 2), nullptr, 16);
+			
+			if (record_type == 0x01) {  //exit condition (EOF), final record will not be parsed
+				return true;
+			}
+			
+			address = static_cast<uint16_t>(stoi(it.substr(3, 4), nullptr, 16));
+			checksum_from_file = stoi(it.substr(9 + (nibbles_in_data_section * 2), 2), nullptr, 16);
 
-		uint8_t temp_rec_type = stoi(i.substr(7, 2), nullptr, 16);		//rec type auslesen
-		size_t temp_address_count = stoi(i.substr(3, 4), nullptr, 16);	//zugehörige adresse auslesen
+			//fill data_bytes_vec with single bytes of record
+			
+			temp_data_vec.push_back(static_cast<uint8_t>(nibbles_in_data_section));
+			temp_data_vec.push_back(static_cast<uint8_t>((address & 0xff00) >> 8));
+			temp_data_vec.push_back(static_cast<uint8_t>(address & 0xff));
+			temp_data_vec.push_back(record_type);
 
-		uC_dat* temp_uC_data = new uC_dat(temp_address_count, checksum_in_file, temp_rec_type, temp_bytes);	//temp. uC_dat objekt erzeugen und 
+			for (size_t rec_pos = 0; rec_pos < nibbles_in_data_section * 2; rec_pos += 2)
+				temp_data_vec.push_back(static_cast<uint8_t>(stoi(it.substr((9 + rec_pos), 2), nullptr, 16)));
+			
+			temp_data_vec.push_back(checksum_from_file);
+			
+			//sum all bytes except start-byte ':' and checksum_in_file for checksum verification
+			start_bytes_sum = static_cast<uint8_t>(nibbles_in_data_section) + ((address & 0xff00) >> 8) + (address & 0xff) + record_type; //address is 16 bit value, split into two bytes
 
-		ChecksumValidator* checksum_checker = new ChecksumValidator(temp_bytes, static_cast<uint8_t>(checksum_in_file)); // create ChecksumValidator object
+			//hand data to checksum validator
+			checksum_calculated.set_Data(temp_data_vec, checksum_from_file, start_bytes_sum);
 
-		if (checksum_checker->check_if_valid()) {			//validate checksum (bool method)
-			uC_data_vec.push_back(*temp_uC_data);			//checksum ok, fill vector
-			checksum_checker->display_calc_checksum();
+			if (checksum_calculated.is_valid()) {
+				//if checksum is valid, fill container with temporary object
+				parsed_hex_file_vec.push_back(temp_data_vec);
+			}
+			else {
+				cout << "checksum error!" << endl;
+				return false;
+			}
+
+			//clear temp data vector for next iteration
+			temp_data_vec.clear();
+			
+			
+
 		}
-		else {
-			cout << "checksum error!" << endl;				//checksum error
-			QMessageBox::information(this, "Error:", "Checksum not valid");
 
-		}
-		
-		temp_bytes.clear();									//reset and cleanup								
-		delete temp_uC_data;
-		delete checksum_checker;
+	}
+	catch (exception& e) { 
+
+		cout << e.what();
 	}
 }
 
-void HexToSerialDataParser::transmit_bytes_to_uC()
+bool HexToSerialParser::send_hex_file()
 {
+	for (auto i : parsed_hex_file_vec) {
+		//tx_record_bytes();
 
-	for (auto i : uC_data_vec)
-		i.debug_print_bytes();
-	//TODO serial port send
+
+
+
+
+	
+
+	}
+
+	return false;
 
 }
 

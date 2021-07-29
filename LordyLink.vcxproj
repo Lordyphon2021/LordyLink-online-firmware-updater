@@ -88,6 +88,7 @@
   <ItemGroup>
     <ClCompile Include="Filehandler.cpp" />
     <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="Serial.cpp" />
     <QtRcc Include="LordyLink.qrc" />
     <QtUic Include="LordyLink.ui">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -97,7 +98,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Downloader.h" />
     <QtMoc Include="Filehandler.h" />
   </ItemGroup>
   <ItemGroup>
@@ -105,7 +105,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h" />
-    <QtMoc Include="Parser.h" />
+    <ClInclude Include="Serial.h" />
+    <QtMoc Include="Downloader.h" />
+    <ClInclude Include="Parser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

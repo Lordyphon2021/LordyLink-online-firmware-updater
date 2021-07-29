@@ -8,6 +8,7 @@
 #include <qlineedit.h>
 #include <QApplication.h>
 #include <QMessagebox>
+#include "Parser.h"
 
 class Filehandler : public QObject
 {
@@ -28,6 +29,7 @@ private slots:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void error(QNetworkReply::NetworkError code);
     
+
 private:
     QNetworkAccessManager manager;
     QFile file;

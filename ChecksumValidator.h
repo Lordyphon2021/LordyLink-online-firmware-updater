@@ -1,56 +1,41 @@
 #pragma once
 #include <vector>
 #include <numeric>
-#include<QMessageBox>
+#include <QApplication>
 
 
-class ChecksumValidator
+//this class accepts extracted elements of intel hexfile or any uint8_t data vector and its corresponding checksum.
+
+class ChecksumValidator 
 {
 
 private:
 
+	uint32_t start_bytes_sum;
+	QByteArray data_vec;
+	uint8_t checksum_calculated;
+	uint8_t checksum_from_file;
 	
-	std::vector <uint8_t> data_vec;
-	uint8_t checksum8_calc = 0;
-	uint8_t checksum8_input = 0;
-	uint16_t checksum16_calc = 0;
-	uint16_t checksum16_input = 0;
-	bool bit_mode = 0;
+	
+	
 
 public:
-
-	ChecksumValidator(const std::vector<uint8_t>& input_vec, uint8_t checksum8_from_file)
+	//start_bytes_sum is set to default 0 to accept other data than intel hex-files
+	void set_Data(const QByteArray& _data_vec, const uint8_t _checksum_from_file, const uint32_t _start_bytes_sum = 0 ) 
 	{
-		data_vec = input_vec;
-		checksum8_input = checksum8_from_file;
-		bit_mode = 0;
+		data_vec = _data_vec;
+		checksum_from_file = _checksum_from_file;
+		start_bytes_sum = _start_bytes_sum;
 	}
-	ChecksumValidator(const std::vector<uint8_t>& input_vec, uint16_t checksum16_from_file)
-	{
-		data_vec = input_vec;
-		checksum16_input = checksum16_from_file;
-		bit_mode = 1;
-	}
+	
 
-	bool check_if_valid()
+	bool is_valid()  // bytewise addition of data vector (and start_bytes from hexfile, if passed to constructor), 
+					 //8 bit checksum is calculated from the two's complement of the least significant byte of the sum,
+					 //is then compared with the passed checksum. 
 	{
+		uint32_t vec_sum = std::accumulate(data_vec.begin(), data_vec.end(), 0);
+		checksum_calculated =  ~((start_bytes_sum + vec_sum) & 0x00ff ) + 0x01 ;
 		
-		uint32_t temp_sum = std::accumulate(data_vec.begin(), data_vec.end(), 0);
-
-		if (bit_mode == 0) {
-			checksum8_calc = static_cast <uint8_t> ( ~( temp_sum & 0xff ) + 1 );
-			return (checksum8_input == checksum8_calc);
-		}
-		else{
-			checksum16_calc = static_cast <uint16_t> ( ~( temp_sum & 0xffff ) + 1 );
-			return (checksum16_input == checksum16_calc);
-		}
+		return(checksum_from_file == checksum_calculated);
 	}
-	void display_calc_checksum()
-	{
-		
-		bit_mode == 0 ? (std::cout << "calculated 8 bit checksum: " << std::hex << static_cast <int>(checksum8_calc) << std::endl)
-			: (std::cout << "calculated 16 bit checksum: " << std::hex << static_cast <int>(checksum16_calc) << std::endl);
-	}
-
 };
