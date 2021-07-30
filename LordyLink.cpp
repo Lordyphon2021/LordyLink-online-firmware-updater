@@ -24,14 +24,18 @@ LordyLink::LordyLink(QWidget *parent)
     
     ui.setupUi(this);
     //QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), SLOT(download_wrapper()));
-	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), SLOT(usb_write()));
+	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), SLOT(usb_action_wrapper()));
 	
 	 filehandler = new Filehandler(ui.Q_UpdateFeedback);
-    
+     
 }
 
-
-
+void LordyLink::error_message_box(const char* message)
+{
+    QMessageBox error_message;
+    error_message.setText(message);
+    error_message.exec();
+}
 
 
 
@@ -51,20 +55,26 @@ void LordyLink::download_wrapper()
     download(filehandler);
 }
 
-
-void LordyLink::usb_write()
+void LordyLink::usb_action_wrapper()
 {
-    
-    Usb.find_lordyphon_port();
-    
-    if (Usb.identify_lordyphon()) {
-
-        ui.QUsbStatus->addItem("Success!");
-
+    //scans ports for manufacturer ID "FTDI", 
+    //( I have no vendor ID yet, so final identification has to be done via handshake 
+    if (usb.find_lordyphon_port() == true) { 
+        //lordylink sends tx_passphrase "c++ is a great language", if USB response is "YES INDEED"
+        //lordyphon is successfully identified and ready for communication
+        if (usb.lordyphon_handshake() == true) {
+            ui.QUsbStatus->addItem("Handshake complete, Lordyphon connected!");
+            
+        }
+        else {
+            error_message_box("handshake failed. set Lordyphon to update mode");
+            return;
+        }
     }
-    
-    
-
+    else {
+        error_message_box("Lordyphon not connected.");
+        return;
+    }
 }
 
 

@@ -9,26 +9,24 @@ bool SerialHandler::find_lordyphon_port()
 {
 	bool found_flag = false;
 	
-
 	foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts())
 	{
 		if (info.manufacturer() == "FTDI") {
-			found_flag = true;
+			
 			lordyphon_portname = info.portName();
-			break;
+			found_flag = true;
+			break;				// exit foreach with correct portname
 		}
 		else {
 			found_flag = false;
 		}
 	}
 	if (found_flag == false) {
-		QMessageBox no_hardware;
-		no_hardware.setText("hardware disconnected!");
-		no_hardware.exec();
+	
 		return false;
 	}
 
-	lordyphon.setPortName(lordyphon_portname);
+	lordyphon.setPortName(lordyphon_portname);	// open connection with correect port name
 	lordyphon.open(QIODevice::OpenMode(QIODevice::ReadWrite));
 	lordyphon.setBaudRate(QSerialPort::Baud9600);
 	lordyphon.setDataBits(QSerialPort::Data8);
@@ -52,37 +50,37 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data)
 
 }
 
-QByteArray SerialHandler::read_serial_data()
+QByteArray& SerialHandler::read_serial_data()
 {
-	QByteArray input_buffer;
+	input_buffer.clear();
 	
 	if (lordyphon.isOpen()) {
 		input_buffer = lordyphon.readAll();
 
 		if (input_buffer.isEmpty()) {
-
-			return "error: read error";
+			input_buffer = "error: buffer empty";
+			return input_buffer;
+		
 		}
 		return input_buffer;
 	}
 
-	return "error: connection closed";
+	input_buffer =  "error: connection closed";
+	return input_buffer;
 	
 
 }
 		
-bool SerialHandler::identify_lordyphon()
-{
-		
-		write_serial_data(hand_shake_tx_phrase);
+bool SerialHandler::lordyphon_handshake()
+{		
+	write_serial_data(hand_shake_tx_phrase);
 	
-		if(read_serial_data()== hand_shake_rx_phrase) {
-			
-			return true;
-		}
-		
-		return false;
+	if(read_serial_data()== hand_shake_rx_phrase) {
+		return true;
+	}
 
+	
 		
+	return false;
 
 }

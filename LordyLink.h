@@ -41,7 +41,7 @@ signals:
 public slots:
    
     void download_wrapper();
-    void usb_write();
+    void usb_action_wrapper();
    
     
 
@@ -53,9 +53,9 @@ private:
    
     Filehandler* filehandler = nullptr;
     QNetworkAccessManager* manager;
-    SerialHandler Usb;
+    SerialHandler usb;
     void download(Filehandler* filehandler);
-    
+    void error_message_box(const char* message);
     
     
    
