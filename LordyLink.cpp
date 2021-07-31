@@ -59,9 +59,10 @@ void LordyLink::usb_action_wrapper()
 {
     //scans ports for manufacturer ID "FTDI", 
     //( I have no vendor ID yet, so final identification has to be done via handshake 
-    if (usb.find_lordyphon_port() == true) { 
+    if (usb.find_and_open_lordyphon_port() == true) { 
         //lordylink sends tx_passphrase "c++ is a great language", if USB response is "YES INDEED"
         //lordyphon is successfully identified and ready for communication
+        
         if (usb.lordyphon_handshake() == true) {
             ui.QUsbStatus->addItem("Handshake complete, Lordyphon connected!");
             

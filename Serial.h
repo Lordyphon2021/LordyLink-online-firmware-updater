@@ -13,7 +13,7 @@ class SerialHandler
 public:
 	
 	
-	bool find_lordyphon_port();
+	bool find_and_open_lordyphon_port();
 	bool lordyphon_handshake();
 	bool write_serial_data(const QByteArray& tx_data);
 	QByteArray& read_serial_data();

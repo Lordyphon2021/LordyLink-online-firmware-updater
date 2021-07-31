@@ -5,7 +5,7 @@
 
 
 
-bool SerialHandler::find_lordyphon_port()
+bool SerialHandler::find_and_open_lordyphon_port()
 {
 	bool found_flag = false;
 	
@@ -25,15 +25,15 @@ bool SerialHandler::find_lordyphon_port()
 	
 		return false;
 	}
-
-	lordyphon.setPortName(lordyphon_portname);	// open connection with correect port name
-	lordyphon.open(QIODevice::OpenMode(QIODevice::ReadWrite));
-	lordyphon.setBaudRate(QSerialPort::Baud9600);
-	lordyphon.setDataBits(QSerialPort::Data8);
-	lordyphon.setParity(QSerialPort::NoParity);
-	lordyphon.setStopBits(QSerialPort::OneStop);
-	lordyphon.setFlowControl(QSerialPort::NoFlowControl);
-
+	if (lordyphon.isOpen()==false) {
+		lordyphon.setPortName(lordyphon_portname);	// open connection with correect port name
+		lordyphon.open(QIODevice::OpenMode(QIODevice::ReadWrite));
+		lordyphon.setBaudRate(QSerialPort::Baud9600);
+		lordyphon.setDataBits(QSerialPort::Data8);
+		lordyphon.setParity(QSerialPort::NoParity);
+		lordyphon.setStopBits(QSerialPort::OneStop);
+		lordyphon.setFlowControl(QSerialPort::NoFlowControl);
+	}
 	return true;
 }
 	
@@ -42,7 +42,9 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data)
 {
 
 	if (lordyphon.isOpen()) {
+		
 		lordyphon.write(tx_data);
+		lordyphon.waitForBytesWritten();
 		return true;
 	}
 
@@ -55,13 +57,18 @@ QByteArray& SerialHandler::read_serial_data()
 	input_buffer.clear();
 	
 	if (lordyphon.isOpen()) {
+		
 		input_buffer = lordyphon.readAll();
-
+		lordyphon.waitForReadyRead();
+		
 		if (input_buffer.isEmpty()) {
+			
 			input_buffer = "error: buffer empty";
+			
 			return input_buffer;
 		
 		}
+		
 		return input_buffer;
 	}
 
@@ -75,12 +82,19 @@ bool SerialHandler::lordyphon_handshake()
 {		
 	write_serial_data(hand_shake_tx_phrase);
 	
-	if(read_serial_data()== hand_shake_rx_phrase) {
+	QString response = read_serial_data();
+	
+	if (response == hand_shake_rx_phrase) {
+		
+		
 		return true;
 	}
+	else {
+		QMessageBox error;
+		error.setText(response);
+		error.exec();
 
-	
-		
+	}
 	return false;
 
 }
