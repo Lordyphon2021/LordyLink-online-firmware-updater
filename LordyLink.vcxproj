@@ -88,6 +88,7 @@
   <ItemGroup>
     <ClCompile Include="Filehandler.cpp" />
     <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="QUpdateDialog.cpp" />
     <ClCompile Include="Serial.cpp" />
     <QtRcc Include="LordyLink.qrc" />
     <QtUic Include="LordyLink.ui">
@@ -96,6 +97,7 @@
     <QtMoc Include="LordyLink.h" />
     <ClCompile Include="LordyLink.cpp" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="QUpdateDialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Filehandler.h" />
@@ -105,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h" />
+    <QtMoc Include="QUpdateDialog.h" />
     <ClInclude Include="Serial.h" />
     <QtMoc Include="Downloader.h" />
     <ClInclude Include="Parser.h" />

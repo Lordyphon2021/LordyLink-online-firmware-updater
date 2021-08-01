@@ -44,7 +44,7 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data)
 	if (lordyphon.isOpen()) {
 		
 		lordyphon.write(tx_data);
-		lordyphon.waitForBytesWritten();
+		//lordyphon.waitForBytesWritten();
 		return true;
 	}
 
@@ -54,7 +54,7 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data)
 
 QByteArray& SerialHandler::read_serial_data()
 {
-	input_buffer.clear();
+	//input_buffer.clear();
 	
 	if (lordyphon.isOpen()) {
 		

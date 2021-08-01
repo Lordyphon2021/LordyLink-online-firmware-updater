@@ -1,107 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>InstallFirmwareWindow</class>
- <widget class="QDialog" name="InstallFirmwareWindow">
+ <class>QUpdateDialog</class>
+ <widget class="QDialog" name="QUpdateDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>301</width>
-    <height>269</height>
+    <width>297</width>
+    <height>243</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>QUpdateDialog</string>
   </property>
-  <widget class="QWidget" name="horizontalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>150</y>
-     <width>261</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QPushButton" name="QInstallpushButton">
-      <property name="text">
-       <string>install</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="QCancelpushButton">
-      <property name="text">
-       <string>cancel</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QLineEdit" name="QFirmwareFeedback">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>220</y>
-     <width>261</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>Lucida Sans Typewriter</family>
-    </font>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="frame">
-    <bool>false</bool>
-   </property>
-   <property name="readOnly">
-    <bool>true</bool>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>200</y>
-     <width>91</width>
+     <x>10</x>
+     <y>20</y>
+     <width>121</width>
      <height>16</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>Lucida Sans Typewriter</family>
-     <weight>50</weight>
-     <bold>false</bold>
-    </font>
-   </property>
-   <property name="contextMenuPolicy">
-    <enum>Qt::DefaultContextMenu</enum>
-   </property>
-   <property name="accessibleName">
-    <string>0</string>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Sunken</enum>
-   </property>
-   <property name="lineWidth">
-    <number>0</number>
-   </property>
-   <property name="text">
-    <string>status/debug</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>10</y>
-     <width>141</width>
-     <height>21</height>
     </rect>
    </property>
    <property name="font">
@@ -127,17 +45,97 @@
     <string>firmware versions</string>
    </property>
   </widget>
-  <widget class="QListWidget" name="QVersionsListWidget">
+  <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
+     <y>120</y>
+     <width>261</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="QInstallButton">
+      <property name="text">
+       <string>install</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="QCancelButton">
+      <property name="text">
+       <string>cancel</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QTableView" name="tableView">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
      <y>40</y>
      <width>261</width>
-     <height>101</height>
+     <height>81</height>
     </rect>
    </property>
   </widget>
+  <widget class="QLineEdit" name="Q_UpdateFeedback">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>190</y>
+     <width>261</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Lucida Sans Typewriter</family>
+    </font>
+   </property>
+   <property name="frame">
+    <bool>false</bool>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>170</y>
+     <width>121</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Lucida Sans Typewriter</family>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::DefaultContextMenu</enum>
+   </property>
+   <property name="accessibleName">
+    <string>0</string>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
+   <property name="lineWidth">
+    <number>0</number>
+   </property>
+   <property name="text">
+    <string>status/debug</string>
+   </property>
+  </widget>
  </widget>
+ <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
 </ui>

@@ -28,7 +28,7 @@ private slots:
     void finished(QNetworkReply* reply);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void error(QNetworkReply::NetworkError code);
-    
+   
 
 private:
     QNetworkAccessManager manager;
