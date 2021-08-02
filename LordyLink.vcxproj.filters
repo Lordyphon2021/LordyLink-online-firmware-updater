@@ -52,6 +52,9 @@
     <ClCompile Include="QUpdateDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="QNoHardwareDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -69,6 +72,9 @@
     <QtMoc Include="Serial.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="QNoHardwareDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h">
@@ -80,6 +86,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="QUpdateDialog.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="QNoHardwareDialog.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

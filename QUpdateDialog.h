@@ -17,6 +17,6 @@ private:
 	Ui::QUpdateDialog ui;
 
 public:
-	QUpdateDialog(QWidget *parent = Q_NULLPTR);
+	QUpdateDialog(QDialog *parent = Q_NULLPTR);
 	~QUpdateDialog();
 };

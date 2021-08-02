@@ -8,6 +8,7 @@
 #include <QSerialPortInfo>
 #include <QIODevice>
 #include <QDialog>
+#include "QNoHardwareDialog.h"
 
 
 
@@ -33,8 +34,18 @@ LordyLink::LordyLink(QWidget *parent)
 	
     filehandler = new Filehandler(ui.Q_UpdateFeedback);
     usb = new SerialHandler;
-    if (!usb->find_lordyphon_port())
-        error_message_box("Hardware disconnected");
+    if (!usb->find_lordyphon_port()) {
+        QNoHardwareDialog* no_hardware = new QNoHardwareDialog;
+        no_hardware->setWindowTitle("Lordyphon not found!");
+        no_hardware->show();
+        int hardware_dialog_code = no_hardware->exec();
+
+        if (hardware_dialog_code == QDialog::Rejected)
+            exit(1);
+            
+    }
+
+       
 }
 
 void LordyLink::error_message_box(const char* message)
