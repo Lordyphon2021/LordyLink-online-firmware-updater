@@ -23,15 +23,18 @@ LordyLink::LordyLink(QWidget *parent)
     : QMainWindow(parent)
 {
     
-    
+   
+
     ui.setupUi(this);
     //QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), SLOT(download_wrapper()));
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(usb_action_wrapper()));
     ui.QInstallLabel->hide();
     ui.QInstallProgressBar->hide();
-	 
+	
     filehandler = new Filehandler(ui.Q_UpdateFeedback);
-     
+    usb = new SerialHandler;
+    if (!usb->find_lordyphon_port())
+        error_message_box("Hardware disconnected");
 }
 
 void LordyLink::error_message_box(const char* message)
@@ -66,14 +69,14 @@ void LordyLink::usb_action_wrapper()
     
     //scans ports for manufacturer ID "FTDI", 
     //( I have no vendor ID yet, so final identification has to be done via handshake 
-    if(!usb.find_lordyphon_port())
+    if(!usb->find_lordyphon_port())
         error_message_box("Port not found!");
     
-    if (usb.open_lordyphon_port()) {
+    if (usb->open_lordyphon_port()) {
         //lordylink sends tx_passphrase "c++ is a great language", if USB response is "YES INDEED"
         //lordyphon is successfully identified and ready for communication
         
-        if (usb.lordyphon_handshake() == true) {
+        if (usb->lordyphon_handshake() == true) {
             ui.QUsbStatus->addItem("Handshake complete, Lordyphon connected!");
             
             
