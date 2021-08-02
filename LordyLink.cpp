@@ -63,11 +63,13 @@ void LordyLink::download_wrapper()
 
 void LordyLink::usb_action_wrapper()
 {
-    parser = new HexToSerialParser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
-    parser->parse();
+    
     //scans ports for manufacturer ID "FTDI", 
     //( I have no vendor ID yet, so final identification has to be done via handshake 
-    if (usb.find_and_open_lordyphon_port() == true) { 
+    if(!usb.find_lordyphon_port())
+        error_message_box("Port not found!");
+    
+    if (usb.open_lordyphon_port()) {
         //lordylink sends tx_passphrase "c++ is a great language", if USB response is "YES INDEED"
         //lordyphon is successfully identified and ready for communication
         
@@ -88,7 +90,10 @@ void LordyLink::usb_action_wrapper()
                 
                 ui.QInstallLabel->show();
                 ui.QInstallProgressBar->show();
-                //install firmware
+                
+                parser = new HexToSerialParser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
+                parser->parse();
+                parser->send_hex_file();
              
               
 

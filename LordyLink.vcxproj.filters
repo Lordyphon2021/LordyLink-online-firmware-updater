@@ -66,15 +66,15 @@
     <QtMoc Include="QUpdateDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="Serial.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Serial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

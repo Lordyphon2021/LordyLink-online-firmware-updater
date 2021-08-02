@@ -1,31 +1,36 @@
 
 #include "Serial.h"
 
+SerialHandler::SerialHandler(QObject* parent)
+	: QObject(parent)
+{}
 
 
-
-
-bool SerialHandler::find_and_open_lordyphon_port()
+bool SerialHandler::find_lordyphon_port()
 {
-	bool found_flag = false;
+	
+	bool found = false;
 	
 	foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts())
 	{
 		if (info.manufacturer() == "FTDI") {
-			
 			lordyphon_portname = info.portName();
-			found_flag = true;
-			break;				// exit foreach with correct portname
+			found = true;
+			break;
+
 		}
-		else {
-			found_flag = false;
-		}
+		else
+			found = false;
 	}
-	if (found_flag == false) {
+	return found;
+		
+}
+
+
+bool SerialHandler::open_lordyphon_port()
+{
 	
-		return false;
-	}
-	if (lordyphon.isOpen()==false) {
+	
 		lordyphon.setPortName(lordyphon_portname);	// open connection with correect port name
 		lordyphon.open(QIODevice::OpenMode(QIODevice::ReadWrite));
 		lordyphon.setBaudRate(QSerialPort::Baud9600);
@@ -33,11 +38,21 @@ bool SerialHandler::find_and_open_lordyphon_port()
 		lordyphon.setParity(QSerialPort::NoParity);
 		lordyphon.setStopBits(QSerialPort::OneStop);
 		lordyphon.setFlowControl(QSerialPort::NoFlowControl);
-	}
-	return true;
+		
+		if (lordyphon.isOpen())
+			return true;
+		
+	
+		return false;
 }
 	
-	
+
+
+
+
+
+
+
 bool SerialHandler::write_serial_data(const QByteArray& tx_data) 
 {
 
@@ -54,22 +69,27 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data)
 
 QByteArray& SerialHandler::read_serial_data()
 {
-	//input_buffer.clear();
+	input_buffer.clear();
 	
 	if (lordyphon.isOpen()) {
 		
-		input_buffer = lordyphon.readAll();
-		lordyphon.waitForReadyRead();
+		while (lordyphon.waitForReadyRead(1000))  //timeout 1000ms
+			;  //do nothing
 		
-		if (input_buffer.isEmpty()) {
-			
-			input_buffer = "error: buffer empty";
-			
+		input_buffer = lordyphon.readAll();
+		
+		
+
+			if (input_buffer.isEmpty()) {
+
+				input_buffer = "error: buffer empty";
+
+				return input_buffer;
+
+			}
+
 			return input_buffer;
 		
-		}
-		
-		return input_buffer;
 	}
 
 	input_buffer =  "error: connection closed";

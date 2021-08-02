@@ -108,7 +108,7 @@
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h" />
     <QtMoc Include="QUpdateDialog.h" />
-    <ClInclude Include="Serial.h" />
+    <QtMoc Include="Serial.h" />
     <QtMoc Include="Downloader.h" />
     <ClInclude Include="Parser.h" />
   </ItemGroup>
