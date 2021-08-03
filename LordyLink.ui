@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>366</width>
-    <height>680</height>
+    <width>375</width>
+    <height>733</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,51 +29,10 @@
       <x>30</x>
       <y>30</y>
       <width>311</width>
-      <height>199</height>
+      <height>231</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="font">
-        <font>
-         <family>Lucida Sans Typewriter</family>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::DefaultContextMenu</enum>
-       </property>
-       <property name="accessibleName">
-        <string>0</string>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Sunken</enum>
-       </property>
-       <property name="lineWidth">
-        <number>0</number>
-       </property>
-       <property name="text">
-        <string>Internet status</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="Q_UpdateFeedback">
-       <property name="font">
-        <font>
-         <family>Lucida Sans Typewriter</family>
-        </font>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QLabel" name="hardware_connected_label">
        <property name="font">
@@ -135,8 +94,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>330</y>
+      <x>30</x>
+      <y>380</y>
       <width>311</width>
       <height>21</height>
      </rect>
@@ -156,7 +115,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>540</y>
+      <y>590</y>
       <width>311</width>
       <height>80</height>
      </rect>
@@ -182,7 +141,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>360</y>
+      <y>410</y>
       <width>311</width>
       <height>171</height>
      </rect>
@@ -191,8 +150,8 @@
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
-      <x>-10</x>
-      <y>300</y>
+      <x>0</x>
+      <y>330</y>
       <width>381</width>
       <height>20</height>
      </rect>
@@ -208,7 +167,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>270</y>
+      <y>300</y>
       <width>341</width>
       <height>16</height>
      </rect>
@@ -224,7 +183,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>250</y>
+      <y>270</y>
       <width>309</width>
       <height>12</height>
      </rect>
@@ -258,7 +217,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>366</width>
+     <width>375</width>
      <height>21</height>
     </rect>
    </property>

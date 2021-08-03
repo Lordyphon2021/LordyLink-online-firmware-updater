@@ -5,19 +5,27 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QFile>
-#include <qlineedit.h>
+#include <QListWidget>
 #include <QApplication.h>
 #include <QMessagebox>
+
 #include "Parser.h"
 
 class Filehandler : public QObject
 {
     Q_OBJECT
 public:
-    Filehandler(QLineEdit* _line_edit, QObject* parent = nullptr);
+    Filehandler(QListWidget* debug_list, QObject* parent = nullptr);
     
     
     void download(QString location, QString path);
+    void get_FTP_list();
+
+
+
+
+
+   
 
 signals:
 
@@ -33,7 +41,7 @@ private slots:
 private:
     QNetworkAccessManager manager;
     QFile file;
-    QLineEdit* line_edit;
+    QListWidget* debug_list;
     QMessageBox error_message;
     void wire(QNetworkReply* reply);
 };

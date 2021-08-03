@@ -13,6 +13,8 @@
 
 
 
+
+
 using namespace std;
 
 
@@ -27,25 +29,48 @@ LordyLink::LordyLink(QWidget *parent)
    
 
     ui.setupUi(this);
-    //QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), SLOT(download_wrapper()));
+   
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(usb_action_wrapper()));
     ui.QInstallLabel->hide();
     ui.QInstallProgressBar->hide();
 	
-    filehandler = new Filehandler(ui.Q_UpdateFeedback);
+    
+    
+
+
+
+   
     usb = new SerialHandler;
     if (!usb->find_lordyphon_port()) {
         QNoHardwareDialog* no_hardware = new QNoHardwareDialog;
-        no_hardware->setWindowTitle("Lordyphon not found!");
-        no_hardware->show();
-        int hardware_dialog_code = no_hardware->exec();
 
-        if (hardware_dialog_code == QDialog::Rejected)
-            exit(1);
+        
+        int ctr = 0;
+        
+        while (!usb->find_lordyphon_port()) {
+            
+            no_hardware->setWindowTitle("Lordyphon not found!");
+            no_hardware->show();
+            
+            int hardware_dialog_code = no_hardware->exec();
+
+            if (hardware_dialog_code == QDialog::Rejected)
+                exit(1);
+
+            ctr++;
+
+            if (ctr > 0 && !usb->find_lordyphon_port()) {
+                QMessageBox error;
+                error.setText("please connect Lordyphone or check power and usb connections.");
+                error.exec();
+            }
+
+        }
             
     }
-
-       
+    if (usb->find_lordyphon_port() && usb->open_lordyphon_port() && usb->lordyphon_handshake()) {
+        ui.QUsbStatus->addItem("Lordyphon connected");
+    }
 }
 
 void LordyLink::error_message_box(const char* message)
@@ -59,21 +84,15 @@ void LordyLink::error_message_box(const char* message)
 
 
 
-void LordyLink::download(Filehandler* filehandler)
-{
-    QString location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/lordyphon_proto.txt";
-    QString path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt"; 
-    filehandler->download(location, path);
-    
-}
 
 
-void LordyLink::download_wrapper()
-{
-    download(filehandler);
-    
-    
-}
+
+
+
+
+
+
+
 
 void LordyLink::usb_action_wrapper()
 {

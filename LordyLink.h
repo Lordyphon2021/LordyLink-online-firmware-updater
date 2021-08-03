@@ -22,6 +22,7 @@
 #include "QUpdateDialog.h"
 
 
+
 class LordyLink : public QMainWindow
 {
     
@@ -44,7 +45,7 @@ signals:
 
 public slots:
    
-    void download_wrapper();
+ 
     void usb_action_wrapper();
     
    
@@ -56,10 +57,11 @@ private slots:
 private:
     
    
-    Filehandler* filehandler = nullptr;
+    
     QNetworkAccessManager* manager;
     SerialHandler* usb;
-    void download(Filehandler* filehandler);
+    
+   
     void error_message_box(const char* message);
     std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt";
     HexToSerialParser* parser = nullptr;
