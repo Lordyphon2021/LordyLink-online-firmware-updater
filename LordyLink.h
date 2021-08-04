@@ -16,6 +16,7 @@
 #include <QDebug>
 #include <QSerialPort.h>
 #include<QIODevice.h>
+#include <QProgressBar>
 #include "Filehandler.h"
 #include "Parser.h"
 #include "Serial.h"

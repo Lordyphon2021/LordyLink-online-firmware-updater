@@ -15,6 +15,7 @@
 
 
 
+
 using namespace std;
 
 
@@ -126,10 +127,33 @@ void LordyLink::usb_action_wrapper()
                 
                 parser = new HexToSerialParser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
                 parser->parse();
-                parser->send_hex_file();
-             
-              
+                char nibbles = 0;
+                char checksum_from_file = 0;
+                QByteArray rx_checksum_from_uC;
+                char checksum_from_uC = rx_checksum_from_uC.at(0);
+                size_t index = 0;
+                char tx_record_length = 0;
+                TempRecord temp_rec;
+                QByteArray tx_record;
+               // ui.QInstallProgressBar->setMaximum(parser->get_hexfile_size());
+               // ui.QInstallProgressBar->
+                
+                while (checksum_from_uC = checksum_from_file) {
 
+                    
+                    temp_rec = parser->get_temprec(index);
+                    tx_record = temp_rec.get_hex_record();
+                    tx_record_length = static_cast<char>(tx_record.size());
+                    tx_record.insert(1, tx_record_length);
+                    checksum_from_file = temp_rec.get_checksum_in_file();
+
+                    
+               
+                    rx_checksum_from_uC = usb->read_serial_data();
+
+
+
+                }
             }
             else if(dialog_code == QDialog::Rejected)
             {

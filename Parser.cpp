@@ -15,21 +15,25 @@ using namespace std;
 
 bool HexToSerialParser::parse()     
 {															
-	QByteArray temp_data_vec;	//holds the data-section of a single hexfile record
+	QByteArray temp_data_vec;				//holds the data-section of a single hexfile record
 	size_t nibbles_in_data_section = 0x00;	//how many nibbles (2 nibbles == 1 byte) are in record
-	uint8_t record_type = 0x00;				//type of data in data-section
+	char record_type = 0x00;				//type of data in data-section
 	uint16_t address = 0x0000;				//address-offset for flash-memory of microcontroller
-	uint8_t checksum_from_file = 0x00;		//8-bit checksum at end of record
+	char checksum_from_file = 0x00;		//8-bit checksum at end of record
 	uint32_t start_bytes_sum = 0x00;		//bytewise sum of all elements except start byte and checksum, used for checksum verification
 	
 	ChecksumValidator checksum_calculated;
+
+	
 	
 	try {
 
+		TempRecord temprecord;
+		
 		for (auto it : hex_file_vec) {
 			
 			//parse string to individual elements
-			nibbles_in_data_section = static_cast<uint8_t>(stoi(it.substr(1, 2)), nullptr, 16);
+			nibbles_in_data_section = static_cast<char>(stoi(it.substr(1, 2)), nullptr, 16);
 			record_type = stoi(it.substr(7, 2), nullptr, 16);
 			
 			if (record_type == 0x01) {  //exit condition (EOF), final record will not be parsed
@@ -40,14 +44,14 @@ bool HexToSerialParser::parse()
 			checksum_from_file = stoi(it.substr(9 + (nibbles_in_data_section * 2), 2), nullptr, 16);
 
 			//fill data_bytes_vec with single bytes of record
-			
-			temp_data_vec.push_back(static_cast<uint8_t>(nibbles_in_data_section));
-			temp_data_vec.push_back(static_cast<uint8_t>((address & 0xff00) >> 8));
-			temp_data_vec.push_back(static_cast<uint8_t>(address & 0xff));
+			temp_data_vec.push_back(':');
+			temp_data_vec.push_back(static_cast<char>(nibbles_in_data_section));
+			temp_data_vec.push_back(static_cast<char>((address & 0xff00) >> 8));
+			temp_data_vec.push_back(static_cast<char>(address & 0xff));
 			temp_data_vec.push_back(record_type);
 
 			for (size_t rec_pos = 0; rec_pos < nibbles_in_data_section * 2; rec_pos += 2)
-				temp_data_vec.push_back(static_cast<uint8_t>(stoi(it.substr((9 + rec_pos), 2), nullptr, 16)));
+				temp_data_vec.push_back(static_cast<char>(stoi(it.substr((9 + rec_pos), 2), nullptr, 16)));
 			
 			temp_data_vec.push_back(checksum_from_file);
 			
@@ -59,7 +63,9 @@ bool HexToSerialParser::parse()
 
 			if (checksum_calculated.is_valid()) {
 				//if checksum is valid, fill container with temporary object
-				parsed_hex_file_vec.push_back(temp_data_vec);
+				
+				temprecord.set_data(temp_data_vec, nibbles_in_data_section, checksum_from_file);
+				temprec_vec.push_back(temprecord);
 			}
 			else {
 				cout << "checksum error!" << endl;
@@ -80,20 +86,20 @@ bool HexToSerialParser::parse()
 	}
 }
 
-bool HexToSerialParser::send_hex_file()
+TempRecord HexToSerialParser::get_temprec(size_t index)
 {
-	for (auto i : parsed_hex_file_vec) {
-		//tx_record_bytes();
 
+	return temprec_vec.at(index);
 
-
-
-
-	
-
-	}
-
-	return false;
 
 }
+
+size_t HexToSerialParser::get_hexfile_size()
+{
+
+	return temprec_vec.size();
+
+}
+
+
 

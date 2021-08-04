@@ -26,7 +26,7 @@ private:
 	QSerialPort lordyphon;
 	QString lordyphon_portname;
 	QByteArray input_buffer;
-	const QByteArray hand_shake_tx_phrase = "c++ is great!   ";
+	const QByteArray hand_shake_tx_phrase = "!c++ is great!   ";
 	const QByteArray hand_shake_rx_phrase = "YES INDEED";
 
 

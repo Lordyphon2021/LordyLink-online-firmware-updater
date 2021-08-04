@@ -6,17 +6,50 @@
 #include <string>
 #include <QApplication>
 
+class TempRecord
+{
 
+private:
+	QByteArray _temp_data_vec;
+	char _nibbles;
+	char _checksum_from_file;
+
+public:
+	void set_data(QByteArray temp_data_vec, char nibbles_in_record, char checksum_from_file)
+	{
+		_temp_data_vec = temp_data_vec;
+		_nibbles = nibbles_in_record;
+		_checksum_from_file = checksum_from_file;
+
+	}
+	QByteArray get_hex_record()
+	{
+		return _temp_data_vec;
+	}
+	char get_checksum_in_file()
+	{
+		return _checksum_from_file;
+	}
+	char get_nibbles_in_file()
+	{
+		return _nibbles;
+	}
+
+
+};
 
 //this class parses an intel hex-file (.txt) to serial data bytes for microcontroller bootloader section
 
 class HexToSerialParser
 {
 private:
-
+	
+	
 	std::vector<std::string>hex_file_vec;  // filled with hexfile records ( text line == record ) upon construction
 	QByteArray serial_data_vec; // this is the data section to be sent to the microcontroller
-	QVector<QByteArray> parsed_hex_file_vec; // contains parsed elements of complete hexfile
+	QVector<TempRecord> temprec_vec; // contains parsed elements of complete hexfile
+	QByteArray* record = nullptr;
+
 	
 
 public:
@@ -46,7 +79,13 @@ public:
 											
 	{}
 	
+	
 	bool parse();       
-	bool send_hex_file();
+	TempRecord get_temprec(size_t index);
+	size_t get_hexfile_size();
+	
+	
 	
 };
+
+
