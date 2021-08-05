@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include <QApplication>
+#include <QListWidget>
+#include <QFile>
 
 class TempRecord
 {
@@ -45,44 +47,63 @@ class HexToSerialParser
 private:
 	
 	
-	std::vector<std::string>hex_file_vec;  // filled with hexfile records ( text line == record ) upon construction
+	std::vector<QString>hex_file_vec;  // filled with hexfile records ( text line == record ) upon construction
 	QByteArray serial_data_vec; // this is the data section to be sent to the microcontroller
 	QVector<TempRecord> temprec_vec; // contains parsed elements of complete hexfile
 	QByteArray* record = nullptr;
-
+	QListWidget* debugger;
 	
 
 public:
-
-	HexToSerialParser(const std::string& _path)  //constructor takes path to file location
+	
+	/*
+	QFile inputFile(fileName);
+	if (inputFile.open(QIODevice::ReadOnly))
 	{
-		std::ifstream hex_file;
-		std::string temp_record;
-		hex_file.open(_path);	
+		QTextStream in(&inputFile);
+		while (!in.atEnd())
+		{
+			QString line = in.readLine();
+			...
+		}
+		inputFile.close();
+	}
 
-		if (hex_file.is_open()) {				//copy hexfile to vector of strings
-			while( std::getline(hex_file, temp_record) ) {
-				hex_file_vec.push_back(temp_record);
+	*/
+	HexToSerialParser( QString _path, QListWidget* _debugger ) 
+		: debugger(_debugger) //constructor takes path to file location
+	{
+		QFile hex_file(_path);
+		QString temp_record;
+		hex_file.open(QIODevice::ReadOnly);
+
+		if (hex_file.isOpen()) {				//copy hexfile to vector of strings
+			while (! hex_file.atEnd()) {
+				QString temp_record = hex_file.readLine();
+			
+			hex_file_vec.push_back(temp_record);
 				temp_record.clear();
 			}
 			hex_file.close();
 		}
 		else
-			std::cout << "file not found!" << std::endl;
+			debugger->addItem("file not found");
 
 		for (auto i : hex_file_vec)				// debugging console output
-			std::cout << i << std::endl;
+			debugger->addItem(i);
 	}
 	
-	HexToSerialParser(const std::vector<std::string>& _hex_file_vec)  //overloaded constructor takes vector of strings containing hex-file
-		: hex_file_vec(_hex_file_vec)
-											
-	{}
 	
 	
 	bool parse();       
 	TempRecord get_temprec(size_t index);
 	size_t get_hexfile_size();
+	QString& get_hexfile_vec(size_t index)
+	{
+
+		return hex_file_vec.at(index);
+
+	}
 	
 	
 	

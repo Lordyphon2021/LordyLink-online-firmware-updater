@@ -13,6 +13,8 @@ using namespace std;
 //from which the serial data can be retrieved via transmit-method without losing its corresponding metadata.
 //----all values hexadecimal----
 
+
+
 bool HexToSerialParser::parse()     
 {															
 	QByteArray temp_data_vec;				//holds the data-section of a single hexfile record
@@ -31,29 +33,29 @@ bool HexToSerialParser::parse()
 		TempRecord temprecord;
 		
 		for (auto it : hex_file_vec) {
-			
+			string std_it = it.toStdString();
 			//parse string to individual elements
-			nibbles_in_data_section = static_cast<char>(stoi(it.substr(1, 2)), nullptr, 16);
-			record_type = stoi(it.substr(7, 2), nullptr, 16);
+			nibbles_in_data_section = static_cast<char>(stoi(std_it.substr(1, 2)), nullptr, 16);
+			record_type = stoi(std_it.substr(7, 2), nullptr, 16);
 			
 			if (record_type == 0x01) {  //exit condition (EOF), final record will not be parsed
 				return true;
 			}
 			
-			address = static_cast<uint16_t>(stoi(it.substr(3, 4), nullptr, 16));
-			checksum_from_file = stoi(it.substr(9 + (nibbles_in_data_section * 2), 2), nullptr, 16);
+			address = static_cast<uint16_t>(stoi(std_it.substr(3, 4), nullptr, 16));
+			checksum_from_file = stoi(std_it.substr(9 + (nibbles_in_data_section * 2), 2), nullptr, 16);
 
 			//fill data_bytes_vec with single bytes of record
-			temp_data_vec.push_back(':');
-			temp_data_vec.push_back(static_cast<char>(nibbles_in_data_section));
-			temp_data_vec.push_back(static_cast<char>((address & 0xff00) >> 8));
-			temp_data_vec.push_back(static_cast<char>(address & 0xff));
-			temp_data_vec.push_back(record_type);
+			
+			//temp_data_vec.push_back(static_cast<char>(nibbles_in_data_section));
+			//temp_data_vec.push_back(static_cast<char>((address & 0xff00) >> 8));
+			//temp_data_vec.push_back(static_cast<char>(address & 0xff));
+			//temp_data_vec.push_back(record_type);
 
 			for (size_t rec_pos = 0; rec_pos < nibbles_in_data_section * 2; rec_pos += 2)
-				temp_data_vec.push_back(static_cast<char>(stoi(it.substr((9 + rec_pos), 2), nullptr, 16)));
+				temp_data_vec.push_back(static_cast<char>(stoi(std_it.substr((9 + rec_pos), 2), nullptr, 16)));
 			
-			temp_data_vec.push_back(checksum_from_file);
+			//temp_data_vec.push_back(checksum_from_file);
 			
 			//sum all bytes except start-byte ':' and checksum_in_file for checksum verification
 			start_bytes_sum = static_cast<uint8_t>(nibbles_in_data_section) + ((address & 0xff00) >> 8) + (address & 0xff) + record_type; //address is 16 bit value, split into two bytes
@@ -68,7 +70,7 @@ bool HexToSerialParser::parse()
 				temprec_vec.push_back(temprecord);
 			}
 			else {
-				cout << "checksum error!" << endl;
+				debugger->addItem("checksum error");
 				return false;
 			}
 

@@ -125,8 +125,30 @@ void LordyLink::usb_action_wrapper()
                 ui.QInstallLabel->show();
                 ui.QInstallProgressBar->show();
                 
-                parser = new HexToSerialParser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
-                parser->parse();
+                parser = new HexToSerialParser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt", ui.QUsbStatus);
+                if (parser->parse()) {
+                    ui.QUsbStatus->addItem("parsing...");
+                    QString record = parser->get_hexfile_vec(0);
+                    
+                   
+                    const char* tx_record = record.toUtf8();
+                    
+                    ui.QUsbStatus->addItem(tx_record);
+
+
+                    usb->write_serial_data(tx_record);
+
+                }
+                
+                
+                
+                
+                
+                
+                
+                
+                else
+                    ui.QUsbStatus->addItem("parser error");
                 char nibbles = 0;
                 char checksum_from_file = 0;
                 QByteArray rx_checksum_from_uC;
@@ -138,22 +160,13 @@ void LordyLink::usb_action_wrapper()
                // ui.QInstallProgressBar->setMaximum(parser->get_hexfile_size());
                // ui.QInstallProgressBar->
                 
-                while (checksum_from_uC = checksum_from_file) {
-
-                    
-                    temp_rec = parser->get_temprec(index);
-                    tx_record = temp_rec.get_hex_record();
-                    tx_record_length = static_cast<char>(tx_record.size());
-                    tx_record.insert(1, tx_record_length);
-                    checksum_from_file = temp_rec.get_checksum_in_file();
-
-                    
                
-                    rx_checksum_from_uC = usb->read_serial_data();
 
+                   
+               
+                   
 
-
-                }
+                
             }
             else if(dialog_code == QDialog::Rejected)
             {
