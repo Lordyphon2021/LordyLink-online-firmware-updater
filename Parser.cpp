@@ -30,10 +30,10 @@ bool HexToSerialParser::parse()
 	
 	try {
 
-		TempRecord temprecord;
+		
 		
 		for (auto it : hex_file_vec) {
-			string std_it = it.toStdString();
+			string std_it = it.toStdString();  //todo: convert parser to QT data types
 			//parse string to individual elements
 			nibbles_in_data_section = static_cast<char>(stoi(std_it.substr(1, 2)), nullptr, 16);
 			record_type = stoi(std_it.substr(7, 2), nullptr, 16);
@@ -46,35 +46,36 @@ bool HexToSerialParser::parse()
 			checksum_from_file = stoi(std_it.substr(9 + (nibbles_in_data_section * 2), 2), nullptr, 16);
 
 			//fill data_bytes_vec with single bytes of record
-			
-			//temp_data_vec.push_back(static_cast<char>(nibbles_in_data_section));
-			//temp_data_vec.push_back(static_cast<char>((address & 0xff00) >> 8));
-			//temp_data_vec.push_back(static_cast<char>(address & 0xff));
-			//temp_data_vec.push_back(record_type);
+			temp_data_vec.push_back(':'); // header for data recognition on uC
+			temp_data_vec.push_back(static_cast<char>(nibbles_in_data_section));
+			temp_data_vec.push_back(static_cast<char>((address & 0xff00) >> 8));
+			temp_data_vec.push_back(static_cast<char>(address & 0xff));
+			temp_data_vec.push_back(record_type);
 
+			
 			for (size_t rec_pos = 0; rec_pos < nibbles_in_data_section * 2; rec_pos += 2)
 				temp_data_vec.push_back(static_cast<char>(stoi(std_it.substr((9 + rec_pos), 2), nullptr, 16)));
 			
-			//temp_data_vec.push_back(checksum_from_file);
 			
-			//sum all bytes except start-byte ':' and checksum_in_file for checksum verification
-			start_bytes_sum = static_cast<uint8_t>(nibbles_in_data_section) + ((address & 0xff00) >> 8) + (address & 0xff) + record_type; //address is 16 bit value, split into two bytes
+			
+			
 
 			//hand data to checksum validator
-			checksum_calculated.set_Data(temp_data_vec, checksum_from_file, start_bytes_sum);
-
+			checksum_calculated.set_Data(temp_data_vec, checksum_from_file ); // data_vec without checksum
+			
 			if (checksum_calculated.is_valid()) {
-				//if checksum is valid, fill container with temporary object
-				
-				temprecord.set_data(temp_data_vec, nibbles_in_data_section, checksum_from_file);
-				temprec_vec.push_back(temprecord);
+				//if checksum is valid:
+				//add checksum to temp record vector
+				temp_data_vec.push_back(checksum_from_file); 
+				//add temp record to hexfile vec
+				hexfile_data_vec.push_back(temp_data_vec);
 			}
 			else {
 				debugger->addItem("checksum error");
 				return false;
 			}
 
-			//clear temp data vector for next iteration
+			//clear temp record for next iteration
 			temp_data_vec.clear();
 			
 			
@@ -88,10 +89,10 @@ bool HexToSerialParser::parse()
 	}
 }
 
-TempRecord HexToSerialParser::get_temprec(size_t index)
+QByteArray HexToSerialParser::get_record(size_t index)
 {
 
-	return temprec_vec.at(index);
+	return hexfile_data_vec.at(index);
 
 
 }
@@ -99,7 +100,7 @@ TempRecord HexToSerialParser::get_temprec(size_t index)
 size_t HexToSerialParser::get_hexfile_size()
 {
 
-	return temprec_vec.size();
+	return hexfile_data_vec.size();
 
 }
 

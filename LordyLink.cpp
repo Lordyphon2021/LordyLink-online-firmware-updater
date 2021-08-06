@@ -126,17 +126,15 @@ void LordyLink::usb_action_wrapper()
                 ui.QInstallProgressBar->show();
                 
                 parser = new HexToSerialParser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt", ui.QUsbStatus);
+                size_t index = 0;
+                
+               
+                
                 if (parser->parse()) {
                     ui.QUsbStatus->addItem("parsing...");
-                    QString record = parser->get_hexfile_vec(0);
-                    
-                   
-                    const char* tx_record = record.toUtf8();
-                    
-                    ui.QUsbStatus->addItem(tx_record);
-
-
-                    usb->write_serial_data(tx_record);
+                    QByteArray& tx_data = parser->get_record(index);
+                    ui.QUsbStatus->addItem(tx_data); 
+                    usb->write_serial_data(tx_data);
 
                 }
                 
@@ -149,14 +147,9 @@ void LordyLink::usb_action_wrapper()
                 
                 else
                     ui.QUsbStatus->addItem("parser error");
-                char nibbles = 0;
-                char checksum_from_file = 0;
-                QByteArray rx_checksum_from_uC;
-                char checksum_from_uC = rx_checksum_from_uC.at(0);
-                size_t index = 0;
-                char tx_record_length = 0;
-                TempRecord temp_rec;
-                QByteArray tx_record;
+                
+               
+               
                // ui.QInstallProgressBar->setMaximum(parser->get_hexfile_size());
                // ui.QInstallProgressBar->
                 
