@@ -48,7 +48,7 @@ public slots:
    
  
     void usb_action_wrapper();
-    
+    bool send_hex_to_usb();
    
     
 

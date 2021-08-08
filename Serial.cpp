@@ -3,8 +3,18 @@
 
 SerialHandler::SerialHandler(QObject* parent)
 	: QObject(parent)
-{}
+{
 
+	//connect(&lordyphon, SIGNAL(QIODevice::readyRead()), this, SerialHandler::readyread());
+}
+
+void SerialHandler::readyread()
+{
+
+	
+
+
+}
 
 bool SerialHandler::find_lordyphon_port()
 {
@@ -59,7 +69,7 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data)
 	if (lordyphon.isOpen()) {
 		
 		lordyphon.write(tx_data);
-		//lordyphon.waitForBytesWritten();
+		lordyphon.waitForBytesWritten();
 		return true;
 	}
 
@@ -95,6 +105,36 @@ QByteArray& SerialHandler::read_serial_data()
 	input_buffer =  "error: connection closed";
 	return input_buffer;
 	
+
+}
+
+QByteArray SerialHandler::read_fixed_size(size_t len)
+{
+	QByteArray buffer;
+
+	if (lordyphon.isOpen()) {
+
+		
+		
+		buffer = lordyphon.read(5);
+		lordyphon.waitForReadyRead();
+
+
+		if (buffer.isEmpty()) {
+
+			buffer = "error: buffer empty";
+
+			return buffer;
+
+		}
+
+		return buffer;
+
+	}
+
+	buffer = "error: connection closed";
+	return buffer;
+
 
 }
 		

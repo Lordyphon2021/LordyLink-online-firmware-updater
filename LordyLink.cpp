@@ -82,9 +82,76 @@ void LordyLink::error_message_box(const char* message)
 }
 
 
+bool LordyLink::send_hex_to_usb()
+{
+    parser = new HexToSerialParser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt", ui.QUsbStatus);
+    size_t index = 0;
+    size_t timeout_ctr = 0;
 
+    if (parser->parse()) {
 
+        if (parser->get_hexfile_size() == 0) {
+            error_message_box("file empty");
+            return false;
+        }
+        
+        bool checksum = false;
+        QString checksum_status_message;
+        QByteArray header = "#";
+        QByteArray tx_data;
+        
+        while (index <= parser->get_hexfile_size()-1) {
+            tx_data.clear();
+            QByteArray tx_data = parser->get_record(index);
+            usb->write_serial_data(tx_data);
+           
+            ui.QUsbStatus->addItem("it");
+            
+            
+            checksum_status_message = usb->read_fixed_size(5);
+         
+            
+        
+            if (checksum_status_message == "error") {
+                ++timeout_ctr;
+                
+                ui.QUsbStatus->addItem("checksum error!");
+                checksum_status_message.clear();
+                checksum = false;
+                continue;
 
+            }
+            else if (checksum_status_message == "valid") {
+                timeout_ctr = 0;
+                ++index;
+                ui.QUsbStatus->addItem("checksum ok");
+                checksum_status_message.clear();
+                checksum = true;
+
+            }
+            else {
+                ++timeout_ctr;
+                checksum_status_message.clear();
+                checksum = false;
+                continue;
+            }
+
+            if (timeout_ctr == 5) {
+                error_message_box("file corrupted");
+                usb->write_serial_data(header);
+                return false;
+            }
+            
+        }
+        
+        usb->write_serial_data(header);
+        ui.QUsbStatus->addItem("hexfile sent!");
+        delete parser;
+        return true;
+
+    }
+
+}
 
 
 
@@ -109,69 +176,23 @@ void LordyLink::usb_action_wrapper()
         
         if (usb->lordyphon_handshake() == true) {
             ui.QUsbStatus->addItem("Handshake complete, Lordyphon connected!");
-            
-            
             update.show();
             ui.QInstallLabel->hide();
             ui.QInstallProgressBar->hide();
             
             int dialog_code = update.exec();
             
-            
-            
-            
             if (dialog_code == QDialog::Accepted) {
                 
                 ui.QInstallLabel->show();
                 ui.QInstallProgressBar->show();
                 
-                parser = new HexToSerialParser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt", ui.QUsbStatus);
-                size_t index = 0;
-                
-               
-                
-                if (parser->parse()) {
-                    ui.QUsbStatus->addItem("parsing...");
-                    QByteArray& tx_data = parser->get_record(index);
-                    ui.QUsbStatus->addItem(tx_data); 
-                    usb->write_serial_data(tx_data);
-
-                }
-                
-                
-                
-                
-                
-                
-                
-                
-                else
-                    ui.QUsbStatus->addItem("parser error");
-                
-               
-               
-               // ui.QInstallProgressBar->setMaximum(parser->get_hexfile_size());
-               // ui.QInstallProgressBar->
-                
-               
-
-                   
-               
-                   
-
-                
+                if (send_hex_to_usb() == true)
+                    error_message_box("file sent");
+                 else
+                    ui.QUsbStatus->addItem("error: update unsuccessful");
             }
-            else if(dialog_code == QDialog::Rejected)
-            {
-              
-               // QMessageBox hurra;
-               // hurra.setText("cancel pressed");
-               // hurra.exec();
-                    
-
-               
-
-            }
+         
         }
         else {
             error_message_box("handshake failed. set Lordyphon to update mode");

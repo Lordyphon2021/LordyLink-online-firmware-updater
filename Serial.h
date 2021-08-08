@@ -12,6 +12,8 @@ class SerialHandler : public QObject
 	Q_OBJECT
 
 public:
+
+
 	
 	SerialHandler( QObject* parent = nullptr );
 	bool find_lordyphon_port();
@@ -21,6 +23,11 @@ public:
 	bool write_serial_data(const QByteArray& tx_data);
 	QByteArray& read_serial_data();
 
+public slots:
+
+	void readyread();
+
+	QByteArray read_fixed_size(size_t len);
 private:
 	
 	QSerialPort lordyphon;
