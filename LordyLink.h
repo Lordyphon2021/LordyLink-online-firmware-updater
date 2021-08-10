@@ -48,12 +48,12 @@ signals:
 
 public slots:
    
-    void OnValueChanged(int val) {
+    void ProgressBar_OnValueChanged(int val) {
 
         ui.QInstallProgressBar->setValue(val);
         
     }
-    void OnsetMax(int val)
+    void ProgressBar_OnsetMax(int val)
     {
 
         ui.QInstallProgressBar->setMaximum(val);
@@ -65,7 +65,9 @@ public slots:
         ui.QInstallLabel->setText(message);
 
     }
-    void usb_action_wrapper();
+    
+    
+    void on_update_button();
    
    
     

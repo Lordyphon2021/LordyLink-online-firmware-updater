@@ -37,7 +37,7 @@ void USBThread::run()
                 emit setLabel("error: no file found");
             }
 
-            emit setMax(parser->get_hexfile_size());
+            emit ProgressBar_setMax(parser->get_hexfile_size());
 
             
 
@@ -60,14 +60,17 @@ void USBThread::run()
                 }
                 else if (checksum_status_message == "ok") {
 
-                    emit valueChanged(static_cast<int>(index));
+                    emit ProgressBar_valueChanged(static_cast<int>(index));
                     
                     emit setLabel("sending file ");
 
                     ++index;
                 }
+                else {
+                    emit setLabel("rx error ");
+                    QThread::sleep(3);
 
-
+                }
                 if (timeout_ctr > 8) {
                     emit setLabel("file corrupted");
                     break;
@@ -79,7 +82,11 @@ void USBThread::run()
             sram_content.close();
             delete parser;
 
+            emit ProgressBar_valueChanged(static_cast<int>(index + 1 ));
             emit setLabel("transfer complete");
+            tx_data.clear();
+            tx_data = "&";
+            usb.write_serial_data(tx_data);
            
         }
 

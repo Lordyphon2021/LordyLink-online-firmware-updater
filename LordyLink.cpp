@@ -31,7 +31,7 @@ LordyLink::LordyLink(QWidget *parent)
     thread = new USBThread;
     ui.setupUi(this);
    
-	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(usb_action_wrapper()));
+	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
     
     
     ui.hardware_connected_label->setText("       ");
@@ -100,15 +100,8 @@ void LordyLink::error_message_box(const char* message)
 
 
 
-void LordyLink::usb_action_wrapper()
+void LordyLink::on_update_button()
 {
-    
-    //scans ports for manufacturer ID "FTDI", 
-    //( I have no vendor ID yet, so final identification has to be done via handshake 
-   
-          
-            
-            
             update.show();
             ui.QInstallLabel->hide();
             ui.QInstallProgressBar->hide();
@@ -118,25 +111,14 @@ void LordyLink::usb_action_wrapper()
             if (dialog_code == QDialog::Accepted) {
                 
                 ui.QInstallLabel->show();
-                
-               
-
                 ui.QInstallProgressBar->show();
-                
-               
-                
-                //QScopedPointer<USBThread>thread(new USBThread());
                
                 QObject::connect(thread, SIGNAL(finished()), thread, SLOT(quit()));
-                QObject::connect(thread, SIGNAL(setMax(int)), this, SLOT(OnsetMax(int)));
+                QObject::connect(thread, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
                 QObject::connect(thread, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-                QObject::connect(thread, SIGNAL(valueChanged(int)), this, SLOT(OnValueChanged(int)));
+                QObject::connect(thread, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
                 
                 thread->start();
-                   
-                    
-                   
-                   
             }
          
     

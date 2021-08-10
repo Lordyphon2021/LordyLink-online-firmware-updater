@@ -17,8 +17,8 @@ public:
 	
 
 signals:
-	void valueChanged(int val);
-	void setMax(int val);
+	void ProgressBar_valueChanged(int val);
+	void ProgressBar_setMax(int val);
 	void setLabel(QString);
 
 private:
