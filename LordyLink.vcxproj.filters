@@ -55,6 +55,9 @@
     <ClCompile Include="QNoHardwareDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UsbThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -73,6 +76,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="QNoHardwareDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="UsbThread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

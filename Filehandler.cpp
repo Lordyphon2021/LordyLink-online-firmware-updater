@@ -61,7 +61,7 @@ void Filehandler::readyRead()
         QByteArray data = reply->readAll();
         file.write(data);
         
-        qApp->processEvents();
+        
        
         debug_list->addItem(data);
         qApp->processEvents();

@@ -21,6 +21,8 @@
 #include "Parser.h"
 #include "Serial.h"
 #include "QUpdateDialog.h"
+#include "UsbThread.h"
+#include <qscopedpointer.h>
 
 
 
@@ -46,9 +48,25 @@ signals:
 
 public slots:
    
- 
+    void OnValueChanged(int val) {
+
+        ui.QInstallProgressBar->setValue(val);
+        
+    }
+    void OnsetMax(int val)
+    {
+
+        ui.QInstallProgressBar->setMaximum(val);
+
+    }
+    void OnsetLabel(QString message)
+    {
+
+        ui.QInstallLabel->setText(message);
+
+    }
     void usb_action_wrapper();
-    bool send_hex_to_usb();
+   
    
     
 
@@ -59,13 +77,13 @@ private:
     
    
     
-    QNetworkAccessManager* manager;
-    SerialHandler* usb;
     
+    SerialHandler* usb_port;
+    USBThread* thread;
    
     void error_message_box(const char* message);
     std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt";
-    HexToSerialParser* parser = nullptr;
+    
     QUpdateDialog update;
    
 };

@@ -91,6 +91,7 @@
     <ClCompile Include="QNoHardwareDialog.cpp" />
     <ClCompile Include="QUpdateDialog.cpp" />
     <ClCompile Include="Serial.cpp" />
+    <ClCompile Include="UsbThread.cpp" />
     <QtRcc Include="LordyLink.qrc" />
     <QtUic Include="LordyLink.ui">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -109,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h" />
+    <QtMoc Include="UsbThread.h" />
     <QtMoc Include="QNoHardwareDialog.h" />
     <QtMoc Include="QUpdateDialog.h" />
     <QtMoc Include="Serial.h" />

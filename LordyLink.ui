@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>375</width>
-    <height>733</height>
+    <width>384</width>
+    <height>521</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
       <x>30</x>
       <y>30</y>
       <width>311</width>
-      <height>231</height>
+      <height>51</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -60,22 +60,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="QUsbStatus"/>
-     </item>
-     <item>
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
       <widget class="QPushButton" name="Q_UpdateLordyphonButton">
        <property name="font">
         <font>
@@ -95,7 +79,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>380</y>
+      <y>170</y>
       <width>311</width>
       <height>21</height>
      </rect>
@@ -115,7 +99,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>590</y>
+      <y>380</y>
       <width>311</width>
       <height>80</height>
      </rect>
@@ -141,7 +125,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>410</y>
+      <y>200</y>
       <width>311</width>
       <height>171</height>
      </rect>
@@ -151,7 +135,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>330</y>
+      <y>140</y>
       <width>381</width>
       <height>20</height>
      </rect>
@@ -167,7 +151,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>300</y>
+      <y>110</y>
       <width>341</width>
       <height>16</height>
      </rect>
@@ -183,7 +167,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>270</y>
+      <y>90</y>
       <width>309</width>
       <height>12</height>
      </rect>
@@ -217,7 +201,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>375</width>
+     <width>384</width>
      <height>21</height>
     </rect>
    </property>

@@ -27,8 +27,8 @@ private:
 public:
 	
 	
-	HexToSerialParser( QString _path, QListWidget* _debugger ) 
-		: debugger(_debugger) //constructor takes path to file location
+	HexToSerialParser( QString _path ) 
+		 //constructor takes path to file location
 	{
 		QFile hex_file(_path);
 		QString temp_record;
@@ -43,11 +43,9 @@ public:
 			}
 			hex_file.close();
 		}
-		else
-			debugger->addItem("file not found");
+		
 
-		for (auto i : hex_file_vec)				// debugging console output
-			debugger->addItem(i);
+		
 	}
 	
 	
