@@ -39,11 +39,11 @@ public:
   
      
     Ui::LordyLinkClass ui;
-   
+    
    
 
 signals:
-
+    
    
 
 public slots:
@@ -69,10 +69,11 @@ public slots:
     
     void on_update_button();
    
-   
+    void OnGetSram();
     
+   
 
-private slots:
+  
     
 
 private:
@@ -81,7 +82,7 @@ private:
     
     
     SerialHandler* usb_port;
-    USBThread* thread;
+    
    
     void error_message_box(const char* message);
     std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt";

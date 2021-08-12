@@ -28,7 +28,7 @@ LordyLink::LordyLink(QWidget *parent)
 {
     
     usb_port = new SerialHandler;
-    thread = new USBThread;
+    
     ui.setupUi(this);
    
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
@@ -90,18 +90,10 @@ void LordyLink::error_message_box(const char* message)
 
 
 
-
-
-
-
-
-
-
-
-
-
 void LordyLink::on_update_button()
 {
+           
+          
             update.show();
             ui.QInstallLabel->hide();
             ui.QInstallProgressBar->hide();
@@ -109,16 +101,28 @@ void LordyLink::on_update_button()
             int dialog_code = update.exec();
             
             if (dialog_code == QDialog::Accepted) {
-                
+                Worker* worker = new Worker;
+                USBThread* thread = new USBThread;
                 ui.QInstallLabel->show();
                 ui.QInstallProgressBar->show();
+
+                worker->moveToThread(thread);
+                    
+                connect(thread, &QThread::started, worker, &Worker::update);
+                connect(worker, &Worker::finished, thread, &QThread::quit);
+                connect(worker, &Worker::finished, worker, &Worker::deleteLater);
+                connect(thread, &QThread::finished, thread, &QThread::deleteLater);
                
-                QObject::connect(thread, SIGNAL(finished()), thread, SLOT(quit()));
-                QObject::connect(thread, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-                QObject::connect(thread, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-                QObject::connect(thread, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+                connect(worker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+                connect(worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+                connect(worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
                 
+                connect(worker, SIGNAL(get_sram()), this, SLOT(OnGetSram()));
+                
+                    
                 thread->start();
+
+
             }
          
     
@@ -127,6 +131,40 @@ void LordyLink::on_update_button()
    
 }
 
+void LordyLink::OnGetSram()
+{
+
+    
+    
+    ui.QInstallProgressBar->reset();
+    ui.QInstallLabel->setText("loading SRAM");
+    Worker* worker2 = new Worker;;
+
+
+
+
+    USBThread* thread2 = new USBThread;
+    ui.QInstallLabel->show();
+    ui.QInstallProgressBar->show();
+
+    worker2->moveToThread(thread2);
+    
+
+    connect(thread2, &QThread::started, worker2, &Worker::get_sram_content);
+    connect(worker2, &Worker::finished, thread2, &QThread::quit);
+    connect(worker2, &Worker::finished, worker2, &Worker::deleteLater);
+    connect(thread2, &QThread::finished, thread2, &QThread::deleteLater);
+    
+    connect(worker2, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+    connect(worker2, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+    connect(worker2, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+   
+    thread2->start();
+        
+
+
+
+}
 
 
 
