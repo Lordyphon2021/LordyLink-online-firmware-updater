@@ -102,7 +102,7 @@ void Worker::update()
         tx_data = "&";
         usb.write_serial_data(tx_data);
         usb.close_usb_port();
-        emit get_sram();
+        //emit get_sram();
         emit finished();
 
     }
@@ -132,22 +132,28 @@ void Worker::get_sram_content()
         usb_port.wait_for_ready_read();
 
         
-        QByteArray message_size_array = usb_port.getInputBuffer();
-        quint16 message_size = ((message_size_array.at(0) << 8) & 0xff00) | (message_size_array.at(1) & 0x00ff);
-        
-        usb_port.set_buffer_size(message_size);
+        QByteArray buffer = usb_port.getInputBuffer();
+        uint8_t message_msb = buffer.at(0);
+      
         usb_port.wait_for_ready_read();
         
-        QByteArray buffer = usb_port.getInputBuffer();
+        buffer = usb_port.getInputBuffer();
         
-        emit setLabel("loading sram");
-        emit ProgressBar_setMax(buffer.size());
-    
-        out << buffer.toHex(':');
-           
-            
-            
+        uint8_t message_lsb = buffer.at(0);
+        uint16_t message_size = (message_msb << 8) & 0xff00 | (message_lsb & 0x00ff);
 
+        emit setLabel("loading sram");
+        emit ProgressBar_setMax(message_size);
+        usb_port.set_buffer_size(16);
+        for (int i = 0; i < message_size; i+=16) {
+            usb_port.wait_for_ready_read();
+            buffer = usb_port.getInputBuffer();
+            out << "Adresse "<< i << "  " << buffer.toHex(':') << '\n';
+            
+            emit ProgressBar_valueChanged(i);
+
+
+        }
     
   
 

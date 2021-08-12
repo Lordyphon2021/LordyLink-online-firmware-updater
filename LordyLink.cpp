@@ -32,7 +32,7 @@ LordyLink::LordyLink(QWidget *parent)
     ui.setupUi(this);
    
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
-    
+    QObject::connect(ui.getSRAM_pushButton, SIGNAL(clicked()), this, SLOT(OnGetSram()));
     
     ui.hardware_connected_label->setText("       ");
     ui.QInstallLabel->hide();
@@ -117,7 +117,7 @@ void LordyLink::on_update_button()
                 connect(worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
                 connect(worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
                 
-                connect(worker, SIGNAL(get_sram()), this, SLOT(OnGetSram()));
+                //connect(worker, SIGNAL(get_sram()), this, SLOT(OnGetSram()));
                 
                     
                 thread->start();
