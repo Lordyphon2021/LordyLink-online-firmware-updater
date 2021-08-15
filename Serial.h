@@ -24,7 +24,9 @@ public:
 	bool lordyphon_handshake();
 	bool write_serial_data(const QByteArray& tx_data);
 	bool port_at_end();
-	void wait_for_ready_read();
+	bool wait_for_ready_read(int timeout);
+	void async_read();
+	bool lordyphon_port_is_open();
 	void close_usb_port();
 	void wire();
 	void set_buffer_size(qint64 size);

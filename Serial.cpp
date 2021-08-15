@@ -94,12 +94,12 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data)
 
 }
 
-void SerialHandler::wait_for_ready_read()
+bool SerialHandler::wait_for_ready_read(int timeout)
 {
-	
-	
-	
-		lordyphon_port->waitForReadyRead();
+	if(!lordyphon_port->waitForReadyRead(timeout))
+		return false;
+
+	return true;
 	
 }
 
@@ -113,7 +113,7 @@ bool SerialHandler::lordyphon_handshake()
 		
 	write_serial_data(hand_shake_tx_phrase);
 		
-		wait_for_ready_read();
+		wait_for_ready_read(1000);
 		
 		
 		if (input_buffer == hand_shake_rx_phrase) {
@@ -129,4 +129,17 @@ bool SerialHandler::lordyphon_handshake()
 		}
 		return false;
 	
+}
+bool SerialHandler::lordyphon_port_is_open()
+{
+
+	return lordyphon_port->isOpen();
+
+
+}
+void SerialHandler::async_read() {
+
+
+	input_buffer = lordyphon_port->readAll();
+
 }
