@@ -137,7 +137,7 @@ void LordyLink::OnGetSram()
     
     
     ui.QInstallProgressBar->reset();
-    ui.QInstallLabel->setText("loading SRAM");
+   
     Worker* worker2 = new Worker;;
 
 

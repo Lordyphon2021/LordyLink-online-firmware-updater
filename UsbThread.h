@@ -7,6 +7,8 @@
 #include <QProgressBar>
 #include <qfile.h>
 #include <QString>
+#include <fstream>
+#include <vector>
 
 
 class USBThread : public QThread
@@ -58,8 +60,9 @@ private:
 	QString status;
 	size_t progress = 0;
 	QString Message;
-	QString path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/";
-	QString Filename = "sram_content.txt";
-
+	std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/";
+	std::string Filename = "sram_content.txt";
+	
 	QFile sram_content;
+	
 };

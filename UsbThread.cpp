@@ -1,5 +1,10 @@
 #include "UsbThread.h"
 #include <QTextStream>
+#include <qdebug.h>
+
+
+using namespace std;
+
 
 void Worker::update()
 {
@@ -65,6 +70,7 @@ void Worker::update()
             else if (checksum_status_message == "ok") {
                 emit ProgressBar_valueChanged(static_cast<int>(index));
                 emit setLabel("sending file ");
+               
                 rx_error_ctr = 0;
                 carry_on_flag = true;
                 ++index;
@@ -73,7 +79,7 @@ void Worker::update()
                 tx_data.clear();
                 tx_data = "?";
                 usb.write_serial_data(tx_data);
-
+                qDebug() << checksum_status_message;
                 tx_data.clear();
                 emit setLabel("rx error, checking status... ");
                 out << "---------------RX ERROR AT INDEX---------------------- " << index << "  " << (tx_data.toHex()) << '\n';
@@ -117,65 +123,61 @@ void Worker::update()
 void Worker::get_sram_content()
 {
     SerialHandler usb_port;
-    QFile sram_content_from_uc;
-    QTextStream out(&sram_content_from_uc);
-    sram_content_from_uc.setFileName("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/atmega_sram.txt");
-    sram_content_from_uc.open(QIODevice::ReadWrite | QIODevice::Text);
+    ofstream file;
     
-    usb_port.find_lordyphon_port();
     
+    
+    if (!usb_port.find_lordyphon_port()) {
+        emit setLabel("lordyphon disconnected!");
+        emit finished();
+    }
     if (!usb_port.lordyphon_port_is_open())
         usb_port.open_lordyphon_port(); 
+    
+    if (!usb_port.lordyphon_handshake()){
+        emit setLabel("connection error");
+        emit finished();
+    }
+    
+    file.open("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/atmega_sram.txt", ios_base::binary);
+    QByteArray sram;
+    QByteArray tx_data = "$ram";
+    usb_port.write_serial_data(tx_data);
+    usb_port.set_buffer_size(16);
+    emit setLabel("reading SRAM");
+    emit ProgressBar_setMax(128000);
+    size_t progress_bar_ctr = 0;
+    size_t rec_ctr = 0;
 
-       
-    else
-       emit setLabel("error: no usb connection");
-
-    //usb_port.lordyphon_handshake();
-        
-       
-        QByteArray tx_data = "$ram";
+    while (sram.size() < 128000) {
+        tx_data = "+";
         usb_port.write_serial_data(tx_data);
-        
-        usb_port.set_buffer_size(16);
-     
-        emit setLabel("reading SRAM");
-        usb_port.wait_for_ready_read(1000);
-        
-        
-        
-        QByteArray sram;
-       
-        emit ProgressBar_setMax(128000);
-        
-        while(sram.size() < 128000) {
-            usb_port.wait_for_ready_read(1000);
-            sram += usb_port.getInputBuffer();
-            
-            emit ProgressBar_valueChanged(sram.size());
+        usb_port.wait_for_ready_read(2000);
+        progress_bar_ctr += 16;
+        tx_data = "-";
+        usb_port.write_serial_data(tx_data);
+        sram += usb_port.getInputBuffer();
+        emit ProgressBar_valueChanged(progress_bar_ctr);
           
+    }
+    emit setLabel("writing file");
+    
+    for (int i = 0; i < sram.size(); ++i) {
+        int temp = static_cast<unsigned char>(sram.at(i)) ;
+            
+        if (i % 16 == 0) {
+            file << endl << dec << "record nr. " << rec_ctr << " :";
+            rec_ctr++;
         }
-        emit ProgressBar_valueChanged(128000);
-        emit setLabel("reading done");
-      
-        emit setLabel("writing file");
-        QString temp = sram.fromHex(" ");
-        //out.setFieldWidth(16);
-        out  << temp.toLatin1();
-        emit setLabel("done");
-        
-        
-        
-        
-        usb_port.close_usb_port();
-
-    sram_content_from_uc.close();
+        file << hex << temp << ":";
+    }
+    
+    emit ProgressBar_valueChanged(128000);
+    emit setLabel("done");
+    usb_port.close_usb_port();
+    file.close();
     emit finished();
     
-    
-    
-
-
 }
 
 void USBThread::run()
