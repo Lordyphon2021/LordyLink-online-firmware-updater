@@ -53,7 +53,7 @@ private:
 	QString lordyphon_portname;
 	QByteArray input_buffer = 0;
 	const QByteArray hand_shake_tx_phrase = "!c++ is great!   ";
-	const QByteArray hand_shake_rx_phrase = "YESINDEED";
+	const QByteArray hand_shake_rx_phrase = "YES!";
 	
 	
 

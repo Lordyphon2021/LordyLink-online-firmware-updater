@@ -71,7 +71,8 @@ public slots:
    
     void OnGetSram();
     
-   
+    void on_flash_button();
+    
 
   
     

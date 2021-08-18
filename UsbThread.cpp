@@ -8,9 +8,7 @@ using namespace std;
 
 void Worker::update()
 {
-
     SerialHandler usb;
-
     usb.find_lordyphon_port();
     usb.open_lordyphon_port();
     usb.set_buffer_size(4);
@@ -28,29 +26,18 @@ void Worker::update()
     QTextStream out(&sram_content);
     HexToSerialParser parser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
 
-
-
-
-
     if (parser.parse()) {
 
         int hexfilesize = parser.get_hexfile_size();
 
         if (hexfilesize == 0) {
-
             emit setLabel("error: no file found");
-            
         }
-
         emit ProgressBar_setMax(hexfilesize);
-
-
 
         while (index < hexfilesize && hexfilesize != 0) {
 
-
             if (carry_on_flag == true) {
-
                 tx_data = parser.get_record(index);
                 usb.write_serial_data(tx_data);
                 out << "record nr. " << index << "  " << (tx_data.toHex()) << '\n';
@@ -58,19 +45,16 @@ void Worker::update()
             usb.wait_for_ready_read(1000);
             checksum_status_message = usb.getInputBuffer();
 
-
             if (checksum_status_message == "er") {
                 ++bad_checksum_ctr;
                 out << "--------------CHECKSUM ERROR AT INDEX " << index << "  " << (tx_data.toHex()) << '\n';
                 emit setLabel("checksum error...sending record again");
                 carry_on_flag = true;
                 QThread::sleep(3);
-
             }
             else if (checksum_status_message == "ok") {
                 emit ProgressBar_valueChanged(static_cast<int>(index));
                 emit setLabel("sending file ");
-               
                 rx_error_ctr = 0;
                 carry_on_flag = true;
                 ++index;
@@ -86,7 +70,6 @@ void Worker::update()
                 ++rx_error_ctr;
                 QThread::sleep(1);
                 carry_on_flag = false;
-
             }
             if (bad_checksum_ctr > 8) {
                 emit setLabel("file corrupted...");
@@ -96,30 +79,31 @@ void Worker::update()
                 emit setLabel("connection lost...");
                 break;
             }
-
         }
-
-
+        
+       
         sram_content.close();
-
-
         emit ProgressBar_valueChanged(static_cast<int>(index + 1));
         emit setLabel("transfer complete");
-        tx_data = "&";
+        tx_data = "*fl";
         usb.write_serial_data(tx_data);
-         usb.close_usb_port();
-        //emit get_sram();
-        emit finished();
+        
+        usb.close_usb_port();
 
     }
     else {
         emit setLabel("file not found, check internet connection");
         emit ProgressBar_valueChanged(0);
-       
     }
 
+    
+    
+    emit finished();
 
 }
+
+
+
 void Worker::get_sram_content()
 {
     SerialHandler usb_port;
