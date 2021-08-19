@@ -15,6 +15,7 @@ void Worker::update()
 
     QString checksum_status_message;
     QByteArray header = "#";
+    QByteArray burn_flash = "w";
     QByteArray tx_data;
     size_t index = 0;
     int bad_checksum_ctr = 0;
@@ -76,19 +77,20 @@ void Worker::update()
                 break;
             }
             if (rx_error_ctr > 8) {
-                emit setLabel("connection lost...");
+                emit setLabel("rx error, check connection ");
                 break;
             }
         }
         
-       
+        usb.wait_for_ready_read(1000);
         sram_content.close();
-        emit ProgressBar_valueChanged(static_cast<int>(index + 1));
+        emit ProgressBar_valueChanged(hexfilesize);
         emit setLabel("transfer complete");
-        tx_data = "*fl";
-        usb.write_serial_data(tx_data);
         
+        usb.write_serial_data(burn_flash);  
+        usb.wait_for_ready_read(1000);
         usb.close_usb_port();
+       
 
     }
     else {

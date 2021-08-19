@@ -24,7 +24,7 @@ LordyLink::LordyLink(QWidget *parent)
    
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
     QObject::connect(ui.getSRAM_pushButton, SIGNAL(clicked()), this, SLOT(OnGetSram()));
-    QObject::connect(ui.flashButton, SIGNAL(clicked()), this, SLOT(on_flash_button()));
+    QObject::connect(ui.QburnButton, SIGNAL(clicked()), this, SLOT(onBurn()));
     
     
     ui.hardware_connected_label->setText("       ");
@@ -126,30 +126,21 @@ void LordyLink::OnGetSram()
     thread2->start();
 }
 
-
-void LordyLink :: on_flash_button()
+void LordyLink::onBurn()
 {
 
-    SerialHandler lordi;
-    if (lordi.find_lordyphon_port()) {
-
-        lordi.open_lordyphon_port();
-        while (!lordi.lordyphon_port_is_open())
-            ;
-        
-        lordi.lordyphon_handshake();
-        QByteArray send = "*fl";
-        lordi.write_serial_data(send);
-
-        lordi.close_usb_port();
+    QByteArray header = "w";
     
+    usb_port->find_lordyphon_port();
+    usb_port->open_lordyphon_port();
     
-    }
-       
-    if(lordi.lordyphon_port_is_open())
+    usb_port->wait_for_ready_read(500);
+    usb_port->write_serial_data(header);
+    usb_port->wait_for_ready_read(500);
 
-        lordi.close_usb_port();
 
+    usb_port->close_usb_port();
 
 }
+
 

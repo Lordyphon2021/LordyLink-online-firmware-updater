@@ -208,7 +208,7 @@
      <string>getSRAM</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="flashButton">
+   <widget class="QPushButton" name="QburnButton">
     <property name="geometry">
      <rect>
       <x>270</x>
@@ -218,7 +218,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>flash!!</string>
+     <string>burn</string>
     </property>
    </widget>
   </widget>
