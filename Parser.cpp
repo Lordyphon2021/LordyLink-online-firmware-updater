@@ -23,13 +23,31 @@ bool HexToSerialParser::parse()
 	uint16_t address = 0x0000;				//address-offset for flash-memory of microcontroller
 	char checksum_from_file = 0x00;		//8-bit checksum at end of record
 	uint32_t start_bytes_sum = 0x00;		//bytewise sum of all elements except start byte and checksum, used for checksum verification
-	
+	exception e;
 	ChecksumValidator checksum_calculated;
 
 	
 	
 	try {
 
+		if(hexfile_data_vec.size() != 0 && hex_file_vec.back() != ":00000001FF"){
+			QMessageBox error;
+			error.setText("Hexfile not valid, download again!");
+			error.exec();
+
+			return false;
+
+		}
+		else if (hexfile_data_vec.size() != 0) {
+			QMessageBox error;
+			error.setText("Hexfile empty, download again!");
+			error.exec();
+
+			return false;
+
+
+		}
+		
 		
 		
 		for (auto it : hex_file_vec) {
@@ -85,7 +103,12 @@ bool HexToSerialParser::parse()
 	}
 	catch (exception& e) { 
 
-		cout << e.what();
+		
+		QMessageBox error;
+		error.setText(e.what());
+		error.exec();
+
+		return false;
 	}
 }
 

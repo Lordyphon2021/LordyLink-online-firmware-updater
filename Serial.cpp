@@ -30,7 +30,7 @@ bool SerialHandler::open_lordyphon_port()
 {
 	lordyphon_port->setPortName(lordyphon_portname);	// open connection with correect port name
 	lordyphon_port->open(QIODevice::OpenMode(QIODevice::ReadWrite));
-	lordyphon_port->setBaudRate(QSerialPort::Baud9600);
+	lordyphon_port->setBaudRate(QSerialPort::Baud57600);
 	lordyphon_port->setDataBits(QSerialPort::Data8);
 	lordyphon_port->setParity(QSerialPort::NoParity);
 	lordyphon_port->setStopBits(QSerialPort::StopBits::OneStop);

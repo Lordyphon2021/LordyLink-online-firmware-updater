@@ -71,7 +71,7 @@ public slots:
    
     void OnGetSram();
     
-    void onBurn();
+    
     
 
   

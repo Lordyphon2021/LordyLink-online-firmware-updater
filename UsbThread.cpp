@@ -8,11 +8,18 @@ using namespace std;
 
 void Worker::update()
 {
+    
+    //OPEN USB PORT
     SerialHandler usb;
     usb.find_lordyphon_port();
     usb.open_lordyphon_port();
-    usb.set_buffer_size(4);
-
+    
+    usb.lordyphon_handshake();
+    
+    usb.set_buffer_size(3);
+   
+   
+    //SET VARIABLES
     QString checksum_status_message;
     QByteArray header = "#";
     QByteArray burn_flash = "w";
@@ -20,76 +27,99 @@ void Worker::update()
     size_t index = 0;
     int bad_checksum_ctr = 0;
     int rx_error_ctr = 0;
-    bool carry_on_flag = true;
+    bool carry_on_flag = true;  //START CONDITION TO GET FIRST RECORD
 
-    sram_content.setFileName("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/sram.txt");
+    //OPEN DOWNLOADED FILE FOR PARSER
+    
+    sram_content.setFileName("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/TX_HEX_LOG.txt");
     sram_content.open(QIODevice::ReadWrite | QIODevice::Text);
     QTextStream out(&sram_content);
     HexToSerialParser parser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
 
-    if (parser.parse()) {
+    //PARSE DOWNLOADED HEXFILE
+    
+    if (parser.parse()) {  //BOOL METHOD, PARSER'S RESPOONSIBLE FOR HEXFILE ERRORS
 
-        int hexfilesize = parser.get_hexfile_size();
+        int hexfilesize = parser.get_hexfile_size();   //GET SIZE FOR PROGRESS BAR AND LOOP
 
         if (hexfilesize == 0) {
             emit setLabel("error: no file found");
+            carry_on_flag = false;
+        
         }
-        emit ProgressBar_setMax(hexfilesize);
+        emit ProgressBar_setMax(hexfilesize);  //SET PROGRESSBAR MAXIMUM
 
+        
+        usb.write_serial_data("§");  //RESET ADDRESS VARIABLES AND COUNTERS ON CONTROLLER
+        QThread::sleep(1);            //ALLOW FOR SETTLING TIME
+        
+        
+        //THIS LOOP SENDS PARSED HEX RECORDS TO CONTROLLER AND WAITS FOR CHECKSUM CONFIRMATION BEFORE SENDING THE
+        //NEXT RECORD: IF CALCULATED CHECKSUM ON CONTROLLER IS "ok",  "index" IS INCREMENTED
+        //
+        
         while (index < hexfilesize && hexfilesize != 0) {
 
             if (carry_on_flag == true) {
                 tx_data = parser.get_record(index);
                 usb.write_serial_data(tx_data);
-                out << "record nr. " << index << "  " << (tx_data.toHex()) << '\n';
+                out << "record nr. " << index << "  " << (tx_data.toHex()) << '\n';  //LOGFILE OUTPUT
             }
-            usb.wait_for_ready_read(1000);
-            checksum_status_message = usb.getInputBuffer();
+            usb.wait_for_ready_read(1000);  //THREAD BLOCKS UNTIL INCOMING CONFIRMATION MESSAGE OR TIMEOUT 1000ms
+            checksum_status_message = usb.getInputBuffer(); //GET INCOMING CONFIRMATION MESSAGE
 
-            if (checksum_status_message == "er") {
-                ++bad_checksum_ctr;
-                out << "--------------CHECKSUM ERROR AT INDEX " << index << "  " << (tx_data.toHex()) << '\n';
+            if (checksum_status_message == "er") {  //CHECKSUM CALCULATION HAS GONE WRONG
+                ++bad_checksum_ctr;                 //EXIT CONDITION, IF HEXFILE IS CORRUPTED, CTR WILL GO UP TO 8 BEFORE ABORTING
+                out << "--------------CHECKSUM ERROR AT INDEX " << index << "  " << (tx_data.toHex()) << '\n'; //LOGFILE OUTPUT
                 emit setLabel("checksum error...sending record again");
-                carry_on_flag = true;
-                QThread::sleep(3);
+                carry_on_flag = true;              //READ RECORD AGAIN AT SAME VECTOR INDEX
+                QThread::sleep(3);                 //ALLOW TIME FOR USER FEEDBACK
             }
-            else if (checksum_status_message == "ok") {
-                emit ProgressBar_valueChanged(static_cast<int>(index));
+            else if (checksum_status_message == "ok") {      //CHECKSUM IS CORRECT   
+                emit ProgressBar_valueChanged(static_cast<int>(index)); //UPDATE PROGRESS BAR
                 emit setLabel("sending file ");
                 rx_error_ctr = 0;
-                carry_on_flag = true;
-                ++index;
+                carry_on_flag = true;  //ALLOW RECORD READ
+                ++index;               //FROM NEXT VECTOR INDEX
             }
             else {
-                tx_data.clear();
+                tx_data.clear();        // INCOMING CONFIRMATION MESSAGE IS CORRUPTED
                 tx_data = "?";
-                usb.write_serial_data(tx_data);
+                usb.write_serial_data(tx_data);     //ASK AGAIN FOR CHECKSUM STATUS, CONTROLLER WILL SEND EITHER "ok" or "er"
                 qDebug() << checksum_status_message;
                 tx_data.clear();
                 emit setLabel("rx error, checking status... ");
-                out << "---------------RX ERROR AT INDEX---------------------- " << index << "  " << (tx_data.toHex()) << '\n';
-                ++rx_error_ctr;
+                out << "---------------RX ERROR AT INDEX---------------------- " << index << "  " << (tx_data.toHex()) << '\n'; //LOGFILE
+                ++rx_error_ctr;         //IF MESSAGE ISNT READABLE FOR MORE THAN 8 TIMES, CONNECTION MUST BE LOST
                 QThread::sleep(1);
                 carry_on_flag = false;
             }
-            if (bad_checksum_ctr > 8) {
+            if (bad_checksum_ctr > 8) {  //EXIT CONDITION: CHECKSUM ERROR
                 emit setLabel("file corrupted...");
+                carry_on_flag = false;
                 break;
             }
-            if (rx_error_ctr > 8) {
+            if (rx_error_ctr > 8) {     //EXIT CONDITION: CONNECTION ERROR
                 emit setLabel("rx error, check connection ");
+                carry_on_flag = false;
                 break;
             }
         }
         
-        usb.wait_for_ready_read(1000);
+        QThread::sleep(1); //THIS IS NECESSARY FOR THE LAST MESSAGE TO BE RECEIVED CORRECTLY, DON'T ASK ME WHY :)
         sram_content.close();
         emit ProgressBar_valueChanged(hexfilesize);
-        emit setLabel("transfer complete");
+      
+        //IF carry_on_flag IS TRUE AFTER EVERYTHING HAS BEEN SENT, EVERYTHING HAS BEEN TRANSMITTED CORRECTLY
+        if (carry_on_flag == true) {   
+            emit setLabel("transfer complete");
+            usb.write_serial_data(burn_flash); //CALLS BURN FUNCTION ON CONTROLLER
+            QThread::sleep(1);
+        }
+        else
+            emit setLabel("transfer aborted");
         
-        usb.write_serial_data(burn_flash);  
-        usb.wait_for_ready_read(1000);
-        usb.close_usb_port();
+        usb.close_usb_port();  
        
 
     }
@@ -100,7 +130,7 @@ void Worker::update()
 
     
     
-    emit finished();
+    emit finished();  //THREAD CLOSED, QT WILL DESTROY LATER VIA SIGNALS
 
 }
 
@@ -127,7 +157,7 @@ void Worker::get_sram_content()
     
     file.open("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/atmega_sram.txt", ios_base::binary);
     QByteArray sram;
-    QByteArray tx_data = "$ram";
+    QByteArray tx_data = "s";
     usb_port.write_serial_data(tx_data);
     usb_port.set_buffer_size(16);
     emit setLabel("reading SRAM");

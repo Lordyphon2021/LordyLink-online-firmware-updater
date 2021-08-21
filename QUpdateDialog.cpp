@@ -28,7 +28,11 @@ void QUpdateDialog::download()
 	QString folder_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com";
 	QString folder_path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/version_list.txt";
 
-	filehandler->download(file_location, file_path);
+	
+	
+	
+	
+filehandler->download(file_location, file_path);
 	//filehandler->download(folder_location, folder_path);
 
 

@@ -24,7 +24,7 @@ LordyLink::LordyLink(QWidget *parent)
    
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
     QObject::connect(ui.getSRAM_pushButton, SIGNAL(clicked()), this, SLOT(OnGetSram()));
-    QObject::connect(ui.QburnButton, SIGNAL(clicked()), this, SLOT(onBurn()));
+   
     
     
     ui.hardware_connected_label->setText("       ");
@@ -86,8 +86,9 @@ void LordyLink::on_update_button()
         Worker* worker = new Worker;
         USBThread* thread = new USBThread;
         ui.QInstallLabel->show();
+        
         ui.QInstallProgressBar->show();
-
+        ui.QInstallProgressBar->valueChanged(0);
         worker->moveToThread(thread);
                     
         connect(thread, &QThread::started, worker, &Worker::update);
@@ -126,21 +127,6 @@ void LordyLink::OnGetSram()
     thread2->start();
 }
 
-void LordyLink::onBurn()
-{
 
-    QByteArray header = "w";
-    
-    usb_port->find_lordyphon_port();
-    usb_port->open_lordyphon_port();
-    
-    usb_port->wait_for_ready_read(500);
-    usb_port->write_serial_data(header);
-    usb_port->wait_for_ready_read(500);
-
-
-    usb_port->close_usb_port();
-
-}
 
 
