@@ -36,6 +36,10 @@ LordyLink::LordyLink(QWidget *parent)
 
         int ctr = 0;
         
+        
+        
+        
+        
         while (!usb_port->find_lordyphon_port()) {
             ui.hardware_connected_label->setText("Lordyphon disconnected");
             no_hardware->setWindowTitle("Lordyphon not found!");
@@ -50,19 +54,53 @@ LordyLink::LordyLink(QWidget *parent)
 
             if (ctr > 0 && !usb_port->find_lordyphon_port()) {
                 QMessageBox error;
-                error.setText("please connect Lordyphone or check power and usb connections.");
+                error.setText("please connect Lordyphone and activate update mode.");
                 error.exec();
+            }
+            else {
+                usb_port->open_lordyphon_port();
+                if (usb_port->lordyphon_handshake()) {
+                    ui.hardware_connected_label->setText("Lordyphon connected");
+                    usb_port->close_usb_port();
+                }
             }
 
         }
+
             
     }
-    if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && usb_port->lordyphon_handshake()) {
+    else if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && usb_port->lordyphon_handshake()) {
+        ui.hardware_connected_label->setText("Lordyphon connected");
+        usb_port->close_usb_port();
+    }
+    
+    if (!usb_port->lordyphon_handshake()) {
+        usb_port->find_lordyphon_port();
+        if(! usb_port->lordyphon_port_is_open())
+            usb_port->open_lordyphon_port();
+        bool handshake_ok = false;
+       
+        
+        while (!usb_port->lordyphon_handshake()) {
+
+            QMessageBox error;
+            error.setText("please set lordyphon to update mode (power on + rec button)");
+            error.exec();
+                usb_port->close_usb_port();
+                usb_port->find_lordyphon_port();
+                usb_port->open_lordyphon_port();
+                
+                if (usb_port->lordyphon_handshake())
+                    break;
+            
+           
+
+        }
         ui.hardware_connected_label->setText("Lordyphon connected");
         usb_port->close_usb_port();
     }
 }
-
+/*
 void LordyLink::error_message_box(const char* message)
 {
     QMessageBox* error_message = new QMessageBox;
@@ -72,7 +110,7 @@ void LordyLink::error_message_box(const char* message)
     
 }
 
-
+*/
 
 void LordyLink::on_update_button()
 {

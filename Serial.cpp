@@ -91,11 +91,9 @@ bool SerialHandler::lordyphon_handshake()
 		
 	if (input_buffer == hand_shake_rx_phrase) 
 		return true;
-	else{
-		QMessageBox error;
-		error.setText(input_buffer);
-		error.exec();
-	}
+	else
+		
+	
 	return false;
 }
 
