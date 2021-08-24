@@ -58,6 +58,7 @@ LordyLink::LordyLink(QWidget *parent)
                 error.exec();
             }
             else {
+                
                 usb_port->open_lordyphon_port();
                 if (usb_port->lordyphon_handshake()) {
                     ui.hardware_connected_label->setText("Lordyphon connected");
@@ -73,7 +74,7 @@ LordyLink::LordyLink(QWidget *parent)
         ui.hardware_connected_label->setText("Lordyphon connected");
         usb_port->close_usb_port();
     }
-    
+    /*
     if (!usb_port->lordyphon_handshake()) {
         usb_port->find_lordyphon_port();
         if(! usb_port->lordyphon_port_is_open())
@@ -98,7 +99,7 @@ LordyLink::LordyLink(QWidget *parent)
         }
         ui.hardware_connected_label->setText("Lordyphon connected");
         usb_port->close_usb_port();
-    }
+    }*/
 }
 /*
 void LordyLink::error_message_box(const char* message)

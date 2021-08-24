@@ -19,6 +19,7 @@ public:
 	
 	SerialHandler( QObject* parent = nullptr );
 	bool find_lordyphon_port();
+	void dump_baud_rate();
 	
 	bool open_lordyphon_port();
 	bool lordyphon_handshake();

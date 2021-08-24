@@ -42,6 +42,16 @@ bool SerialHandler::open_lordyphon_port()
 	return false;
 }
 	
+void SerialHandler::dump_baud_rate()
+{
+	if(lordyphon_port->isOpen())
+		lordyphon_port->setBaudRate(QSerialPort::Baud9600);
+
+}
+
+
+
+
 void SerialHandler::close_usb_port()
 {
 	lordyphon_port->close();
@@ -102,3 +112,5 @@ bool SerialHandler::lordyphon_port_is_open()
 {
 	return lordyphon_port->isOpen();
 }
+
+

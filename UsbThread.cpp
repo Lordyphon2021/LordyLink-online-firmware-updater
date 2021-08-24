@@ -21,6 +21,7 @@ void Worker::update()
    
     //SET VARIABLES
     QString checksum_status_message;
+   
     QByteArray header = "#";
     QByteArray burn_flash = "w";
     QByteArray tx_data;
@@ -49,7 +50,8 @@ void Worker::update()
         }
         emit ProgressBar_setMax(hexfilesize);  //SET PROGRESSBAR MAXIMUM
 
-        
+        usb.write_serial_data("u");    //lordyphon jump to bootloader
+        QThread::sleep(1);            //ALLOW FOR SETTLING TIME
         usb.write_serial_data("§");  //RESET ADDRESS VARIABLES AND COUNTERS ON CONTROLLER
         QThread::sleep(1);            //ALLOW FOR SETTLING TIME
         
@@ -94,7 +96,7 @@ void Worker::update()
                 QThread::sleep(1);
                 carry_on_flag = false;
             }
-            if (bad_checksum_ctr > 8) {  //EXIT CONDITION: CHECKSUM ERROR
+            if (bad_checksum_ctr > 100) {  //EXIT CONDITION: CHECKSUM ERROR
                 emit setLabel("file corrupted...");
                 carry_on_flag = false;
                 break;
@@ -147,6 +149,10 @@ void Worker::get_sram_content()
         emit setLabel("lordyphon disconnected!");
         emit finished();
     }
+    
+    
+    
+    
     if (!usb_port.lordyphon_port_is_open())
         usb_port.open_lordyphon_port(); 
     
@@ -155,37 +161,56 @@ void Worker::get_sram_content()
         emit finished();
     }
     
-    file.open("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/atmega_sram.txt", ios_base::binary);
-    QByteArray sram;
-    QByteArray tx_data = "s";
-    usb_port.write_serial_data(tx_data);
-    usb_port.set_buffer_size(16);
+    file.open("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_eeprom.txt", ios_base::binary);
+    QByteArray eeprom;
+   
+    QByteArray temp_rec;
+    
     emit setLabel("reading SRAM");
     emit ProgressBar_setMax(128000);
     size_t progress_bar_ctr = 0;
     size_t rec_ctr = 0;
-
-    while (sram.size() < 128000) {
-        tx_data = "+";
-        usb_port.write_serial_data(tx_data);
-        usb_port.wait_for_ready_read(2000);
-        progress_bar_ctr += 16;
-        tx_data = "-";
-        usb_port.write_serial_data(tx_data);
-        sram += usb_port.getInputBuffer();
-        emit ProgressBar_valueChanged(progress_bar_ctr);
-          
-    }
-    emit setLabel("writing file");
+    //usb_port.dump_baud_rate();
+    QByteArray tx_data = "r"; //init dump
+    usb_port.write_serial_data(tx_data);
+    usb_port.set_buffer_size(4);
+    usb_port.wait_for_ready_read(20);
+    usb_port.set_buffer_size(1000);
     
-    for (int i = 0; i < sram.size(); ++i) {
-        int temp = static_cast<unsigned char>(sram.at(i)) ;
+    while (eeprom.size() < 128000) {
+        
+        //tx_data = "+";
+        //usb_port.write_serial_data(tx_data);
+        usb_port.wait_for_ready_read(20);
+       
+        //tx_data = "-";
+        //usb_port.write_serial_data(tx_data);
+        
+        eeprom += usb_port.getInputBuffer();
+       
+
+        
+        emit ProgressBar_valueChanged(eeprom.size());
+
+        //eeprom_record_sum = std::accumulate(eeprom_record.begin(), eeprom_record.end(), eeprom_record_sum);  // get sum of last record
+
+    }
+  
+    
+        
+       
+    
+   
+    emit setLabel("writing file");
+    rec_ctr = 0;
+    for (int i = 0; i < eeprom.size(); ++i) {
+        int temp = static_cast<unsigned char>(eeprom.at(i)) ;
             
         if (i % 16 == 0) {
             file << endl << dec << "record nr. " << rec_ctr << " :";
             rec_ctr++;
         }
-        file << hex << temp << ":";
+        file << hex << temp << " ";
     }
     
     emit ProgressBar_valueChanged(128000);
