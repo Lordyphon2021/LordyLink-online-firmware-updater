@@ -8,6 +8,7 @@
 #include <QListWidget>
 #include <QFile>
 #include <QMessageBox>
+#include <qdebug>
 
 
 
@@ -49,10 +50,15 @@ public:
 
 		
 	}
+	HexToSerialParser(std::vector<std::string>& set_data)
+	{
+
+
+
+	}
 	
 	
-	
-	bool parse();       
+	bool parse_hex();       
 	QByteArray get_record(size_t index);
 	size_t get_hexfile_size();
 	QString& get_hexfile_vec(size_t index)

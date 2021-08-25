@@ -69,7 +69,7 @@ public slots:
     
     void on_update_button();
    
-    void OnGetSram();
+    void OnGetSetButton();
     
     
     

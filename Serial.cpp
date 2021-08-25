@@ -6,6 +6,8 @@ SerialHandler::SerialHandler(QObject* parent)
 	lordyphon_port = new QSerialPort(this);
 	lordyphon_port->setReadBufferSize(10);
 	QObject::connect(lordyphon_port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+	QObject::connect(lordyphon_port, SIGNAL(QSerialPort::errorOccurred), this, SLOT(QSerialPort::SerialPortError error()const));
+	QObject::connect(lordyphon_port, SIGNAL(device_not_found()), this, SLOT(onUsbError()));
 }
 
 
@@ -20,8 +22,10 @@ bool SerialHandler::find_lordyphon_port()
 			found = true;
 			break;
 		}
-		else
+		else {
 			found = false;
+			emit device_not_found();
+		}
 	}
 	return found;
 }
@@ -35,11 +39,12 @@ bool SerialHandler::open_lordyphon_port()
 	lordyphon_port->setParity(QSerialPort::NoParity);
 	lordyphon_port->setStopBits(QSerialPort::StopBits::OneStop);
 	lordyphon_port->setFlowControl(QSerialPort::FlowControl::NoFlowControl);
-		
+	
 	if (lordyphon_port->isOpen())
 		return true;
-		
+	
 	return false;
+	
 }
 	
 void SerialHandler::dump_baud_rate()
@@ -77,7 +82,7 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data)
 		if(lordyphon_port->waitForBytesWritten())
 			return true;
 	}
-
+	//emit device_not_found();
 	return false;
 
 }
@@ -106,11 +111,51 @@ bool SerialHandler::lordyphon_handshake()
 	
 	return false;
 }
+bool SerialHandler::lordyphon_update_call()
+{
+
+	while (!lordyphon_port->isOpen())
+		;
+
+	write_serial_data(update_tx_phrase);
+	wait_for_ready_read(1000);
+
+
+	if (input_buffer == update_rx_phrase_y)
+		return true;
+	
+	else if (input_buffer == update_rx_phrase_n)
+		return false;
+	
+	else {
+		emit device_not_found();
+		QMessageBox error;
+		error.setText("update response not valid");
+		error.exec();
+		
+		return false;
+
+	}
+}
 
 
 bool SerialHandler::lordyphon_port_is_open()
 {
-	return lordyphon_port->isOpen();
+	if(lordyphon_port->isOpen())
+		return true;
+	
+	else {
+		emit device_not_found();
+		return false;
+	}
 }
 
+void SerialHandler::onUsbError()
+{
 
+	QMessageBox error;
+	error.setText("lordyphon disconnected");
+	error.exec();
+
+
+}

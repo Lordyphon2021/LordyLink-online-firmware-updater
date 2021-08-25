@@ -113,7 +113,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="saveSetButton">
        <property name="text">
         <string>load / save set</string>
        </property>
@@ -193,19 +193,6 @@
     </property>
     <property name="text">
      <string>installing firmware...</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="getSRAM_pushButton">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>10</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>getSRAM</string>
     </property>
    </widget>
   </widget>

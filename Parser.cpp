@@ -15,7 +15,7 @@ using namespace std;
 
 
 
-bool HexToSerialParser::parse()     
+bool HexToSerialParser::parse_hex()     
 {															
 	QByteArray temp_data_vec;				//holds the data-section of a single hexfile record
 	size_t nibbles_in_data_section = 0x00;	//how many nibbles (2 nibbles == 1 byte) are in record
@@ -53,14 +53,47 @@ bool HexToSerialParser::parse()
 		for (auto it : hex_file_vec) {
 			string std_it = it.toStdString();  //todo: convert parser to QT data types
 			//parse string to individual elements
-			nibbles_in_data_section = static_cast<char>(stoi(std_it.substr(1, 2)), nullptr, 16);
-			record_type = stoi(std_it.substr(7, 2), nullptr, 16);
+			
+			
+			size_t len = 2;
+			//parse string to individual elements
+			string substr = std_it.substr(1, 2);
+			string pre = "0x";
+			string full_nib = pre + substr;
+			
+			nibbles_in_data_section = static_cast<uint8_t>(stoi(full_nib, nullptr, 16));
+			
+			
+			
+			substr = std_it.substr(7, 2);
+			string full_rec_type = pre + substr;
+			
+			record_type = stoi(full_rec_type, nullptr, 16);
+			
+			
+			
+			
 			
 			if (record_type == 0x01) {  //exit condition (EOF), final record will not be parsed
 				return true;
 			}
+			else if (record_type == 0x03) {
+				QMessageBox error;
+				error.setText("file too big!");
+				error.exec();
+
+				return false;
+			}
+
 			
-			address = static_cast<uint16_t>(stoi(std_it.substr(3, 4), nullptr, 16));
+			substr = std_it.substr(3, 4);
+			string full_address = pre + substr;
+			
+			
+			
+			
+			
+			address = static_cast<uint16_t>(stoi(full_address, nullptr, 16));
 			checksum_from_file = stoi(std_it.substr(9 + (nibbles_in_data_section * 2), 2), nullptr, 16);
 
 			//fill data_bytes_vec with single bytes of record
@@ -89,7 +122,9 @@ bool HexToSerialParser::parse()
 				hexfile_data_vec.push_back(temp_data_vec);
 			}
 			else {
-				debugger->addItem("checksum error");
+				QMessageBox error;
+				error.setText("checksum error!");
+				error.exec();
 				return false;
 			}
 
@@ -103,9 +138,9 @@ bool HexToSerialParser::parse()
 	}
 	catch (exception& e) { 
 
-		
+		qDebug() << e.what();
 		QMessageBox error;
-		error.setText(e.what());
+		error.setText("parser error");
 		error.exec();
 
 		return false;

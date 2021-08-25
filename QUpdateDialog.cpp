@@ -23,7 +23,7 @@ void QUpdateDialog::download()
 
 	filehandler = new Filehandler(ui.QInternetStatus);
 
-	QString file_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_proto.txt";
+	QString file_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_firmware_25_08.hex";
 	QString file_path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt";
 	QString folder_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com";
 	QString folder_path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/version_list.txt";

@@ -26,7 +26,7 @@ public:
 	bool write_serial_data(const QByteArray& tx_data);
 	bool port_at_end();
 	void wait_for_ready_read(int timeout);
-	
+	bool lordyphon_update_call();
 	bool lordyphon_port_is_open();
 	void close_usb_port();
 	void wire();
@@ -39,12 +39,14 @@ public:
 	}
 	
 signals:
-
+	
+	void device_not_found();
 	
 
 public slots:
 
 	void onReadyRead();
+	void onUsbError();
 	
 
 private:
@@ -55,7 +57,8 @@ private:
 	QByteArray input_buffer = 0;
 	const QByteArray hand_shake_tx_phrase = "!c++ is great!   ";
 	const QByteArray hand_shake_rx_phrase = "YES!";
-	
-	
+	const QByteArray update_tx_phrase = "update";
+	const QByteArray update_rx_phrase_y = "sure";
+	const QByteArray update_rx_phrase_n = "nope";
 
 };

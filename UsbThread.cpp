@@ -1,6 +1,7 @@
 #include "UsbThread.h"
 #include <QTextStream>
 #include <qdebug.h>
+#include <iomanip>
 
 
 using namespace std;
@@ -39,7 +40,7 @@ void Worker::update()
 
     //PARSE DOWNLOADED HEXFILE
     
-    if (parser.parse()) {  //BOOL METHOD, PARSER'S RESPOONSIBLE FOR HEXFILE ERRORS
+    if (parser.parse_hex()) {  //BOOL METHOD, PARSER'S RESPOONSIBLE FOR HEXFILE ERRORS
 
         int hexfilesize = parser.get_hexfile_size();   //GET SIZE FOR PROGRESS BAR AND LOOP
 
@@ -50,7 +51,7 @@ void Worker::update()
         }
         emit ProgressBar_setMax(hexfilesize);  //SET PROGRESSBAR MAXIMUM
 
-        usb.write_serial_data("u");    //lordyphon jump to bootloader
+        //usb.write_serial_data("u");    //lordyphon jump to bootloader
         QThread::sleep(1);            //ALLOW FOR SETTLING TIME
         usb.write_serial_data("§");  //RESET ADDRESS VARIABLES AND COUNTERS ON CONTROLLER
         QThread::sleep(1);            //ALLOW FOR SETTLING TIME
@@ -165,58 +166,122 @@ void Worker::get_sram_content()
     QByteArray eeprom;
    
     QByteArray temp_rec;
-    
-    emit setLabel("reading SRAM");
-    emit ProgressBar_setMax(128000);
-    size_t progress_bar_ctr = 0;
-    size_t rec_ctr = 0;
-    //usb_port.dump_baud_rate();
-    QByteArray tx_data = "r"; //init dump
-    usb_port.write_serial_data(tx_data);
-    usb_port.set_buffer_size(4);
-    usb_port.wait_for_ready_read(20);
-    usb_port.set_buffer_size(1000);
-    
-    while (eeprom.size() < 128000) {
-        
-        //tx_data = "+";
-        //usb_port.write_serial_data(tx_data);
+    uint16_t checksum_uc = 0;
+    uint16_t eeprom_checksum = 0;
+    int error_ctr = 0;
+
+    do {
+        emit setLabel("reading set data");
+        emit ProgressBar_setMax(128000);
+        size_t progress_bar_ctr = 0;
+        size_t rec_ctr = 0;
+        //usb_port.dump_baud_rate();
+        QByteArray tx_data = "r"; //init dump
+        usb_port.write_serial_data(tx_data);
+        usb_port.set_buffer_size(4);
         usb_port.wait_for_ready_read(20);
-       
-        //tx_data = "-";
-        //usb_port.write_serial_data(tx_data);
-        
-        eeprom += usb_port.getInputBuffer();
-       
+        usb_port.set_buffer_size(1000);
+
+        while (eeprom.size() < 128000) {
+
+            //tx_data = "+";
+            //usb_port.write_serial_data(tx_data);
+            usb_port.wait_for_ready_read(20);
+
+            //tx_data = "-";
+            //usb_port.write_serial_data(tx_data);
+
+            eeprom += usb_port.getInputBuffer();
+
+
+
+            emit ProgressBar_valueChanged(eeprom.size());
+
+
+
+        }
+        //checksum verification
+
+        usb_port.set_buffer_size(2); //set buffer size for 16bit checksum from lordyphon
 
         
-        emit ProgressBar_valueChanged(eeprom.size());
 
-        //eeprom_record_sum = std::accumulate(eeprom_record.begin(), eeprom_record.end(), eeprom_record_sum);  // get sum of last record
+        for (auto i : eeprom)
+            eeprom_checksum += static_cast<unsigned char>(i);  //qbytearray returns signed char, need unsigned for correct value
 
-    }
-  
+        tx_data = "s"; //request uint16 checksum from lordyphon
+        usb_port.write_serial_data(tx_data);
+        usb_port.wait_for_ready_read(2000);
+
+        QByteArray checksum_from_lordyphon = usb_port.getInputBuffer();
+        uint8_t msb = checksum_from_lordyphon.at(0);
+        uint8_t lsb = checksum_from_lordyphon.at(1);
+
+        checksum_uc = (msb << 8) | lsb;  //assemble 16bit checksum
+
+        qDebug() << "checksum from uc: " << checksum_uc;
+        qDebug() << "local checksum : " << eeprom_checksum;
+       
+        if (checksum_uc != eeprom_checksum)
+            ++error_ctr;
     
         
-       
+        if (error_ctr > 3) {  //exit condition if smthg goes wrong
+            QMessageBox checksum;
+            checksum.setText("checksum error, file corrupted or bad connection. try again!");
+            checksum.exec();
+            usb_port.close_usb_port();
+
+
+
+
+
+
+            emit finished(); // exit thread
+
+        }
+
     
+    
+    
+    } while (checksum_uc != eeprom_checksum);
+    
+    eeprom_checksum = 0;
    
     emit setLabel("writing file");
-    rec_ctr = 0;
+    QThread::sleep(1);
+
+    
+    
+   
+    
+    
     for (int i = 0; i < eeprom.size(); ++i) {
         int temp = static_cast<unsigned char>(eeprom.at(i)) ;
+        //char temp = eeprom.at(i);
+        
+
+
+
+        if (i !=0 && i % 16 == 0) {
+            file << endl;
             
-        if (i % 16 == 0) {
-            file << endl << dec << "record nr. " << rec_ctr << " :";
-            rec_ctr++;
         }
-        file << hex << temp << " ";
+        file << setw(2) << setfill('0') << hex << temp ;
     }
+    file.close();
+
+    
     
     emit ProgressBar_valueChanged(128000);
     emit setLabel("done");
     usb_port.close_usb_port();
-    file.close();
+   
+   
+    
+    
+    
+    
     emit finished();
     
 }

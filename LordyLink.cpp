@@ -23,7 +23,7 @@ LordyLink::LordyLink(QWidget *parent)
     ui.setupUi(this);
    
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
-    QObject::connect(ui.getSRAM_pushButton, SIGNAL(clicked()), this, SLOT(OnGetSram()));
+    QObject::connect(ui.saveSetButton, SIGNAL(clicked()), this, SLOT(OnGetSetButton()));
    
     
     
@@ -115,55 +115,91 @@ void LordyLink::error_message_box(const char* message)
 
 void LordyLink::on_update_button()
 {
-    update.show();
-    ui.QInstallLabel->hide();
-    ui.QInstallProgressBar->hide();
-            
-    int dialog_code = update.exec();
-            
-    if (dialog_code == QDialog::Accepted) {
-        Worker* worker = new Worker;
-        USBThread* thread = new USBThread;
-        ui.QInstallLabel->show();
+    usb_port->find_lordyphon_port();
+    usb_port->open_lordyphon_port();
+    usb_port->lordyphon_update_call();
+   
         
-        ui.QInstallProgressBar->show();
-        ui.QInstallProgressBar->valueChanged(0);
-        worker->moveToThread(thread);
-                    
-        connect(thread, &QThread::started, worker, &Worker::update);
-        connect(worker, &Worker::finished, thread, &QThread::quit);
-        connect(worker, &Worker::finished, worker, &Worker::deleteLater);
-        connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-        connect(worker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-        connect(worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-        connect(worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-                
-        thread->start();
+    if (usb_port->lordyphon_update_call()) {
+        usb_port->close_usb_port();
+        
+    
+
+        update.show();
+        ui.QInstallLabel->hide();
+        ui.QInstallProgressBar->hide();
+
+        int dialog_code = update.exec();
+
+        if (dialog_code == QDialog::Accepted) {
+            Worker* worker = new Worker;
+            USBThread* thread = new USBThread;
+            ui.QInstallLabel->show();
+
+            ui.QInstallProgressBar->show();
+            ui.QInstallProgressBar->valueChanged(0);
+            worker->moveToThread(thread);
+
+            connect(thread, &QThread::started, worker, &Worker::update);
+            connect(worker, &Worker::finished, thread, &QThread::quit);
+            connect(worker, &Worker::finished, worker, &Worker::deleteLater);
+            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+            connect(worker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+            connect(worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+            connect(worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+
+            thread->start();
+        }
     }
-         
+   
+    else {
+        QMessageBox info;
+        info.setText("please activate update mode (power on with rec button pressed)");
+        info.exec();
+        usb_port->close_usb_port();
+    }
 }
 
-void LordyLink::OnGetSram()
+void LordyLink::OnGetSetButton()
 {
-    ui.QInstallProgressBar->reset();
-   
-    Worker* worker2 = new Worker;;
-
-    USBThread* thread2 = new USBThread;
-    ui.QInstallLabel->show();
-    ui.QInstallProgressBar->show();
-
-    worker2->moveToThread(thread2);
     
-    connect(thread2, &QThread::started, worker2, &Worker::get_sram_content);
-    connect(worker2, &Worker::finished, thread2, &QThread::quit);
-    connect(worker2, &Worker::finished, worker2, &Worker::deleteLater);
-    connect(thread2, &QThread::finished, thread2, &QThread::deleteLater);
-    connect(worker2, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-    connect(worker2, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-    connect(worker2, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-   
-    thread2->start();
+    if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && !usb_port->lordyphon_update_call()) {
+
+        usb_port->close_usb_port();
+
+
+
+
+        ui.QInstallProgressBar->reset();
+
+        Worker* worker2 = new Worker;;
+
+        USBThread* thread2 = new USBThread;
+        ui.QInstallLabel->show();
+        ui.QInstallProgressBar->show();
+
+        worker2->moveToThread(thread2);
+
+        connect(thread2, &QThread::started, worker2, &Worker::get_sram_content);
+        connect(worker2, &Worker::finished, thread2, &QThread::quit);
+        connect(worker2, &Worker::finished, worker2, &Worker::deleteLater);
+        connect(thread2, &QThread::finished, thread2, &QThread::deleteLater);
+        connect(worker2, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+        connect(worker2, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+        connect(worker2, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+
+        thread2->start();
+    }
+    else {
+
+        QMessageBox info;
+        info.setText("not possible in update mode");
+        info.exec();
+
+
+
+    }
+
 }
 
 
