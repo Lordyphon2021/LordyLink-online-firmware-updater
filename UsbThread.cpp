@@ -2,6 +2,7 @@
 #include <QTextStream>
 #include <qdebug.h>
 #include <iomanip>
+#include <QMutex>
 
 
 using namespace std;
@@ -9,7 +10,8 @@ using namespace std;
 
 void Worker::update()
 {
-    
+    QMutex mutex;
+    mutex.lock();
     //OPEN USB PORT
     SerialHandler usb;
     usb.find_lordyphon_port();
@@ -52,9 +54,9 @@ void Worker::update()
         emit ProgressBar_setMax(hexfilesize);  //SET PROGRESSBAR MAXIMUM
 
         //usb.write_serial_data("u");    //lordyphon jump to bootloader
-        QThread::sleep(1);            //ALLOW FOR SETTLING TIME
+        delay(1000);            //ALLOW FOR SETTLING TIME
         usb.write_serial_data("§");  //RESET ADDRESS VARIABLES AND COUNTERS ON CONTROLLER
-        QThread::sleep(1);            //ALLOW FOR SETTLING TIME
+        delay(1000);           //ALLOW FOR SETTLING TIME
         
         
         //THIS LOOP SENDS PARSED HEX RECORDS TO CONTROLLER AND WAITS FOR CHECKSUM CONFIRMATION BEFORE SENDING THE
@@ -76,7 +78,7 @@ void Worker::update()
                 out << "--------------CHECKSUM ERROR AT INDEX " << index << "  " << (tx_data.toHex()) << '\n'; //LOGFILE OUTPUT
                 emit setLabel("checksum error...sending record again");
                 carry_on_flag = true;              //READ RECORD AGAIN AT SAME VECTOR INDEX
-                QThread::sleep(3);                 //ALLOW TIME FOR USER FEEDBACK
+                delay(1000);                 //ALLOW TIME FOR USER FEEDBACK
             }
             else if (checksum_status_message == "ok") {      //CHECKSUM IS CORRECT   
                 emit ProgressBar_valueChanged(static_cast<int>(index)); //UPDATE PROGRESS BAR
@@ -94,7 +96,7 @@ void Worker::update()
                 emit setLabel("rx error, checking status... ");
                 out << "---------------RX ERROR AT INDEX---------------------- " << index << "  " << (tx_data.toHex()) << '\n'; //LOGFILE
                 ++rx_error_ctr;         //IF MESSAGE ISNT READABLE FOR MORE THAN 8 TIMES, CONNECTION MUST BE LOST
-                QThread::sleep(1);
+                delay(1000);
                 carry_on_flag = false;
             }
             if (bad_checksum_ctr > 100) {  //EXIT CONDITION: CHECKSUM ERROR
@@ -109,7 +111,7 @@ void Worker::update()
             }
         }
         
-        QThread::sleep(1); //THIS IS NECESSARY FOR THE LAST MESSAGE TO BE RECEIVED CORRECTLY, DON'T ASK ME WHY :)
+        delay(1000); //THIS IS NECESSARY FOR THE LAST MESSAGE TO BE RECEIVED CORRECTLY
         sram_content.close();
         emit ProgressBar_valueChanged(hexfilesize);
       
@@ -117,7 +119,7 @@ void Worker::update()
         if (carry_on_flag == true) {   
             emit setLabel("transfer complete");
             usb.write_serial_data(burn_flash); //CALLS BURN FUNCTION ON CONTROLLER
-            QThread::sleep(1);
+            delay(1000);
         }
         else
             emit setLabel("transfer aborted");
@@ -141,6 +143,8 @@ void Worker::update()
 
 void Worker::get_eeprom_content()
 {
+    QMutex mutex;
+    mutex.lock();
     SerialHandler usb_port;
     ofstream file;
     
@@ -245,7 +249,7 @@ void Worker::get_eeprom_content()
     eeprom_checksum = 0;
    
     emit setLabel("writing file");
-    QThread::sleep(1);
+    delay(1000);
 
     
     
@@ -285,7 +289,8 @@ void Worker::get_eeprom_content()
 
 void Worker::send_eeprom_content()
 {
-
+    QMutex mutex;
+    mutex.lock();
     SerialHandler usb_port2;
    
 
@@ -306,7 +311,7 @@ void Worker::send_eeprom_content()
     //    emit setLabel("connection error");
      //   emit finished();
     //}
-    QThread::sleep(1);
+    delay(500);
     usb_port2.set_buffer_size(100);
     if(!usb_port2.clear_buffer())
         qDebug() <<"buffer not empty";
@@ -376,10 +381,11 @@ void Worker::send_eeprom_content()
 
             uint16_t checksum_lordyphon = (msb << 8) | lsb;  //assemble 16bit checksum
             //if (checksum_lordyphon == eeprom_parser.get_eeprom_checksum()) {
-                QByteArray call_lordyphon = "ß";
+              
                 //if(usb_port2.clear_buffer())
                   
-                QThread::sleep(1);
+                delay(1000);
+                QByteArray call_lordyphon = "ß";
                 usb_port2.write_serial_data(call_lordyphon);
                 
 

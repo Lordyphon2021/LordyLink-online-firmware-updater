@@ -9,6 +9,7 @@
 #include <QString>
 #include <fstream>
 #include <vector>
+#include <QTimer>
 
 
 class USBThread : public QThread
@@ -64,5 +65,15 @@ private:
 	//std::string Filename = "sram_content.txt";
 	
 	QFile sram_content;
+
+
+	inline void delay(int millisecondsWait)
+	{
+		QEventLoop loop;
+		QTimer t;
+		t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
+		t.start(millisecondsWait);
+		loop.exec();
+	}
 	
 };
