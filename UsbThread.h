@@ -39,14 +39,14 @@ public:
 
 public slots:
 	void update();
-	void get_sram_content();
-
+	void get_eeprom_content();
+	void send_eeprom_content();
 
 signals:
 	void ProgressBar_valueChanged(int val);
 	void ProgressBar_setMax(int val);
 	void setLabel(QString);
-	void get_sram();
+	//void get_eeprom();
 	
 	
 	
@@ -54,14 +54,14 @@ signals:
 	void error(QString err);
 private:
 	
-	HexToSerialParser* parser;
+	Parser* parser;
 	SerialHandler* usb;
 	QString lordyphon_portname;
 	QString status;
 	size_t progress = 0;
 	QString Message;
-	std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/";
-	std::string Filename = "sram_content.txt";
+	//std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/";
+	//std::string Filename = "sram_content.txt";
 	
 	QFile sram_content;
 	

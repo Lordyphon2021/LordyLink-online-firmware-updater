@@ -53,7 +53,13 @@ void SerialHandler::dump_baud_rate()
 		lordyphon_port->setBaudRate(QSerialPort::Baud9600);
 
 }
+bool SerialHandler::clear_buffer()
+{
 
+	return lordyphon_port->clear();
+
+
+}
 
 
 

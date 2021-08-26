@@ -36,13 +36,13 @@ void Worker::update()
     sram_content.setFileName("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/TX_HEX_LOG.txt");
     sram_content.open(QIODevice::ReadWrite | QIODevice::Text);
     QTextStream out(&sram_content);
-    HexToSerialParser parser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
+    Parser hex_parser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
 
     //PARSE DOWNLOADED HEXFILE
     
-    if (parser.parse_hex()) {  //BOOL METHOD, PARSER'S RESPOONSIBLE FOR HEXFILE ERRORS
+    if (hex_parser.parse_hex()) {  //BOOL METHOD, PARSER'S RESPOONSIBLE FOR HEXFILE ERRORS
 
-        int hexfilesize = parser.get_hexfile_size();   //GET SIZE FOR PROGRESS BAR AND LOOP
+        int hexfilesize = hex_parser.get_hexfile_size();   //GET SIZE FOR PROGRESS BAR AND LOOP
 
         if (hexfilesize == 0) {
             emit setLabel("error: no file found");
@@ -64,7 +64,7 @@ void Worker::update()
         while (index < hexfilesize && hexfilesize != 0) {
 
             if (carry_on_flag == true) {
-                tx_data = parser.get_record(index);
+                tx_data = hex_parser.get_hex_record(index);
                 usb.write_serial_data(tx_data);
                 out << "record nr. " << index << "  " << (tx_data.toHex()) << '\n';  //LOGFILE OUTPUT
             }
@@ -139,12 +139,12 @@ void Worker::update()
 
 
 
-void Worker::get_sram_content()
+void Worker::get_eeprom_content()
 {
     SerialHandler usb_port;
     ofstream file;
     
-    
+    qDebug() << "entering get data thread";
     
     if (!usb_port.find_lordyphon_port()) {
         emit setLabel("lordyphon disconnected!");
@@ -181,7 +181,7 @@ void Worker::get_sram_content()
         usb_port.set_buffer_size(4);
         usb_port.wait_for_ready_read(20);
         usb_port.set_buffer_size(1000);
-
+        usb_port.clear_buffer();
         while (eeprom.size() < 128000) {
 
             //tx_data = "+";
@@ -230,13 +230,9 @@ void Worker::get_sram_content()
             QMessageBox checksum;
             checksum.setText("checksum error, file corrupted or bad connection. try again!");
             checksum.exec();
+            usb_port.clear_buffer();
             usb_port.close_usb_port();
-
-
-
-
-
-
+            file.close();
             emit finished(); // exit thread
 
         }
@@ -275,6 +271,7 @@ void Worker::get_sram_content()
     
     emit ProgressBar_valueChanged(128000);
     emit setLabel("done");
+    usb_port.clear_buffer();
     usb_port.close_usb_port();
    
    
@@ -284,6 +281,146 @@ void Worker::get_sram_content()
     
     emit finished();
     
+}
+
+void Worker::send_eeprom_content()
+{
+
+    SerialHandler usb_port2;
+   
+
+
+
+    if (!usb_port2.find_lordyphon_port()) {
+        emit setLabel("lordyphon disconnected!");
+        emit finished();
+    }
+
+
+
+
+    if (!usb_port2.lordyphon_port_is_open())
+        usb_port2.open_lordyphon_port();
+
+    //if (!usb_port2.lordyphon_handshake()) {
+    //    emit setLabel("connection error");
+     //   emit finished();
+    //}
+    QThread::sleep(1);
+    usb_port2.set_buffer_size(100);
+    if(!usb_port2.clear_buffer())
+        qDebug() <<"buffer not empty";
+   
+
+    Parser eeprom_parser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_eeprom.txt");
+   
+   
+    if (eeprom_parser.parse_eeprom()) {
+        
+        qDebug() << "entering send data thread";
+
+        int setfilesize = eeprom_parser.get_eeprom_size();
+        emit ProgressBar_setMax(setfilesize);
+        emit setLabel("sending set");
+        
+        //prepare lordyphon for incoming transmission
+        usb_port2.set_buffer_size(5);
+        QByteArray call_lordyphon = "R";
+       
+        usb_port2.write_serial_data(call_lordyphon);
+        //set buffer size for expected response
+       
+        
+        usb_port2.wait_for_ready_read(2000); //allow up to 2 sec to confirm
+
+        QString response = usb_port2.getInputBuffer();
+        qDebug() << response;
+        QByteArray temp_record;
+        QString status;
+        
+        if (response == "doit") {
+            size_t index = 0;
+           
+            call_lordyphon = "//";  //start transfer
+            usb_port2.write_serial_data(call_lordyphon);
+           
+            
+            while (index < setfilesize && setfilesize != 0) {
+                
+                
+                temp_record = eeprom_parser.get_eeprom_record(index);
+               
+                
+                usb_port2.write_serial_data(temp_record);  //send record
+
+
+                usb_port2.set_buffer_size(3);
+               
+                usb_port2.wait_for_ready_read(1000);        //wait for eeprom burn (6ms)
+
+                status = usb_port2.getInputBuffer();
+                //qDebug() << status;
+                index++;
+
+                emit ProgressBar_valueChanged(static_cast<int>(index));
+
+
+            }
+            
+            
+            usb_port2.set_buffer_size(2);
+            QByteArray checksum_bigendian = usb_port2.getInputBuffer();
+            qDebug() << "checksum from lordyphon: " << checksum_bigendian;
+            uint8_t msb = checksum_bigendian.at(0);
+            uint8_t lsb = checksum_bigendian.at(1);
+
+            uint16_t checksum_lordyphon = (msb << 8) | lsb;  //assemble 16bit checksum
+            //if (checksum_lordyphon == eeprom_parser.get_eeprom_checksum()) {
+                QByteArray call_lordyphon = "ß";
+                //if(usb_port2.clear_buffer())
+                  
+                QThread::sleep(1);
+                usb_port2.write_serial_data(call_lordyphon);
+                
+
+
+           // }
+
+
+           
+           
+        }
+        else if (response == "DONT") {
+
+            QMessageBox error;
+            error.setText("lordyphon memory busy, press stop button");
+            error.exec();
+            
+
+
+
+        }
+        else {
+            qDebug() << "error, message not recognized";
+            
+        }
+        if(usb_port2.clear_buffer())
+         usb_port2.close_usb_port();
+        emit finished();
+    }
+    else
+    {
+        QMessageBox error;
+        error.setText("parser error, file corrupted");
+        error.exec();
+        usb_port2.close_usb_port();
+        emit finished();
+
+    }
+
+
+
+
 }
 
 void USBThread::run()

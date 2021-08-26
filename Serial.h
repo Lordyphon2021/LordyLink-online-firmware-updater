@@ -31,8 +31,9 @@ public:
 	void close_usb_port();
 	void wire();
 	void set_buffer_size(qint64 size);
+	bool clear_buffer();
 	
-	QByteArray& getInputBuffer()
+		QByteArray& getInputBuffer()
 	{
 		
 		return input_buffer;

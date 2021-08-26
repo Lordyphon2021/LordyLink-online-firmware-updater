@@ -71,7 +71,7 @@ public slots:
    
     void OnGetSetButton();
     
-    
+    void OnSendSetButton();
     
 
   

@@ -15,7 +15,7 @@ using namespace std;
 
 
 
-bool HexToSerialParser::parse_hex()     
+bool Parser::parse_hex()     
 {															
 	QByteArray temp_data_vec;				//holds the data-section of a single hexfile record
 	size_t nibbles_in_data_section = 0x00;	//how many nibbles (2 nibbles == 1 byte) are in record
@@ -23,7 +23,7 @@ bool HexToSerialParser::parse_hex()
 	uint16_t address = 0x0000;				//address-offset for flash-memory of microcontroller
 	char checksum_from_file = 0x00;		//8-bit checksum at end of record
 	uint32_t start_bytes_sum = 0x00;		//bytewise sum of all elements except start byte and checksum, used for checksum verification
-	exception e;
+	//exception e;
 	ChecksumValidator checksum_calculated;
 
 	
@@ -147,20 +147,71 @@ bool HexToSerialParser::parse_hex()
 	}
 }
 
-QByteArray HexToSerialParser::get_record(size_t index)
+bool Parser::parse_eeprom()
 {
+	
+	//std::vector<QString>eeprom_file_vec;  // filled with lordyphon set data
+	
+	
+	
+	
+	
+	
+	try {
 
-	return hexfile_data_vec.at(index);
+		
+		if (eeprom_file_vec.size() == 0) {
+			//QMessageBox error;
+			//error.setText("set file empty");
+			//error.exec();
+			qDebug() << "file empty";
+			return false;
+
+
+		}
+
+
+
+		for (auto it : eeprom_file_vec) {
+			string std_it = it.toStdString();  //todo: convert parser to QT data types
+			//parse string to individual bytes
+			//qDebug() << it;
+			
+			
+			for (size_t rec_pos = 0; rec_pos < 32; rec_pos += 2) {
+				
+				set_serial_data_array.push_back(static_cast<char>(stoi(std_it.substr((0 + rec_pos), 2), nullptr, 16)));
+			}
+			//qDebug() << set_serial_data_array;
+			eeprom_data_vec.push_back(set_serial_data_array);
+			set_serial_data_array.clear();
+		
+		}
+		
+
+	}
+	catch (exception& e) {
+
+		qDebug() << e.what();
+		//QMessageBox error;
+		//error.setText("parser error");
+		//error.exec();
+
+		return false;
+	}
+
+
+
+
 
 
 }
 
-size_t HexToSerialParser::get_hexfile_size()
-{
 
-	return hexfile_data_vec.size();
 
-}
+
+
+
 
 
 

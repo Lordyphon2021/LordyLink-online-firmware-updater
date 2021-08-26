@@ -24,7 +24,7 @@ LordyLink::LordyLink(QWidget *parent)
    
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
     QObject::connect(ui.saveSetButton, SIGNAL(clicked()), this, SLOT(OnGetSetButton()));
-   
+    QObject::connect(ui.sendSetButton, SIGNAL(clicked()), this, SLOT(OnSendSetButton()));
     
     
     ui.hardware_connected_label->setText("       ");
@@ -62,7 +62,8 @@ LordyLink::LordyLink(QWidget *parent)
                 usb_port->open_lordyphon_port();
                 if (usb_port->lordyphon_handshake()) {
                     ui.hardware_connected_label->setText("Lordyphon connected");
-                    usb_port->close_usb_port();
+                    if (usb_port->clear_buffer())
+                        usb_port->close_usb_port();
                 }
             }
 
@@ -72,7 +73,8 @@ LordyLink::LordyLink(QWidget *parent)
     }
     else if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && usb_port->lordyphon_handshake()) {
         ui.hardware_connected_label->setText("Lordyphon connected");
-        usb_port->close_usb_port();
+        if (usb_port->clear_buffer())
+            usb_port->close_usb_port();
     }
     /*
     if (!usb_port->lordyphon_handshake()) {
@@ -121,7 +123,8 @@ void LordyLink::on_update_button()
    
         
     if (usb_port->lordyphon_update_call()) {
-        usb_port->close_usb_port();
+        if (usb_port->clear_buffer())
+            usb_port->close_usb_port();
         
     
 
@@ -156,7 +159,8 @@ void LordyLink::on_update_button()
         QMessageBox info;
         info.setText("please activate update mode (power on with rec button pressed)");
         info.exec();
-        usb_port->close_usb_port();
+        if (usb_port->clear_buffer())
+            usb_port->close_usb_port();
     }
 }
 
@@ -165,7 +169,8 @@ void LordyLink::OnGetSetButton()
     
     if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && !usb_port->lordyphon_update_call()) {
 
-        usb_port->close_usb_port();
+        if (usb_port->clear_buffer())
+            usb_port->close_usb_port();
 
 
 
@@ -180,7 +185,7 @@ void LordyLink::OnGetSetButton()
 
         worker2->moveToThread(thread2);
 
-        connect(thread2, &QThread::started, worker2, &Worker::get_sram_content);
+        connect(thread2, &QThread::started, worker2, &Worker::get_eeprom_content);
         connect(worker2, &Worker::finished, thread2, &QThread::quit);
         connect(worker2, &Worker::finished, worker2, &Worker::deleteLater);
         connect(thread2, &QThread::finished, thread2, &QThread::deleteLater);
@@ -203,5 +208,45 @@ void LordyLink::OnGetSetButton()
 }
 
 
+void LordyLink::OnSendSetButton()
+{
 
+    if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && !usb_port->lordyphon_update_call()) {
+        if(usb_port->clear_buffer())
+            usb_port->close_usb_port();
+
+
+
+
+        ui.QInstallProgressBar->reset();
+
+        Worker* worker3 = new Worker;
+
+        USBThread* thread3 = new USBThread;
+        ui.QInstallLabel->show();
+        ui.QInstallProgressBar->show();
+
+        worker3->moveToThread(thread3);
+
+        connect(thread3, &QThread::started, worker3, &Worker::send_eeprom_content);
+        connect(worker3, &Worker::finished, thread3, &QThread::quit);
+        connect(worker3, &Worker::finished, worker3, &Worker::deleteLater);
+        connect(thread3, &QThread::finished, thread3, &QThread::deleteLater);
+        connect(worker3, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+        connect(worker3, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+        connect(worker3, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+
+        thread3->start();
+    }
+    else {
+
+        QMessageBox info;
+        info.setText("not possible in update mode");
+        info.exec();
+
+
+
+    }
+
+}
 
