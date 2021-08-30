@@ -92,7 +92,7 @@
      </font>
     </property>
     <property name="text">
-     <string>lordyphon sets</string>
+     <string>saved sets:</string>
     </property>
    </widget>
    <widget class="QWidget" name="horizontalLayoutWidget">
@@ -115,7 +115,7 @@
      <item>
       <widget class="QPushButton" name="saveSetButton">
        <property name="text">
-        <string>load / save set</string>
+        <string>import / save current set</string>
        </property>
       </widget>
      </item>
@@ -194,6 +194,27 @@
       <height>171</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <family>Lucida Sans Typewriter</family>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
+    <property name="alternatingRowColors">
+     <bool>false</bool>
+    </property>
+    <property name="showGrid">
+     <bool>false</bool>
+    </property>
+    <property name="sortingEnabled">
+     <bool>true</bool>
+    </property>
+    <attribute name="horizontalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
    </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">

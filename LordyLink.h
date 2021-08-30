@@ -81,6 +81,24 @@ public slots:
     
     void OnDeactivateButtons();
     
+    void refresh(QString filename)
+    {
+        
+        
+      QStandardItem* itemname = new QStandardItem(filename);
+      itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
+      
+      
+      
+      model->appendRow(QList<QStandardItem*>() << itemname);
+      model->setHeaderData(0, Qt::Horizontal, QObject::tr("saved sets: "));
+      
+      for (int col = 0; col < model->rowCount(); col++)
+      {
+          ui.dirView->setColumnWidth(col, 300);
+      }
+   
+    }
    
     //void renameStart(const QModelIndex);
     //void renameEnd(QStandardItem*);
@@ -95,7 +113,7 @@ private:
     SerialHandler* usb_port;
     
    
-    void error_message_box(const char* message);
+    //void error_message_box(const char* message);
     std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt";
     
     QUpdateDialog update;

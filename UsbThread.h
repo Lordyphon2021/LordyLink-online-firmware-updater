@@ -14,6 +14,7 @@
 #include <QFileInfo>
 #include <qstring.h>
 #include <QDateTime>
+#include <filesystem>
 
 class USBThread : public QThread
 {
@@ -53,9 +54,10 @@ signals:
 	void remoteMessageBox(QString);
 	void activateButtons();
 	void deactivateButtons();
-	
+	void newItem(QString);
 	void finished();
-	void error(QString err);
+	void error(QString);
+
 private:
 	
 	Parser* parser;

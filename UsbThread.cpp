@@ -176,39 +176,39 @@ void Worker::get_eeprom_content()
         emit finished();
     }
     
-    QDir sets(QDir::homePath() + "LordyLink/Sets/");
+    QDir sets(QDir::homePath() + "/LordyLink/Sets");
     if (!sets.exists())
         sets.mkpath(".");
-    
-    
+   
+    QString sets_path = QDir::homePath();
     QDateTime now = QDateTime::currentDateTime();
-    QString my_set_dir = QDir::homePath() + "LordyLink/Sets";
-    QString new_file_path = QDir::homePath() + "LordyLink/Sets/new " + now.toString() + ".txt";
+    QString timestamp = now.toString("dd_MM_yyyy__h_m_s");
+
+   
+    
+   
+    
+    QString new_filepath = sets_path + "/LordyLink/Sets/saved_set_" + timestamp + ".txt";
+    QString new_filename = "saved_set_" + timestamp + ".txt";
     
     
+    file.open(new_filepath.toStdString());
     
-    
-    file.open(new_file_path.toStdString());
-    
-    if (!file.is_open()) {
+    if (file.is_open()) {
 
-        emit remoteMessageBox("file not found!");
-        emit activateButtons();
-        mutex.unlock();
-        emit finished();
+                // update GUI
+        
 
 
 
 
-    }
+        QByteArray eeprom;
+        QByteArray temp_rec;
+        uint16_t checksum_uc = 0;
+        uint16_t eeprom_checksum = 0;
+        int error_ctr = 0;
 
-    QByteArray eeprom;
-    QByteArray temp_rec;
-    uint16_t checksum_uc = 0;
-    uint16_t eeprom_checksum = 0;
-    int error_ctr = 0;
 
-    
         emit setLabel("reading set data");
         emit ProgressBar_setMax(128000);
         size_t progress_bar_ctr = 0;
@@ -220,14 +220,13 @@ void Worker::get_eeprom_content()
         usb_port.wait_for_ready_read(20);
         usb_port.set_buffer_size(1000);
         usb_port.clear_buffer();
+        
         while (eeprom.size() < 128000) {
 
-            //tx_data = "+";
-            //usb_port.write_serial_data(tx_data);
+           
             usb_port.wait_for_ready_read(20);
 
-            //tx_data = "-";
-            //usb_port.write_serial_data(tx_data);
+           
 
             eeprom += usb_port.getInputBuffer();
 
@@ -242,7 +241,7 @@ void Worker::get_eeprom_content()
 
         usb_port.set_buffer_size(2); //set buffer size for 16bit checksum from lordyphon
 
-        
+
 
         for (auto i : eeprom)
             eeprom_checksum += static_cast<unsigned char>(i);  //qbytearray returns signed char, need unsigned for correct value
@@ -259,63 +258,86 @@ void Worker::get_eeprom_content()
 
         qDebug() << "checksum from uc: " << checksum_uc;
         qDebug() << "local checksum : " << eeprom_checksum;
-       
-        if (checksum_uc != eeprom_checksum){
+
+        if (checksum_uc != eeprom_checksum) {
             emit remoteMessageBox("checksum error, try again");
             usb_port.clear_buffer();
             usb_port.close_usb_port();
             file.close();
+            
+            sets.remove(new_filepath);
+
             emit activateButtons();
             mutex.unlock();
             emit finished(); // exit thread
 
         }
 
-    
-    
-    
-  
-    
-    eeprom_checksum = 0;
-   
-    emit setLabel("writing file");
-    delay(1000);
-
-    
-    
-   
-    
-    
-    for (int i = 0; i < eeprom.size(); ++i) {
-        int temp = static_cast<unsigned char>(eeprom.at(i)) ;
-        //char temp = eeprom.at(i);
-        
 
 
 
-        if (i !=0 && i % 16 == 0) {
-            file << endl;
-            
+
+
+        eeprom_checksum = 0;
+
+        emit setLabel("writing file");
+        delay(1000);
+
+
+
+
+
+
+        for (int i = 0; i < eeprom.size(); ++i) {
+            int temp = static_cast<unsigned char>(eeprom.at(i));
+            //char temp = eeprom.at(i);
+
+
+
+
+            if (i != 0 && i % 16 == 0) {
+                file << endl;
+
+            }
+            file << setw(2) << setfill('0') << hex << temp;
         }
-        file << setw(2) << setfill('0') << hex << temp ;
-    }
-    file.close();
+        file.close();
+        emit newItem(new_filename);
 
+
+        emit ProgressBar_valueChanged(128000);
+        emit setLabel("done");
+        usb_port.clear_buffer();
+        usb_port.close_usb_port();
+    }
+    else
+        emit remoteMessageBox("file not found!");
+   
     
-    
-    emit ProgressBar_valueChanged(128000);
-    emit setLabel("done");
-    usb_port.clear_buffer();
     usb_port.close_usb_port();
-   
-   
-    
-    
     emit activateButtons();
     mutex.unlock();
     emit finished();
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void Worker::send_eeprom_content()
 {

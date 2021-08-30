@@ -24,8 +24,13 @@ LordyLink::LordyLink(QWidget *parent)
     // model erzeugen
     model = new QStandardItemModel();
 
+    
+    QDir sets(QDir::homePath() + "/LordyLink/Sets");
+    if (!sets.exists())
+        sets.mkpath(".");
+    
     // read files from directory
-    home = QDir::homePath() + "/Sets";
+    home = QDir::homePath() + "/LordyLink/Sets";
     
     
     QDir directory(home);
@@ -37,14 +42,19 @@ LordyLink::LordyLink(QWidget *parent)
         itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
         model->appendRow(QList<QStandardItem*>() << itemname);
     }
-    model->setHeaderData(0, Qt::Horizontal, QObject::tr("Dateiname"));
-
+    model->setHeaderData(0, Qt::Horizontal, QObject::tr("set name: "));
+    
     // Verbindung des models mit der View
     ui.dirView->setModel(model);
-
+    
+    for (int col = 0; col < model->rowCount(); col++)
+    {
+        ui.dirView->setColumnWidth(col, 300);
+    }
+    
     // Slots verbinden
     QObject::connect(ui.dirView, SIGNAL(doubleClicked(const QModelIndex&)), SLOT(renameStart(const QModelIndex)));
-    
+   
     QObject::connect(ui.dirView->model(), SIGNAL(itemChanged(QStandardItem*)), SLOT(renameEnd(QStandardItem*)));
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
     QObject::connect(ui.saveSetButton, SIGNAL(clicked()), this, SLOT(OnGetSetButton()));
@@ -173,11 +183,12 @@ void LordyLink::OnGetSetButton()
         Worker* getSetWorker = new Worker;;
 
         USBThread* getSetThread = new USBThread;
+        ui.QInstallLabel->setText("reading file");
         ui.QInstallLabel->show();
         ui.QInstallProgressBar->show();
 
         getSetWorker->moveToThread(getSetThread);
-
+        connect(getSetWorker, SIGNAL(newItem(QString)), this, SLOT(refresh(QString)));
         connect(getSetThread, &QThread::started, getSetWorker, &Worker::get_eeprom_content);
         connect(getSetWorker, &Worker::finished, getSetThread, &QThread::quit);
         connect(getSetWorker, &Worker::finished, getSetWorker, &Worker::deleteLater);
@@ -189,6 +200,9 @@ void LordyLink::OnGetSetButton()
         connect(getSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
         connect(getSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
         getSetThread->start();
+        
+        
+       
     }
     else {
 
@@ -218,6 +232,7 @@ void LordyLink::OnSendSetButton()
         Worker* sendSetWorker = new Worker;
 
         USBThread* sendSetThread = new USBThread;
+        ui.QInstallLabel->setText("sending file");
         ui.QInstallLabel->show();
         ui.QInstallProgressBar->show();
 
