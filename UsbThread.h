@@ -10,7 +10,10 @@
 #include <fstream>
 #include <vector>
 #include <QTimer>
-
+#include <QDir>
+#include <QFileInfo>
+#include <qstring.h>
+#include <QDateTime>
 
 class USBThread : public QThread
 {
@@ -47,9 +50,9 @@ signals:
 	void ProgressBar_valueChanged(int val);
 	void ProgressBar_setMax(int val);
 	void setLabel(QString);
-	//void get_eeprom();
-	
-	
+	void remoteMessageBox(QString);
+	void activateButtons();
+	void deactivateButtons();
 	
 	void finished();
 	void error(QString err);
@@ -65,6 +68,7 @@ private:
 	//std::string Filename = "sram_content.txt";
 	
 	QFile sram_content;
+	QString set_dir;
 
 
 	inline void delay(int millisecondsWait)

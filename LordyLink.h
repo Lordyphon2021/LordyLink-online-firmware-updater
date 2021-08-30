@@ -23,6 +23,8 @@
 #include "QUpdateDialog.h"
 #include "UsbThread.h"
 #include <qscopedpointer.h>
+#include <QStandardItemModel>
+#include <QDir>
 
 
 
@@ -73,8 +75,16 @@ public slots:
     
     void OnSendSetButton();
     
+    void OnRemoteMessageBox(QString message);
+    
+    void OnActivateButtons();
+    
+    void OnDeactivateButtons();
+    
+   
+    //void renameStart(const QModelIndex);
+    //void renameEnd(QStandardItem*);
 
-  
     
 
 private:
@@ -89,6 +99,10 @@ private:
     std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt";
     
     QUpdateDialog update;
+
+    QStandardItemModel* model;
+    QString home;
+    QString oldName;
    
 };
 

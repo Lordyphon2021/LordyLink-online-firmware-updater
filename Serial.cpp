@@ -6,7 +6,7 @@ SerialHandler::SerialHandler(QObject* parent)
 	lordyphon_port = new QSerialPort(this);
 	lordyphon_port->setReadBufferSize(10);
 	QObject::connect(lordyphon_port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-	QObject::connect(lordyphon_port, SIGNAL(QSerialPort::errorOccurred), this, SLOT(QSerialPort::SerialPortError error()const));
+	QObject::connect(lordyphon_port, SIGNAL(QSerialPort::errorOccurred()), this, SLOT(QSerialPort::SerialPortError error()const));
 	QObject::connect(lordyphon_port, SIGNAL(device_not_found()), this, SLOT(onUsbError()));
 }
 

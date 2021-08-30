@@ -21,7 +21,31 @@ LordyLink::LordyLink(QWidget *parent)
     usb_port = new SerialHandler;
     
     ui.setupUi(this);
-   
+    // model erzeugen
+    model = new QStandardItemModel();
+
+    // read files from directory
+    home = QDir::homePath() + "/Sets";
+    
+    
+    QDir directory(home);
+    QStringList txtfiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
+    
+    foreach(QString filename, txtfiles) {
+        qDebug() << filename;
+        QStandardItem* itemname = new QStandardItem(filename);
+        itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
+        model->appendRow(QList<QStandardItem*>() << itemname);
+    }
+    model->setHeaderData(0, Qt::Horizontal, QObject::tr("Dateiname"));
+
+    // Verbindung des models mit der View
+    ui.dirView->setModel(model);
+
+    // Slots verbinden
+    QObject::connect(ui.dirView, SIGNAL(doubleClicked(const QModelIndex&)), SLOT(renameStart(const QModelIndex)));
+    
+    QObject::connect(ui.dirView->model(), SIGNAL(itemChanged(QStandardItem*)), SLOT(renameEnd(QStandardItem*)));
 	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
     QObject::connect(ui.saveSetButton, SIGNAL(clicked()), this, SLOT(OnGetSetButton()));
     QObject::connect(ui.sendSetButton, SIGNAL(clicked()), this, SLOT(OnSendSetButton()));
@@ -76,44 +100,11 @@ LordyLink::LordyLink(QWidget *parent)
         if (usb_port->clear_buffer())
             usb_port->close_usb_port();
     }
-    /*
-    if (!usb_port->lordyphon_handshake()) {
-        usb_port->find_lordyphon_port();
-        if(! usb_port->lordyphon_port_is_open())
-            usb_port->open_lordyphon_port();
-        bool handshake_ok = false;
-       
-        
-        while (!usb_port->lordyphon_handshake()) {
-
-            QMessageBox error;
-            error.setText("please set lordyphon to update mode (power on + rec button)");
-            error.exec();
-                usb_port->close_usb_port();
-                usb_port->find_lordyphon_port();
-                usb_port->open_lordyphon_port();
-                
-                if (usb_port->lordyphon_handshake())
-                    break;
-            
-           
-
-        }
-        ui.hardware_connected_label->setText("Lordyphon connected");
-        usb_port->close_usb_port();
-    }*/
-}
-/*
-void LordyLink::error_message_box(const char* message)
-{
-    QMessageBox* error_message = new QMessageBox;
-    error_message->setText(message);
-    error_message->exec();
-
     
 }
 
-*/
+
+
 
 void LordyLink::on_update_button()
 {
@@ -135,23 +126,25 @@ void LordyLink::on_update_button()
         int dialog_code = update.exec();
 
         if (dialog_code == QDialog::Accepted) {
-            Worker* worker = new Worker;
-            USBThread* thread = new USBThread;
+            Worker* update_worker = new Worker;
+            USBThread* update_thread = new USBThread;
             ui.QInstallLabel->show();
 
             ui.QInstallProgressBar->show();
             ui.QInstallProgressBar->valueChanged(0);
-            worker->moveToThread(thread);
+            update_worker->moveToThread(update_thread);
 
-            connect(thread, &QThread::started, worker, &Worker::update);
-            connect(worker, &Worker::finished, thread, &QThread::quit);
-            connect(worker, &Worker::finished, worker, &Worker::deleteLater);
-            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-            connect(worker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-            connect(worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-            connect(worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-
-            thread->start();
+            connect(update_thread, &QThread::started, update_worker, &Worker::update);
+            connect(update_worker, &Worker::finished, update_thread, &QThread::quit);
+            connect(update_worker, &Worker::finished, update_worker, &Worker::deleteLater);
+            connect(update_thread, &QThread::finished, update_thread, &QThread::deleteLater);
+            connect(update_worker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+            connect(update_worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+            connect(update_worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+            connect(update_worker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+            connect(update_worker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
+            connect(update_worker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
+            update_thread->start();
         }
     }
    
@@ -177,23 +170,25 @@ void LordyLink::OnGetSetButton()
 
         ui.QInstallProgressBar->reset();
 
-        Worker* worker2 = new Worker;;
+        Worker* getSetWorker = new Worker;;
 
-        USBThread* thread2 = new USBThread;
+        USBThread* getSetThread = new USBThread;
         ui.QInstallLabel->show();
         ui.QInstallProgressBar->show();
 
-        worker2->moveToThread(thread2);
+        getSetWorker->moveToThread(getSetThread);
 
-        connect(thread2, &QThread::started, worker2, &Worker::get_eeprom_content);
-        connect(worker2, &Worker::finished, thread2, &QThread::quit);
-        connect(worker2, &Worker::finished, worker2, &Worker::deleteLater);
-        connect(thread2, &QThread::finished, thread2, &QThread::deleteLater);
-        connect(worker2, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-        connect(worker2, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-        connect(worker2, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-
-        thread2->start();
+        connect(getSetThread, &QThread::started, getSetWorker, &Worker::get_eeprom_content);
+        connect(getSetWorker, &Worker::finished, getSetThread, &QThread::quit);
+        connect(getSetWorker, &Worker::finished, getSetWorker, &Worker::deleteLater);
+        connect(getSetThread, &QThread::finished, getSetThread, &QThread::deleteLater);
+        connect(getSetWorker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+        connect(getSetWorker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+        connect(getSetWorker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+        connect(getSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+        connect(getSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
+        connect(getSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
+        getSetThread->start();
     }
     else {
 
@@ -220,23 +215,25 @@ void LordyLink::OnSendSetButton()
 
         ui.QInstallProgressBar->reset();
 
-        Worker* worker3 = new Worker;
+        Worker* sendSetWorker = new Worker;
 
-        USBThread* thread3 = new USBThread;
+        USBThread* sendSetThread = new USBThread;
         ui.QInstallLabel->show();
         ui.QInstallProgressBar->show();
 
-        worker3->moveToThread(thread3);
+        sendSetWorker->moveToThread(sendSetThread);
 
-        connect(thread3, &QThread::started, worker3, &Worker::send_eeprom_content);
-        connect(worker3, &Worker::finished, thread3, &QThread::quit);
-        connect(worker3, &Worker::finished, worker3, &Worker::deleteLater);
-        connect(thread3, &QThread::finished, thread3, &QThread::deleteLater);
-        connect(worker3, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-        connect(worker3, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-        connect(worker3, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-
-        thread3->start();
+        connect(sendSetThread, &QThread::started, sendSetWorker, &Worker::send_eeprom_content);
+        connect(sendSetWorker, &Worker::finished, sendSetThread, &QThread::quit);
+        connect(sendSetWorker, &Worker::finished, sendSetWorker, &Worker::deleteLater);
+        connect(sendSetThread, &QThread::finished, sendSetThread, &QThread::deleteLater);
+        connect(sendSetWorker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+        connect(sendSetWorker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+        connect(sendSetWorker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+        connect(sendSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+        connect(sendSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
+        connect(sendSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
+        sendSetThread->start();
     }
     else {
 
@@ -249,4 +246,44 @@ void LordyLink::OnSendSetButton()
     }
 
 }
+void LordyLink::OnRemoteMessageBox(QString message)
+{
+    QMessageBox fromRemote;
+    fromRemote.setText(message);
+    fromRemote.exec();
 
+}
+void LordyLink::OnActivateButtons()
+{
+    bool ok = true;
+    
+    if(!ui.Q_UpdateLordyphonButton->isEnabled())
+        ui.Q_UpdateLordyphonButton->setEnabled(ok);
+    if (!ui.saveSetButton->isEnabled())
+        ui.saveSetButton->setEnabled(ok);
+    if (!ui.sendSetButton->isEnabled())
+        ui.sendSetButton->setEnabled(ok);
+
+    ui.QInstallProgressBar->hide();
+    ui.QInstallLabel->hide();
+
+}
+void LordyLink::OnDeactivateButtons()
+{
+    bool ok = true;
+
+    if (ui.QInstallProgressBar->isHidden())
+        ui.QInstallProgressBar->show();
+    if (ui.QInstallLabel->isHidden())
+        ui.QInstallLabel->show();
+       
+    if (ui.Q_UpdateLordyphonButton->isEnabled())
+        ui.Q_UpdateLordyphonButton->setDisabled(ok);
+    if (ui.saveSetButton->isEnabled())
+        ui.saveSetButton->setDisabled(ok);
+    if (ui.sendSetButton->isEnabled())
+        ui.sendSetButton->setDisabled(ok);
+
+
+
+}

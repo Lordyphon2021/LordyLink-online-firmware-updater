@@ -10,6 +10,7 @@ using namespace std;
 
 void Worker::update()
 {
+    emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
     //OPEN USB PORT
@@ -129,12 +130,16 @@ void Worker::update()
 
     }
     else {
-        emit setLabel("file not found, check internet connection");
+        emit remoteMessageBox("file not found, check internet connection");
+        
         emit ProgressBar_valueChanged(0);
+        mutex.unlock();
+        emit activateButtons();
+        emit finished();
     }
 
-    
-    
+    emit activateButtons();
+    mutex.unlock();
     emit finished();  //THREAD CLOSED, QT WILL DESTROY LATER VIA SIGNALS
 
 }
@@ -143,6 +148,7 @@ void Worker::update()
 
 void Worker::get_eeprom_content()
 {
+    emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
     SerialHandler usb_port;
@@ -152,6 +158,8 @@ void Worker::get_eeprom_content()
     
     if (!usb_port.find_lordyphon_port()) {
         emit setLabel("lordyphon disconnected!");
+        mutex.unlock();
+        emit activateButtons();
         emit finished();
     }
     
@@ -163,18 +171,44 @@ void Worker::get_eeprom_content()
     
     if (!usb_port.lordyphon_handshake()){
         emit setLabel("connection error");
+        emit activateButtons();
+        mutex.unlock();
         emit finished();
     }
     
-    file.open("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_eeprom.txt", ios_base::binary);
+    QDir sets(QDir::homePath() + "LordyLink/Sets/");
+    if (!sets.exists())
+        sets.mkpath(".");
+    
+    
+    QDateTime now = QDateTime::currentDateTime();
+    QString my_set_dir = QDir::homePath() + "LordyLink/Sets";
+    QString new_file_path = QDir::homePath() + "LordyLink/Sets/new " + now.toString() + ".txt";
+    
+    
+    
+    
+    file.open(new_file_path.toStdString());
+    
+    if (!file.is_open()) {
+
+        emit remoteMessageBox("file not found!");
+        emit activateButtons();
+        mutex.unlock();
+        emit finished();
+
+
+
+
+    }
+
     QByteArray eeprom;
-   
     QByteArray temp_rec;
     uint16_t checksum_uc = 0;
     uint16_t eeprom_checksum = 0;
     int error_ctr = 0;
 
-    do {
+    
         emit setLabel("reading set data");
         emit ProgressBar_setMax(128000);
         size_t progress_bar_ctr = 0;
@@ -226,17 +260,13 @@ void Worker::get_eeprom_content()
         qDebug() << "checksum from uc: " << checksum_uc;
         qDebug() << "local checksum : " << eeprom_checksum;
        
-        if (checksum_uc != eeprom_checksum)
-            ++error_ctr;
-    
-        
-        if (error_ctr > 3) {  //exit condition if smthg goes wrong
-            QMessageBox checksum;
-            checksum.setText("checksum error, file corrupted or bad connection. try again!");
-            checksum.exec();
+        if (checksum_uc != eeprom_checksum){
+            emit remoteMessageBox("checksum error, try again");
             usb_port.clear_buffer();
             usb_port.close_usb_port();
             file.close();
+            emit activateButtons();
+            mutex.unlock();
             emit finished(); // exit thread
 
         }
@@ -244,7 +274,7 @@ void Worker::get_eeprom_content()
     
     
     
-    } while (checksum_uc != eeprom_checksum);
+  
     
     eeprom_checksum = 0;
    
@@ -281,23 +311,27 @@ void Worker::get_eeprom_content()
    
     
     
-    
-    
+    emit activateButtons();
+    mutex.unlock();
     emit finished();
     
 }
 
 void Worker::send_eeprom_content()
 {
+    emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
     SerialHandler usb_port2;
    
-
+    emit setLabel("sending set");
 
 
     if (!usb_port2.find_lordyphon_port()) {
-        emit setLabel("lordyphon disconnected!");
+       
+        emit remoteMessageBox("lordyphon disconnected!");
+        emit activateButtons();
+        mutex.unlock();
         emit finished();
     }
 
@@ -361,7 +395,7 @@ void Worker::send_eeprom_content()
 
                 usb_port2.set_buffer_size(3);
                
-                usb_port2.wait_for_ready_read(1000);        //wait for eeprom burn (6ms)
+                usb_port2.wait_for_ready_read(1000);        //wait for eeprom burn 
 
                 status = usb_port2.getInputBuffer();
                 //qDebug() << status;
@@ -398,28 +432,30 @@ void Worker::send_eeprom_content()
         }
         else if (response == "DONT") {
 
-            QMessageBox error;
-            error.setText("lordyphon memory busy, press stop button");
-            error.exec();
-            
-
-
+           
+            emit remoteMessageBox("lordyphon memory busy, press stop button");
+            emit activateButtons();
+            mutex.unlock();
+            emit finished();
 
         }
         else {
             qDebug() << "error, message not recognized";
             
         }
-        if(usb_port2.clear_buffer())
-         usb_port2.close_usb_port();
+        usb_port2.clear_buffer();
+        usb_port2.close_usb_port();
+        mutex.unlock();
+        emit activateButtons();
         emit finished();
     }
     else
     {
-        QMessageBox error;
-        error.setText("parser error, file corrupted");
-        error.exec();
+        emit remoteMessageBox("file not found");
+        
         usb_port2.close_usb_port();
+        mutex.unlock();
+       emit activateButtons();
         emit finished();
 
     }
