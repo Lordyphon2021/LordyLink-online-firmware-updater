@@ -11,11 +11,11 @@
 
 #include "Parser.h"
 
-class Filehandler : public QObject
+class Downloader : public QObject
 {
     Q_OBJECT
 public:
-    Filehandler(QObject* parent = nullptr);
+    Downloader(QObject* parent = nullptr);
     
     
     void download(QString location, QString path);

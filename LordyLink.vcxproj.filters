@@ -69,9 +69,6 @@
     <QtMoc Include="Filehandler.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="Downloader.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="QUpdateDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>

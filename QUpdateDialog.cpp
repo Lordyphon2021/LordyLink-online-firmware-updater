@@ -32,13 +32,6 @@ void QUpdateDialog::download_firmware()
 	QDir directory(home);
 	QStringList txtfiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
 	
-
-	
-
-    
-	
-	
-
 	model = new QStandardItemModel();
     
 	//read textfiles from directory
@@ -55,12 +48,8 @@ void QUpdateDialog::download_firmware()
     ui.tableView->setModel(model);
 	// set column size
 	for (int col = 0; col < model->rowCount(); col++)
-	{
 		ui.tableView->setColumnWidth(col, 320);
-	}
-    
-
-   
+	
     //single click to select item
     QObject::connect(ui.tableView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(return_path(const QModelIndex)));
    

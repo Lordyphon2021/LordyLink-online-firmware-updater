@@ -3,16 +3,16 @@
 
 
 
-Filehandler::Filehandler(QObject* parent):QObject(parent)
+Downloader::Downloader(QObject* parent):QObject(parent)
 
 {
-    connect(&manager, &QNetworkAccessManager::finished, this, &Filehandler::finished);
+    connect(&manager, &QNetworkAccessManager::finished, this, &Downloader::finished);
    
 }
 
 
 
-void Filehandler::download(QString location, QString path)
+void Downloader::download(QString location, QString path)
 {
    
     
@@ -48,7 +48,7 @@ void Filehandler::download(QString location, QString path)
 
 }
 
-void Filehandler::readyRead()
+void Downloader::readyRead()
 {
     
     
@@ -69,7 +69,7 @@ void Filehandler::readyRead()
     }
 }
 
-void Filehandler::finished(QNetworkReply* reply)
+void Downloader::finished(QNetworkReply* reply)
 {
     
   
@@ -82,7 +82,7 @@ void Filehandler::finished(QNetworkReply* reply)
 }
 
 
-void Filehandler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+void Downloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     if (bytesTotal <= 0) {
         
@@ -97,7 +97,7 @@ void Filehandler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
    
 }
 
-void Filehandler::error(QNetworkReply::NetworkError code)
+void Downloader::error(QNetworkReply::NetworkError code)
 {
    
     
@@ -112,12 +112,12 @@ void Filehandler::error(QNetworkReply::NetworkError code)
    
 }
 
-void Filehandler::wire(QNetworkReply* reply)
+void Downloader::wire(QNetworkReply* reply)
 {
    
-    connect(reply, &QNetworkReply::readyRead, this, &Filehandler::readyRead);
-    connect(reply, &QNetworkReply::downloadProgress, this, &Filehandler::downloadProgress);
-    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &Filehandler::error);
+    connect(reply, &QNetworkReply::readyRead, this, &Downloader::readyRead);
+    connect(reply, &QNetworkReply::downloadProgress, this, &Downloader::downloadProgress);
+    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &Downloader::error);
     
    
    

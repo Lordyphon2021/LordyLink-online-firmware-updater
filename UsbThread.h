@@ -69,7 +69,7 @@ signals:
 private:
 	
 	Parser* parser = nullptr;
-	Filehandler* filehandler = nullptr;
+	Downloader* filehandler = nullptr;
 	SerialHandler* usb = nullptr;
 	QString lordyphon_portname;
 	QString status;
@@ -77,7 +77,7 @@ private:
 	QString Message;
 	QString selected_set;
 	
-	QFile sram_content;
+	QFile eeprom_content;
 	QString set_dir;
 	QString selected_firmware;
 	

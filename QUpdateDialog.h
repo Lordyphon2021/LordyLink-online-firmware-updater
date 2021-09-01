@@ -17,30 +17,23 @@ class QUpdateDialog : public QDialog, public Ui::QUpdateDialog
 
 
 public:
-	
-	QString get_firmware_path()
-	{
-		return selected_firmware;
-	}
+	QUpdateDialog(QDialog* parent = Q_NULLPTR);
+	~QUpdateDialog();
+
+	QString get_firmware_version() { return selected_firmware; }
 
 public slots:
 	
 	
-	void return_path(const QModelIndex mindex)
-	{
-		selected_firmware = ui.tableView->model()->index(mindex.row(), 0).data().toString();
-		
-		qDebug() << selected_firmware;
-		ui.QInstallButton->setEnabled(true);
-	}
-
-
-
-
-
+void return_path(const QModelIndex mindex)
+{
+	selected_firmware = ui.tableView->model()->index(mindex.row(), 0).data().toString();
+	qDebug() << selected_firmware;
+	ui.QInstallButton->setEnabled(true);
+}
 
 signals:
-	void send_path(QString);
+	void selected_version(QString);
 
 private:
 	Ui::QUpdateDialog ui;
@@ -51,9 +44,7 @@ private:
 	
 	
 
-public:
-	QUpdateDialog(QDialog *parent = Q_NULLPTR);
-	~QUpdateDialog();
+
 	
 	
 };

@@ -125,7 +125,7 @@ public:
 		for (auto qbytearray : eeprom_data_vec) {
 
 			for (int j = 0; j < 16; ++j)
-				checksum += qbytearray.at(j);
+				checksum += static_cast<unsigned char>(qbytearray.at(j));
 
 
 

@@ -10,40 +10,42 @@ using namespace std;
 
 void Worker::update()
 {
+    
+    //don't allow erratic user input
     emit deactivateButtons();
+    //safety
     QMutex mutex;
     mutex.lock();
     //OPEN USB PORT
+    
     SerialHandler usb;
     usb.find_lordyphon_port();
     usb.open_lordyphon_port();
-    
     usb.lordyphon_handshake();
-    
+    //SET BUFFER FOR "OK" or "ER" + '\0' CHARACTER
     usb.set_buffer_size(3);
    
    
     //SET VARIABLES
     QString checksum_status_message;
-   
     QByteArray header = "#";
     QByteArray burn_flash = "w";
     QByteArray tx_data;
     size_t index = 0;
-    int bad_checksum_ctr = 0;
+    int bad_checksum_ctr = 0;       
     int rx_error_ctr = 0;
     bool carry_on_flag = true;  //START CONDITION TO GET FIRST RECORD
 
     //OPEN DOWNLOADED FILE FOR PARSER
     
-    sram_content.setFileName("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/TX_HEX_LOG.txt");
-    sram_content.open(QIODevice::ReadWrite | QIODevice::Text);
-    QTextStream out(&sram_content);
+    eeprom_content.setFileName(QDir::homePath() + "/LordyLink/log/firmware_transfer_log.txt");
+    eeprom_content.open(QIODevice::ReadWrite | QIODevice::Text);
+    QTextStream out(&eeprom_content);
     Parser hex_parser(selected_firmware);
 
     //PARSE DOWNLOADED HEXFILE
     
-    if (hex_parser.parse_hex()) {  //BOOL METHOD, PARSER'S RESPOONSIBLE FOR HEXFILE ERRORS
+    if (hex_parser.parse_hex()) {  //BOOL METHOD, PARSER'S RESPONSIBLE FOR HEXFILE ERRORS
 
         int hexfilesize = hex_parser.get_hexfile_size();   //GET SIZE FOR PROGRESS BAR AND LOOP
 
@@ -113,7 +115,7 @@ void Worker::update()
         }
         
         delay(1000); //THIS IS NECESSARY FOR THE LAST MESSAGE TO BE RECEIVED CORRECTLY
-        sram_content.close();
+        eeprom_content.close();
         emit ProgressBar_valueChanged(hexfilesize);
       
         //IF carry_on_flag IS TRUE AFTER EVERYTHING HAS BEEN SENT, EVERYTHING HAS BEEN TRANSMITTED CORRECTLY
@@ -277,20 +279,6 @@ void Worker::get_eeprom_content()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void Worker::send_eeprom_content()
 {
     emit deactivateButtons();
@@ -338,6 +326,7 @@ void Worker::send_eeprom_content()
         qDebug() << "entering send data thread";
 
         int setfilesize = eeprom_parser.get_eeprom_size();
+        
         emit ProgressBar_setMax(setfilesize);
         emit setLabel("sending set");
         
@@ -356,18 +345,20 @@ void Worker::send_eeprom_content()
         QByteArray temp_record;
         QString status;
         
+        
         if (response == "doit") {
             size_t index = 0;
            
             call_lordyphon = "//";  //start transfer
             usb_port2.write_serial_data(call_lordyphon);
-           
+            QByteArray checksum_vec;
             
             while (index < setfilesize && setfilesize != 0) {
                 
                 
                 temp_record = eeprom_parser.get_eeprom_record(index);
-               
+                
+                checksum_vec += temp_record;
                 
                 usb_port2.write_serial_data(temp_record);  //send record
 
@@ -388,11 +379,20 @@ void Worker::send_eeprom_content()
             
             usb_port2.set_buffer_size(2);
             QByteArray checksum_bigendian = usb_port2.getInputBuffer();
-            qDebug() << "checksum from lordyphon: " << checksum_bigendian;
+            //qDebug() << "checksum from lordyphon: " << checksum_bigendian;
             uint8_t msb = checksum_bigendian.at(0);
             uint8_t lsb = checksum_bigendian.at(1);
 
             uint16_t checksum_lordyphon = (msb << 8) | lsb;  //assemble 16bit checksum
+            
+            uint16_t checksum_local = 0;
+
+            for (auto i : checksum_vec)
+                checksum_local += static_cast<unsigned char>(i);
+            
+            qDebug() << "checksum local: " << checksum_local;
+            qDebug() << "checksum from lordyphon: " << checksum_lordyphon;
+            
             //if (checksum_lordyphon == eeprom_parser.get_eeprom_checksum()) {
               
                 //if(usb_port2.clear_buffer())
