@@ -22,6 +22,7 @@ LordyLink::LordyLink(QWidget *parent)
    
     //setup gui
     ui.setupUi(this);
+    ui.Q_UpdateLordyphonButton->setDisabled(true);
     //create model
     model = new QStandardItemModel();
 
@@ -34,7 +35,9 @@ LordyLink::LordyLink(QWidget *parent)
     if (!firmware.exists())
         firmware.mkpath(".");
     
-    
+    QDir versioncount(QDir::homePath() + "/LordyLink/versioncount");
+    if (!versioncount.exists())
+        versioncount.mkpath(".");
     
     // read sets from directory
     home = QDir::homePath() + "/LordyLink/Sets";
@@ -128,19 +131,21 @@ LordyLink::LordyLink(QWidget *parent)
             usb_port->close_usb_port();
     }
     
-    //get 10 files from server
-    for (size_t version = 0; version < 10; ++version) {
+    
+   
+    
+    //download firmware versions from ftp server, filehandler will delete empty files
+    for (size_t i = 0; i < 10; ++i) {
 
-
+       
         Filehandler* filehandler = new Filehandler;
-        QString location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_firmware_V1.0" + QString::number(version) + ".hex";
+        connect(filehandler, SIGNAL(download_finished()), this, SLOT(activate_install_button()));
+        
+        QString location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_firmware_V1.0" + QString::number(i) + ".hex";
         QString file_path = QDir::homePath() + "/LordyLink/Firmware/lordyphon_firmware_V1.0";
-        QString path = file_path + QString::number(version) + ".txt";
-
-
-
+        QString path = file_path + QString::number(i) + ".txt";
         filehandler->download(location, path);
-
+        
 
     }
     
@@ -153,16 +158,6 @@ LordyLink::LordyLink(QWidget *parent)
 
 void LordyLink::OnUpdateButton()
 {
-    
-    
-  
-    
-    
-    
-    
-    
-    
-    
     
     usb_port->find_lordyphon_port();
     usb_port->open_lordyphon_port();

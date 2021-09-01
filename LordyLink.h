@@ -82,6 +82,15 @@ public slots:
     void renameStart(const QModelIndex);
     void renameEnd(QStandardItem*);
     void selectItemToSend(const QModelIndex mindex);
+    void activate_install_button()
+    {
+
+       
+        
+        ui.Q_UpdateLordyphonButton->setEnabled(true);
+
+    }
+    
     void get_path(QString path)
     {
 
@@ -108,6 +117,15 @@ private:
     QString oldName;
     QString selected_set;
     QString firmware_path;
+
+    inline void delay(int millisecondsWait)
+    {
+        QEventLoop loop;
+        QTimer t;
+        t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
+        t.start(millisecondsWait);
+        loop.exec();
+    }
    
 };
 

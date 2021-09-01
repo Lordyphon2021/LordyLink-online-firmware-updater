@@ -7,7 +7,7 @@ Filehandler::Filehandler(QObject* parent):QObject(parent)
 
 {
     connect(&manager, &QNetworkAccessManager::finished, this, &Filehandler::finished);
-    status = false;
+   
 }
 
 
@@ -63,7 +63,7 @@ void Filehandler::readyRead()
     }
     else {
         
-        status = false;
+        
         qDebug() << "readyread error";
         
     }
@@ -73,9 +73,10 @@ void Filehandler::finished(QNetworkReply* reply)
 {
     
   
-    status = true;
+    
     file.close();
     reply->close();
+    emit download_finished();
     qDebug() << "done"; 
     
 }
@@ -88,6 +89,8 @@ void Filehandler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
         
         qDebug() << "no data received... ";
         emit no_data();
+        file.close();
+        file.remove();
         return;
     }
    
@@ -97,7 +100,7 @@ void Filehandler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 void Filehandler::error(QNetworkReply::NetworkError code)
 {
    
-    status = false;
+    
     qDebug() << "error" << code;
     
 

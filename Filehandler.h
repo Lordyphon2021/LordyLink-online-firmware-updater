@@ -20,12 +20,7 @@ public:
     
     void download(QString location, QString path);
     
-    bool download_finished()
-    {
-
-        return status;
-
-    }
+    
 
 
 
@@ -34,6 +29,7 @@ public:
 
 signals:
     void no_data();
+    void download_finished();
 
 
 private slots:
@@ -49,6 +45,6 @@ private:
     QListWidget* debug_list = nullptr;
     QMessageBox error_message;
     void wire(QNetworkReply* reply);
-    bool status = false;
+    
 };
 
