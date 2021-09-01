@@ -35,6 +35,11 @@ public:
 	Parser( QString _path ) 
 		 //constructor takes path to file location
 	{
+		if(! _path.contains(".txt"))
+			_path += ".txt";
+		qDebug() << "in parser :" <<_path;
+		
+		
 		QFile data_file(_path);
 		QString temp_record;
 		data_file.open(QIODevice::ReadOnly);

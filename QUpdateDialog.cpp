@@ -10,37 +10,69 @@ QUpdateDialog::QUpdateDialog(QDialog *parent)
 	
 	ui.setupUi(this);
 	setWindowTitle("Firmware Versions:");
-	download();
-	//QObject::connect(ui.QInstallButton, SIGNAL(clicked()), SLOT(download()));
+
+	
 	QObject::connect(ui.QInstallButton, SIGNAL(clicked()), this, SLOT(accept()));
 	QObject::connect(ui.QCancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 	
-
+	ui.QInstallButton->setDisabled(true);
+	download_firmware();
 	
 }
-void QUpdateDialog::download()
-{
 
-	filehandler = new Filehandler(ui.QInternetStatus);
-
-	QString file_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_firmware_25_08.hex";
-	QString file_path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt";
-	QString folder_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com";
-	QString folder_path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/version_list.txt";
-
-	
-	
-	
-	
-filehandler->download(file_location, file_path);
-	//filehandler->download(folder_location, folder_path);
-
-
-	
-
-
-}
 QUpdateDialog::~QUpdateDialog()
 {
 }
 
+
+void QUpdateDialog::download_firmware()
+{
+	//check directory for empty files
+	QString home = QDir::homePath() + "/LordyLink/Firmware";
+	QDir directory(home);
+	QStringList txtfiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
+	
+
+	foreach(QString filename, txtfiles) {
+		QFile to_delete(home + "/" + filename);
+		qDebug() << home + "/" + filename;
+		//delete empty files
+		to_delete.open(QIODevice::ReadOnly | QIODevice::Text);
+		if (to_delete.size() == 0) {
+			to_delete.close();
+			to_delete.remove();
+
+		}
+		to_delete.close();
+	}
+
+    
+	
+	//update list
+	txtfiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
+	model = new QStandardItemModel();
+    
+	//read textfiles from directory
+	
+	foreach(QString filename, txtfiles) {
+        qDebug() << filename;
+        QStandardItem* itemname = new QStandardItem(filename);
+        itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
+        model->appendRow(QList<QStandardItem*>() << itemname);
+    }
+    model->setHeaderData(0, Qt::Horizontal, QObject::tr("versions: "));
+
+    //connect qtableview with model
+    ui.tableView->setModel(model);
+   
+    
+
+   
+    //single click to select item
+    QObject::connect(ui.tableView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(return_path(const QModelIndex)));
+   
+	
+
+	
+
+}

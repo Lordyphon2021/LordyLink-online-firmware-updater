@@ -15,12 +15,17 @@ class Filehandler : public QObject
 {
     Q_OBJECT
 public:
-    Filehandler(QListWidget* debug_list, QObject* parent = nullptr);
+    Filehandler(QObject* parent = nullptr);
     
     
     void download(QString location, QString path);
-    void get_FTP_list();
+    
+    bool download_finished()
+    {
 
+        return status;
+
+    }
 
 
 
@@ -28,7 +33,7 @@ public:
    
 
 signals:
-
+    void no_data();
 
 
 private slots:
@@ -41,8 +46,9 @@ private slots:
 private:
     QNetworkAccessManager manager;
     QFile file;
-    QListWidget* debug_list;
+    QListWidget* debug_list = nullptr;
     QMessageBox error_message;
     void wire(QNetworkReply* reply);
+    bool status = false;
 };
 

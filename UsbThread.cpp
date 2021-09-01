@@ -39,7 +39,7 @@ void Worker::update()
     sram_content.setFileName("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/TX_HEX_LOG.txt");
     sram_content.open(QIODevice::ReadWrite | QIODevice::Text);
     QTextStream out(&sram_content);
-    Parser hex_parser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt");
+    Parser hex_parser(selected_firmware);
 
     //PARSE DOWNLOADED HEXFILE
     
@@ -148,27 +148,28 @@ void Worker::update()
 
 void Worker::get_eeprom_content()
 {
+    
+    //GUI/THREAD SAFETY MEASURES
     emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
+   
+    
     SerialHandler usb_port;
     ofstream file;
     
-    qDebug() << "entering get data thread";
-    
+   
+    //check if lordyphon still connected
     if (!usb_port.find_lordyphon_port()) {
         emit setLabel("lordyphon disconnected!");
         mutex.unlock();
         emit activateButtons();
         emit finished();
     }
-    
-    
-    
-    
+    //open port
     if (!usb_port.lordyphon_port_is_open())
         usb_port.open_lordyphon_port(); 
-    
+    //ask for ID
     if (!usb_port.lordyphon_handshake()){
         emit setLabel("connection error");
         emit activateButtons();
@@ -176,44 +177,27 @@ void Worker::get_eeprom_content()
         emit finished();
     }
     
-    QDir sets(QDir::homePath() + "/LordyLink/Sets");
-    if (!sets.exists())
-        sets.mkpath(".");
-   
-    QString sets_path = QDir::homePath();
+    //create timestamp
     QDateTime now = QDateTime::currentDateTime();
-    QString timestamp = now.toString("dd_MM_yyyy__h_m_s");
-
-   
-    
-   
-    
-    QString new_filepath = sets_path + "/LordyLink/Sets/saved_set_" + timestamp + ".txt";
+    QString timestamp = now.toString("dd_MM_yyyy___h_m_s");
+    //add to path and file name
+    QString new_filepath_qstring = QDir::homePath() + "/LordyLink/Sets/saved_set_" + timestamp + ".txt";
     QString new_filename = "saved_set_" + timestamp + ".txt";
     
-    
-    file.open(new_filepath.toStdString());
+    //open new file with timestamp in name
+    file.open(new_filepath_qstring.toStdString());
     
     if (file.is_open()) {
-
-                // update GUI
-        
-
-
-
-
         QByteArray eeprom;
         QByteArray temp_rec;
         uint16_t checksum_uc = 0;
         uint16_t eeprom_checksum = 0;
-        int error_ctr = 0;
-
-
+       
         emit setLabel("reading set data");
         emit ProgressBar_setMax(128000);
         size_t progress_bar_ctr = 0;
         size_t rec_ctr = 0;
-        //usb_port.dump_baud_rate();
+        
         QByteArray tx_data = "r"; //init dump
         usb_port.write_serial_data(tx_data);
         usb_port.set_buffer_size(4);
@@ -222,26 +206,13 @@ void Worker::get_eeprom_content()
         usb_port.clear_buffer();
         
         while (eeprom.size() < 128000) {
-
-           
             usb_port.wait_for_ready_read(20);
-
-           
-
             eeprom += usb_port.getInputBuffer();
-
-
-
             emit ProgressBar_valueChanged(eeprom.size());
-
-
-
         }
         //checksum verification
 
         usb_port.set_buffer_size(2); //set buffer size for 16bit checksum from lordyphon
-
-
 
         for (auto i : eeprom)
             eeprom_checksum += static_cast<unsigned char>(i);  //qbytearray returns signed char, need unsigned for correct value
@@ -260,60 +231,41 @@ void Worker::get_eeprom_content()
         qDebug() << "local checksum : " << eeprom_checksum;
 
         if (checksum_uc != eeprom_checksum) {
+            eeprom_checksum = 0;
             emit remoteMessageBox("checksum error, try again");
-            usb_port.clear_buffer();
-            usb_port.close_usb_port();
             file.close();
-            
-            sets.remove(new_filepath);
-
-            emit activateButtons();
-            mutex.unlock();
-            emit finished(); // exit thread
-
+            //delete temp file
+            QDir sets = new_filepath_qstring;
+            sets.remove(new_filepath_qstring);
         }
+        else {
+            eeprom_checksum = 0;
+            emit setLabel("writing file");
+            delay(1000);
 
-
-
-
-
-
-        eeprom_checksum = 0;
-
-        emit setLabel("writing file");
-        delay(1000);
-
-
-
-
-
-
-        for (int i = 0; i < eeprom.size(); ++i) {
-            int temp = static_cast<unsigned char>(eeprom.at(i));
-            //char temp = eeprom.at(i);
-
-
-
-
-            if (i != 0 && i % 16 == 0) {
-                file << endl;
-
+            for (int i = 0; i < eeprom.size(); ++i) {
+                int temp = static_cast<unsigned char>(eeprom.at(i));
+                //set output format for parser
+                if (i != 0 && i % 16 == 0) {
+                        file << endl;
+                }
+                file << setw(2) << setfill('0') << hex << temp;
             }
-            file << setw(2) << setfill('0') << hex << temp;
+            file.close();
+            //add new set to model/GUI
+            emit newItem(new_filename);
+            emit ProgressBar_valueChanged(128000);
+            emit setLabel("done");
+            
+            
         }
-        file.close();
-        emit newItem(new_filename);
-
-
-        emit ProgressBar_valueChanged(128000);
-        emit setLabel("done");
-        usb_port.clear_buffer();
-        usb_port.close_usb_port();
     }
     else
         emit remoteMessageBox("file not found!");
    
     
+    //clean up, reactivate GUI buttons
+    usb_port.clear_buffer();
     usb_port.close_usb_port();
     emit activateButtons();
     mutex.unlock();
@@ -371,9 +323,14 @@ void Worker::send_eeprom_content()
     usb_port2.set_buffer_size(100);
     if(!usb_port2.clear_buffer())
         qDebug() <<"buffer not empty";
-   
 
-    Parser eeprom_parser("C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_eeprom.txt");
+    qDebug() << "in send thread: " << selected_set;
+   
+    set_dir = QDir::homePath() + "/LordyLink/Sets/";
+    Parser eeprom_parser(set_dir + selected_set);
+
+
+
    
    
     if (eeprom_parser.parse_eeprom()) {
@@ -486,6 +443,10 @@ void Worker::send_eeprom_content()
 
 
 }
+
+
+
+
 
 void USBThread::run()
 {

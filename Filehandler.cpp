@@ -3,35 +3,31 @@
 
 
 
-Filehandler::Filehandler(QListWidget* _line_edit, QObject* parent) : debug_list(_line_edit)
-            , QObject(parent)
+Filehandler::Filehandler(QObject* parent):QObject(parent)
 
 {
     connect(&manager, &QNetworkAccessManager::finished, this, &Filehandler::finished);
+    status = false;
 }
 
-void Filehandler::get_FTP_list() {
 
-
-
-
-
-}
 
 void Filehandler::download(QString location, QString path)
 {
    
-
+    
+    
     file.setFileName(path);
     
     if (!file.open(QIODevice::WriteOnly))
     {
         
-        debug_list->addItem ( file.errorString());
-        qApp->processEvents();
+        qDebug() << file.errorString();
+       
         return;
     }
-
+    
+    
     QUrl url(location);
     
     url.setPort(21);
@@ -43,44 +39,45 @@ void Filehandler::download(QString location, QString path)
     QNetworkRequest request = QNetworkRequest(url);
     QNetworkReply* reply = manager.get(request);
     
-    
-    
+   
     wire(reply);
 
     
-    debug_list->addItem("connecting...");
-    qApp->processEvents();
+   
+    
 
 }
 
 void Filehandler::readyRead()
 {
+    
+    
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
     if (reply)
     {
         QByteArray data = reply->readAll();
         file.write(data);
         
-        
        
-        debug_list->addItem(data);
-        qApp->processEvents();
+        
     }
     else {
         
+        status = false;
+        qDebug() << "readyread error";
         
-        debug_list->addItem("readyread error");
-        qApp->processEvents();
     }
 }
 
 void Filehandler::finished(QNetworkReply* reply)
 {
     
-    debug_list->addItem ("done");
-    qApp->processEvents();
+  
+    status = true;
     file.close();
     reply->close();
+    qDebug() << "done"; 
+    
 }
 
 
@@ -89,8 +86,8 @@ void Filehandler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
     if (bytesTotal <= 0) {
         
         
-        debug_list->addItem("no data received... ");
-        qApp->processEvents();
+        qDebug() << "no data received... ";
+        emit no_data();
         return;
     }
    
@@ -100,9 +97,9 @@ void Filehandler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 void Filehandler::error(QNetworkReply::NetworkError code)
 {
    
+    status = false;
+    qDebug() << "error" << code;
     
-    debug_list->addItem(code + "                      ");
-    qApp->processEvents();
 
     
     
@@ -119,8 +116,8 @@ void Filehandler::wire(QNetworkReply* reply)
     connect(reply, &QNetworkReply::downloadProgress, this, &Filehandler::downloadProgress);
     connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &Filehandler::error);
     
-    debug_list->addItem("wiring...");
-    qApp->processEvents();
+   
+   
 
 
 }

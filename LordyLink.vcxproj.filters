@@ -58,6 +58,9 @@
     <ClCompile Include="UsbThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="QtSendDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -81,6 +84,9 @@
     <QtMoc Include="UsbThread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="QtSendDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h">
@@ -95,6 +101,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="QNoHardwareDialog.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="QtSendDialog.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

@@ -8,7 +8,7 @@
 #include <QSerialPortInfo>
 #include <QIODevice>
 #include <QDialog>
-#include "QNoHardwareDialog.h"
+
 
 
 using namespace std;
@@ -18,18 +18,25 @@ LordyLink::LordyLink(QWidget *parent)
     : QMainWindow(parent)
 {
     
-    usb_port = new SerialHandler;
     
+   
+    //setup gui
     ui.setupUi(this);
-    // model erzeugen
+    //create model
     model = new QStandardItemModel();
 
-    
+    //create directories for sets and firmware if they don't exist already
     QDir sets(QDir::homePath() + "/LordyLink/Sets");
     if (!sets.exists())
         sets.mkpath(".");
     
-    // read files from directory
+    QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
+    if (!firmware.exists())
+        firmware.mkpath(".");
+    
+    
+    
+    // read sets from directory
     home = QDir::homePath() + "/LordyLink/Sets";
     
     
@@ -44,43 +51,53 @@ LordyLink::LordyLink(QWidget *parent)
     }
     model->setHeaderData(0, Qt::Horizontal, QObject::tr("set name: "));
     
-    // Verbindung des models mit der View
+    //connect qtableview with model
     ui.dirView->setModel(model);
-    
+    // set column size
     for (int col = 0; col < model->rowCount(); col++)
     {
-        ui.dirView->setColumnWidth(col, 300);
+        ui.dirView->setColumnWidth(col, 320);
     }
     
-    // Slots verbinden
+   //connect slots
+    
+    //double click to rename
     QObject::connect(ui.dirView, SIGNAL(doubleClicked(const QModelIndex&)), SLOT(renameStart(const QModelIndex)));
-   
     QObject::connect(ui.dirView->model(), SIGNAL(itemChanged(QStandardItem*)), SLOT(renameEnd(QStandardItem*)));
-	QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(on_update_button()));
+    //single click to select item
+    QObject::connect(ui.dirView, SIGNAL(clicked(const QModelIndex&)), SLOT(selectItemToSend(const QModelIndex)));
+    //connect gui buttons
+   
+    QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(OnUpdateButton()));
+   
     QObject::connect(ui.saveSetButton, SIGNAL(clicked()), this, SLOT(OnGetSetButton()));
     QObject::connect(ui.sendSetButton, SIGNAL(clicked()), this, SLOT(OnSendSetButton()));
-    
+   
     
     ui.hardware_connected_label->setText("       ");
     ui.QInstallLabel->hide();
     ui.QInstallProgressBar->hide();
 	
+    
+    //GUI is only created if lordyphon is detected
+    //without lordyphon user is forced to quit 
+    
+    //create serial port
+    usb_port = new SerialHandler;
+    
     if (!usb_port->find_lordyphon_port()) {
-        QNoHardwareDialog* no_hardware = new QNoHardwareDialog;
+        dialog_no_hardware_found = new QNoHardwareDialog;
 
-        int ctr = 0;
-        
-        
-        
-        
+        int ctr = 0;  // alternates through different message boxes
         
         while (!usb_port->find_lordyphon_port()) {
             ui.hardware_connected_label->setText("Lordyphon disconnected");
-            no_hardware->setWindowTitle("Lordyphon not found!");
-            no_hardware->show();
-            
-            int hardware_dialog_code = no_hardware->exec();
+            dialog_no_hardware_found->setWindowTitle("Lordyphon not found!");
+            dialog_no_hardware_found->show();
+            // open dialog
+            int hardware_dialog_code = dialog_no_hardware_found->exec();
 
+            //no lordyphon => quit
             if (hardware_dialog_code == QDialog::Rejected)
                 exit(1);
 
@@ -88,7 +105,7 @@ LordyLink::LordyLink(QWidget *parent)
 
             if (ctr > 0 && !usb_port->find_lordyphon_port()) {
                 QMessageBox error;
-                error.setText("please connect Lordyphone and activate update mode.");
+                error.setText("please connect Lordyphone");
                 error.exec();
             }
             else {
@@ -111,54 +128,94 @@ LordyLink::LordyLink(QWidget *parent)
             usb_port->close_usb_port();
     }
     
+    //get 10 files from server
+    for (size_t version = 0; version < 10; ++version) {
+
+
+        Filehandler* filehandler = new Filehandler;
+        QString location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_firmware_V1.0" + QString::number(version) + ".hex";
+        QString file_path = QDir::homePath() + "/LordyLink/Firmware/lordyphon_firmware_V1.0";
+        QString path = file_path + QString::number(version) + ".txt";
+
+
+
+        filehandler->download(location, path);
+
+
+    }
+    
+    
+    
 }
 
 
 
 
-void LordyLink::on_update_button()
+void LordyLink::OnUpdateButton()
 {
+    
+    
+  
+    
+    
+    
+    
+    
+    
+    
+    
     usb_port->find_lordyphon_port();
     usb_port->open_lordyphon_port();
-    usb_port->lordyphon_update_call();
-   
-        
-    if (usb_port->lordyphon_update_call()) {
+  
+   if (usb_port->lordyphon_update_call()) {  //lordyphon has to be in update mode for this
         if (usb_port->clear_buffer())
             usb_port->close_usb_port();
         
-    
-
-        update.show();
+        update_dialog = new QUpdateDialog;
+        update_dialog->show();
         ui.QInstallLabel->hide();
         ui.QInstallProgressBar->hide();
 
-        int dialog_code = update.exec();
+        connect(update_dialog, SIGNAL(selected(QString)), this, SLOT(get_path(QString)));
+        
+        
+        int update_dialog_code = update_dialog->exec();
 
-        if (dialog_code == QDialog::Accepted) {
-            Worker* update_worker = new Worker;
+
+
+
+        if (update_dialog_code == QDialog::Accepted) {  //if update is confirmed, new thread is created
+            qDebug() << "path in lordylink "  << QDir::homePath() +"/LordyLink/Firmware/" + update_dialog->get_firmware_path();
+            QString path_to_selected_firmware = QDir::homePath() +"/LordyLink/Firmware/" + update_dialog->get_firmware_path();
+            Worker* update_worker = new Worker(path_to_selected_firmware, true);
             USBThread* update_thread = new USBThread;
+            //setup gui feedback
             ui.QInstallLabel->show();
-
             ui.QInstallProgressBar->show();
-            ui.QInstallProgressBar->valueChanged(0);
+            ui.QInstallProgressBar->valueChanged(0); //progress bar to zero
+            
             update_worker->moveToThread(update_thread);
 
             connect(update_thread, &QThread::started, update_worker, &Worker::update);
             connect(update_worker, &Worker::finished, update_thread, &QThread::quit);
             connect(update_worker, &Worker::finished, update_worker, &Worker::deleteLater);
             connect(update_thread, &QThread::finished, update_thread, &QThread::deleteLater);
+            //no gui operations in thread, worker signals send values to local slots
             connect(update_worker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
             connect(update_worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
             connect(update_worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+            //one message box to serve all threads
             connect(update_worker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+            //during threads "update", "getSet" and "sendSet" all pushbuttons are deactivated
             connect(update_worker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
+            //and reactivated when thread is finished
             connect(update_worker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
-            update_thread->start();
+            
+            update_thread->start(); 
         }
-    }
+    } //end: if(usb_port->lordyphon_update_call()) 
    
-    else {
+    else { //lordyphon is not in update mode
         QMessageBox info;
         info.setText("please activate update mode (power on with rec button pressed)");
         info.exec();
@@ -188,7 +245,7 @@ void LordyLink::OnGetSetButton()
         ui.QInstallProgressBar->show();
 
         getSetWorker->moveToThread(getSetThread);
-        connect(getSetWorker, SIGNAL(newItem(QString)), this, SLOT(refresh(QString)));
+        connect(getSetWorker, SIGNAL(newItem(QString)), this, SLOT(addNewSet(QString)));
         connect(getSetThread, &QThread::started, getSetWorker, &Worker::get_eeprom_content);
         connect(getSetWorker, &Worker::finished, getSetThread, &QThread::quit);
         connect(getSetWorker, &Worker::finished, getSetWorker, &Worker::deleteLater);
@@ -213,42 +270,63 @@ void LordyLink::OnGetSetButton()
 
 
     }
+    
 
 }
 
 
 void LordyLink::OnSendSetButton()
 {
-
+   
+    
     if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && !usb_port->lordyphon_update_call()) {
         if(usb_port->clear_buffer())
             usb_port->close_usb_port();
 
+        
+       
 
+       
 
+       
 
-        ui.QInstallProgressBar->reset();
+        if (selected_set != "") {
+            QtSendDialog* send_dialog = new QtSendDialog;
+            send_dialog->show();
+            int send_dialog_code = send_dialog->exec();
+            
+            if (send_dialog_code == QDialog::Accepted) {
+                ui.QInstallProgressBar->reset();
+                qDebug() << "constructor path: " << selected_set;
+                Worker* sendSetWorker = new Worker(selected_set);  //hand path to selected item to constructor
 
-        Worker* sendSetWorker = new Worker;
+                USBThread* sendSetThread = new USBThread;
+                ui.QInstallLabel->setText("sending file");
+                ui.QInstallLabel->show();
+                ui.QInstallProgressBar->show();
 
-        USBThread* sendSetThread = new USBThread;
-        ui.QInstallLabel->setText("sending file");
-        ui.QInstallLabel->show();
-        ui.QInstallProgressBar->show();
+                sendSetWorker->moveToThread(sendSetThread);
 
-        sendSetWorker->moveToThread(sendSetThread);
+                connect(sendSetThread, &QThread::started, sendSetWorker, &Worker::send_eeprom_content);
+                connect(sendSetWorker, &Worker::finished, sendSetThread, &QThread::quit);
+                connect(sendSetWorker, &Worker::finished, sendSetWorker, &Worker::deleteLater);
+                connect(sendSetThread, &QThread::finished, sendSetThread, &QThread::deleteLater);
+                connect(sendSetWorker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+                connect(sendSetWorker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+                connect(sendSetWorker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+                connect(sendSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+                connect(sendSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
+                connect(sendSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
+                sendSetThread->start();
+            }
 
-        connect(sendSetThread, &QThread::started, sendSetWorker, &Worker::send_eeprom_content);
-        connect(sendSetWorker, &Worker::finished, sendSetThread, &QThread::quit);
-        connect(sendSetWorker, &Worker::finished, sendSetWorker, &Worker::deleteLater);
-        connect(sendSetThread, &QThread::finished, sendSetThread, &QThread::deleteLater);
-        connect(sendSetWorker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-        connect(sendSetWorker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-        connect(sendSetWorker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-        connect(sendSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
-        connect(sendSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
-        connect(sendSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
-        sendSetThread->start();
+        }
+        else {
+            QMessageBox info;
+            info.setText("select a set");
+            info.exec();
+        }
+
     }
     else {
 
@@ -302,3 +380,62 @@ void LordyLink::OnDeactivateButtons()
 
 
 }
+void LordyLink::addNewSet(QString filename)
+{
+
+
+    QStandardItem* itemname = new QStandardItem(filename);
+    itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
+
+    model->appendRow(QList<QStandardItem*>() << itemname);
+    model->setHeaderData(0, Qt::Horizontal, QObject::tr("saved sets: "));
+
+    for (int col = 0; col < model->rowCount(); col++)
+    {
+        ui.dirView->setColumnWidth(col, 320);
+    }
+
+}
+
+void LordyLink::renameStart(const QModelIndex mindex)
+{
+    // alter Filename bestimmen
+    oldName = ui.dirView->model()->index(mindex.row(), 0).data().toString();
+    qDebug() << "DoubleClicked: " << oldName;
+
+
+
+}
+void LordyLink::renameEnd(QStandardItem* item) 
+{
+    
+   
+    // neuen Filenamen bestimmen
+    qDebug() << item->text();
+    // Datei umbenennen
+    QString newname = QDir::homePath() + "/LordyLink/Sets/" + item->text();
+    
+    if (!newname.contains(".txt"))
+        newname += ".txt";
+    
+    
+    QFile::rename(QDir::homePath() + "/LordyLink/Sets/" + oldName , newname);  // neuen Filenamen bestimmen
+    
+
+
+
+}
+
+void LordyLink::selectItemToSend(const QModelIndex mindex)
+{
+
+
+    selected_set = ui.dirView->model()->index(mindex.row(), 0).data().toString();
+ 
+    
+
+
+}
+
+
+

@@ -15,16 +15,19 @@
 #include <String>
 #include <QDebug>
 #include <QSerialPort.h>
-#include<QIODevice.h>
+#include <QIODevice.h>
 #include <QProgressBar>
-#include "Filehandler.h"
+
 #include "Parser.h"
 #include "Serial.h"
 #include "QUpdateDialog.h"
+#include "filehandler.h"
+#include "QtSendDialog.h"
 #include "UsbThread.h"
-#include <qscopedpointer.h>
+#include "QNoHardwareDialog.h"
 #include <QStandardItemModel>
 #include <QDir>
+#include <QModelIndex>
 
 
 
@@ -69,40 +72,21 @@ public slots:
     }
     
     
-    void on_update_button();
-   
+    void OnUpdateButton();
     void OnGetSetButton();
-    
     void OnSendSetButton();
-    
     void OnRemoteMessageBox(QString message);
-    
     void OnActivateButtons();
-    
     void OnDeactivateButtons();
-    
-    void refresh(QString filename)
+    void addNewSet(QString filename);
+    void renameStart(const QModelIndex);
+    void renameEnd(QStandardItem*);
+    void selectItemToSend(const QModelIndex mindex);
+    void get_path(QString path)
     {
-        
-        
-      QStandardItem* itemname = new QStandardItem(filename);
-      itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
-      
-      
-      
-      model->appendRow(QList<QStandardItem*>() << itemname);
-      model->setHeaderData(0, Qt::Horizontal, QObject::tr("saved sets: "));
-      
-      for (int col = 0; col < model->rowCount(); col++)
-      {
-          ui.dirView->setColumnWidth(col, 300);
-      }
-   
-    }
-   
-    //void renameStart(const QModelIndex);
-    //void renameEnd(QStandardItem*);
 
+        firmware_path = path;
+    }
     
 
 private:
@@ -113,14 +97,17 @@ private:
     SerialHandler* usb_port;
     
    
-    //void error_message_box(const char* message);
-    std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/lordyphon_proto.txt";
     
-    QUpdateDialog update;
-
-    QStandardItemModel* model;
+   
+    
+    QUpdateDialog* update_dialog;
+    QNoHardwareDialog* dialog_no_hardware_found = nullptr;
+    Filehandler* filehandler = nullptr;
+    QStandardItemModel* model = nullptr;
     QString home;
     QString oldName;
+    QString selected_set;
+    QString firmware_path;
    
 };
 

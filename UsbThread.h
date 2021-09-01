@@ -4,6 +4,7 @@
 #include <QWaitCondition>
 #include "Parser.h"
 #include "Serial.h"
+#include "Filehandler.h"
 #include <QProgressBar>
 #include <qfile.h>
 #include <QString>
@@ -39,6 +40,12 @@ class Worker : public QObject {
 	Q_OBJECT
 
 public:
+	Worker(){} // default
+	
+	Worker(QString path):selected_set(path){}  //ctor for send set
+	
+	Worker(QString path, bool status): selected_firmware(path){}    //ctor for firmware update
+
 	
 	
 
@@ -46,6 +53,7 @@ public slots:
 	void update();
 	void get_eeprom_content();
 	void send_eeprom_content();
+	
 
 signals:
 	void ProgressBar_valueChanged(int val);
@@ -60,17 +68,20 @@ signals:
 
 private:
 	
-	Parser* parser;
-	SerialHandler* usb;
+	Parser* parser = nullptr;
+	Filehandler* filehandler = nullptr;
+	SerialHandler* usb = nullptr;
 	QString lordyphon_portname;
 	QString status;
 	size_t progress = 0;
 	QString Message;
-	//std::string path = "C:/Users/trope/OneDrive/Desktop/Neuer Ordner/";
-	//std::string Filename = "sram_content.txt";
+	QString selected_set;
 	
 	QFile sram_content;
 	QString set_dir;
+	QString selected_firmware;
+	
+	int version = 0;
 
 
 	inline void delay(int millisecondsWait)
@@ -82,4 +93,4 @@ private:
 		loop.exec();
 	}
 	
-};
+}; 

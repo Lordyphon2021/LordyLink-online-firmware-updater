@@ -22,6 +22,11 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <family>Lucida Sans Typewriter</family>
+    </font>
+   </property>
    <property name="text">
     <string>try again</string>
    </property>
@@ -34,6 +39,11 @@
      <width>141</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Lucida Sans Typewriter</family>
+    </font>
    </property>
    <property name="text">
     <string>quit</string>
