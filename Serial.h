@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QBuffer>
 
+//WRAPPER FOR QSERIALPORT
 
 class SerialHandler : public QObject
 {
@@ -19,35 +20,26 @@ public:
 	
 	SerialHandler( QObject* parent = nullptr );
 	bool find_lordyphon_port();
-	void dump_baud_rate();
-	
 	bool open_lordyphon_port();
 	bool lordyphon_handshake();
 	bool write_serial_data(const QByteArray& tx_data);
-	bool port_at_end();
-	void wait_for_ready_read(int timeout);
+	void wait_for_ready_read(int timeout)const;
 	bool lordyphon_update_call();
 	bool lordyphon_port_is_open();
 	void close_usb_port();
-	void wire();
-	void set_buffer_size(qint64 size);
+	void set_buffer_size(qint64 size)const;
 	bool clear_buffer();
-	
-		QByteArray& getInputBuffer()
-	{
-		
-		return input_buffer;
-	}
+	QByteArray& getInputBuffer(){ return input_buffer; }
 	
 signals:
 	
-	void device_not_found();
+	
 	
 
 public slots:
 
 	void onReadyRead();
-	void onUsbError();
+	
 	
 
 private:
@@ -56,10 +48,15 @@ private:
 	
 	QString lordyphon_portname;
 	QByteArray input_buffer = 0;
+	//HANDSHAKE CALL
 	const QByteArray hand_shake_tx_phrase = "!c++ is great!   ";
+	//HANDSHAKE RESPONSE
 	const QByteArray hand_shake_rx_phrase = "YES!";
+	//UPDATE MODE CALL
 	const QByteArray update_tx_phrase = "update";
+	//UPDATE MODE RESPONSE
 	const QByteArray update_rx_phrase_y = "sure";
+	//UPDATE MODE RESPONSE
 	const QByteArray update_rx_phrase_n = "nope";
 
 };

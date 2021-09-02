@@ -68,9 +68,6 @@ public:
 			}
 			data_file.close();
 		}
-		
-
-		
 	}
 	
 	

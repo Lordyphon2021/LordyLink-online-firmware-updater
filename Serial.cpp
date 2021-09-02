@@ -1,13 +1,18 @@
 #include "Serial.h"
 
+
+
+//WRAPPER CLASS FOR QSERIALPORT
+
+
 SerialHandler::SerialHandler(QObject* parent)
 	: QObject(parent)
 {
 	lordyphon_port = new QSerialPort(this);
 	lordyphon_port->setReadBufferSize(10);
 	QObject::connect(lordyphon_port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-	QObject::connect(lordyphon_port, SIGNAL(QSerialPort::errorOccurred()), this, SLOT(QSerialPort::SerialPortError error()const));
-	QObject::connect(lordyphon_port, SIGNAL(device_not_found()), this, SLOT(onUsbError()));
+	//QObject::connect(lordyphon_port, &QSerialPort::errorOccurred, QSerialPort::SerialPortError error()const);
+	//mit den qt error meldungen hab ich noch so meine probleme...
 }
 
 
@@ -17,22 +22,22 @@ bool SerialHandler::find_lordyphon_port()
 	
 	foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts())
 	{
-		if (info.manufacturer() == "FTDI") {
-			lordyphon_portname = info.portName();
+		if (info.manufacturer() == "FTDI") {  //this in't enough for identification, I have no vendor ID
+			lordyphon_portname = info.portName();  //handshake will confirm lordyphon ID
 			found = true;
 			break;
 		}
 		else {
 			found = false;
-			emit device_not_found();
+			
 		}
 	}
 	return found;
 }
 
-bool SerialHandler::open_lordyphon_port()
+bool SerialHandler::open_lordyphon_port()// open connection with correect port name
 {
-	lordyphon_port->setPortName(lordyphon_portname);	// open connection with correect port name
+	lordyphon_port->setPortName(lordyphon_portname);	
 	lordyphon_port->open(QIODevice::OpenMode(QIODevice::ReadWrite));
 	lordyphon_port->setBaudRate(QSerialPort::Baud57600);
 	lordyphon_port->setDataBits(QSerialPort::Data8);
@@ -47,76 +52,69 @@ bool SerialHandler::open_lordyphon_port()
 	
 }
 	
-void SerialHandler::dump_baud_rate()
-{
-	if(lordyphon_port->isOpen())
-		lordyphon_port->setBaudRate(QSerialPort::Baud9600);
-
-}
-bool SerialHandler::clear_buffer()
-{
-
-	return lordyphon_port->clear();
+//DON'T KNOW IF THIS REALLY DOES SOMETHING, BUT THE WHOLE THING FEELS LESS GLITCHY
+bool SerialHandler::clear_buffer() { return lordyphon_port->clear(); } 
 
 
-}
+//CLOSE PORT AFTER ACTION, THERE CAN ONLY BE ONE LORDYPHON PORT
+void SerialHandler::close_usb_port(){ lordyphon_port->close(); }
 
 
 
-void SerialHandler::close_usb_port()
-{
-	lordyphon_port->close();
-}
 
-void SerialHandler::onReadyRead()
-{
-	input_buffer = lordyphon_port->read(lordyphon_port->readBufferSize());
-}
-
-void SerialHandler::set_buffer_size(qint64 size)
+//ADJUST BUFFERSIZE TO MATCH EXPECTED MESSAGE SIZE
+void SerialHandler::set_buffer_size(qint64 size)const
 {
 	lordyphon_port->setReadBufferSize(size);
 }
 
 bool SerialHandler::write_serial_data(const QByteArray& tx_data) 
 {
-
 	if (lordyphon_port->isOpen()) {
-		
 		lordyphon_port->write(tx_data);
 		
 		if(lordyphon_port->waitForBytesWritten())
 			return true;
 	}
-	//emit device_not_found();
 	return false;
-
 }
 
-void SerialHandler::wait_for_ready_read(int timeout)
+
+//BLOCKING FUNCTION, WAITS UNTIL BUFFER IS FULL OR UNTIL TIMEOUT (MS)
+//TIMEOUT -1 => WAITS FOREVER
+//EMITS SIGNAL WHEN IT'S DONE
+
+void SerialHandler::wait_for_ready_read(int timeout)const  
 {
 	lordyphon_port->waitForReadyRead(timeout);
 }
 
 
-		
+//CATCHES SIGNAL OF wait_for_ready_read, READS BUFFER SIZE
+void SerialHandler::onReadyRead()
+{
+	input_buffer = lordyphon_port->read(lordyphon_port->readBufferSize());
+}
+
+//FINAL IDENTIFICATION INSTEAD OF CHECKING VENDOR ID		
 bool SerialHandler::lordyphon_handshake()
 {		
-	
 	while(!lordyphon_port->isOpen())
-		;
+		;  //wait till port is open (might take a couple of ms)
 		
-	write_serial_data(hand_shake_tx_phrase);
+	write_serial_data(hand_shake_tx_phrase); //call
 	wait_for_ready_read(1000);
 		
 		
-	if (input_buffer == hand_shake_rx_phrase) 
+	if (input_buffer == hand_shake_rx_phrase) //check response
 		return true;
 	else
 		
 	
 	return false;
 }
+
+//CHECK WHETHER LORDYPHON IS IN UPDATE MODE
 bool SerialHandler::lordyphon_update_call()
 {
 
@@ -134,9 +132,9 @@ bool SerialHandler::lordyphon_update_call()
 		return false;
 	
 	else {
-		emit device_not_found();
+		
 		QMessageBox error;
-		error.setText("update response not valid");
+		error.setText("rx error, please try again");
 		error.exec();
 		
 		return false;
@@ -144,24 +142,15 @@ bool SerialHandler::lordyphon_update_call()
 	}
 }
 
-
+//CHECK IF OPEN
 bool SerialHandler::lordyphon_port_is_open()
 {
 	if(lordyphon_port->isOpen())
 		return true;
 	
 	else {
-		emit device_not_found();
+		
 		return false;
 	}
 }
 
-void SerialHandler::onUsbError()
-{
-
-	QMessageBox error;
-	error.setText("lordyphon disconnected");
-	error.exec();
-
-
-}

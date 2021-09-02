@@ -86,7 +86,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Filehandler.cpp" />
+    <ClCompile Include="Downloader.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="QNoHardwareDialog.cpp" />
     <ClCompile Include="QtSendDialog.cpp" />
@@ -105,7 +105,7 @@
     <QtUic Include="QUpdateDialog.ui" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Filehandler.h" />
+    <QtMoc Include="Downloader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

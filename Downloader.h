@@ -17,16 +17,8 @@ class Downloader : public QObject
 public:
     Downloader(QObject* parent = nullptr);
     
+void download(QString location, QString path); //main method
     
-    void download(QString location, QString path);
-    
-    
-
-
-
-
-   
-
 signals:
     void no_data();
     void download_finished();

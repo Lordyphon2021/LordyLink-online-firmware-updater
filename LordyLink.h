@@ -20,13 +20,14 @@
 #include "Parser.h"
 #include "Serial.h"
 #include "QUpdateDialog.h"
-#include "filehandler.h"
+#include "Downloader.h"
 #include "QtSendDialog.h"
 #include "UsbThread.h"
 #include "QNoHardwareDialog.h"
 #include <QStandardItemModel>
 #include <QDir>
 #include <QModelIndex>
+
 
 
 
@@ -43,54 +44,42 @@ public:
     Ui::LordyLinkClass ui;
     
 signals:
+    void rightMouseButtonClicked();
     
 public slots:
-   
+    //MAIN FEATURES
     void OnUpdateButton();
     void OnGetSetButton();
     void OnSendSetButton();
-    
+    //Set QTableView
     void addNewSet(QString filename);
     void renameStart(const QModelIndex);
     void renameEnd(QStandardItem*);
     void selectItemToSend(const QModelIndex mindex);
-    
+   
+    //GUI Feedback
     void ProgressBar_OnValueChanged(int val) { ui.QInstallProgressBar->setValue(val); }
     void ProgressBar_OnsetMax(int val) { ui.QInstallProgressBar->setMaximum(val); }
     void OnsetLabel(QString message){ ui.QInstallLabel->setText(message); }
-    
-    
-   
-   
-    
-    
-    void OnRemoteMessageBox(QString message);
     void OnActivateButtons();
     void OnDeactivateButtons();
-   
     void activate_install_button(){ ui.Q_UpdateLordyphonButton->setEnabled(true); }
-    
+    //HELPER
     void set_firmware_path_from_dialog(QString path){ firmware_path = path; }
-    
+    void OnRemoteMessageBox(QString message);
+   
 
 private:
     
-   
-    
-    
-    SerialHandler* usb_port;
-    
-   
-    
-   
-    
-    QUpdateDialog* update_dialog;
+    SerialHandler* usb_port = nullptr;
+    QUpdateDialog* update_dialog = nullptr;
     QNoHardwareDialog* dialog_no_hardware_found = nullptr;
     Downloader* filehandler = nullptr;
     QStandardItemModel* model = nullptr;
     QString home;
     QString oldName;
     QString selected_set;
+   
     QString firmware_path;
 
     inline void delay(int millisecondsWait)

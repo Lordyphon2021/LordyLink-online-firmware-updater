@@ -4,7 +4,8 @@
 #include <QApplication>
 
 
-//this class accepts extracted elements of intel hexfile or any uint8_t data vector and its corresponding checksum.
+//this helper class accepts extracted elements of intel hexfile 
+//or any QByteArray and its corresponding checksum.
 
 class ChecksumValidator 
 {
@@ -17,22 +18,16 @@ private:
 	uint8_t checksum_from_file;
 	
 	
-	
-
 public:
 	// data vec: complete record without checksum
 	void set_Data(const QByteArray& _data_vec, char _checksum_from_file) 
-		
 	{
 		data_vec = _data_vec;
 		checksum_from_file = _checksum_from_file;
-
 	}
 	
 
 	bool is_valid()  
-					 
-					
 	{
 		data_vec.remove(0, 1); // remove header ':' for calculation
 		uint32_t vec_sum = std::accumulate(data_vec.begin(), data_vec.end(), 0);

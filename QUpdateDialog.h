@@ -37,14 +37,10 @@ signals:
 
 private:
 	Ui::QUpdateDialog ui;
+	
 	void download_firmware();
+	
 	QStandardItemModel* model;
 	QString selected_firmware;
-	
-	
-	
-
-
-	
 	
 };

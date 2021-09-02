@@ -7,7 +7,7 @@
 
 
 #include "LordyLink.h"
-#include "Filehandler.h"
+
 
 
 #include <QtWidgets/QApplication>

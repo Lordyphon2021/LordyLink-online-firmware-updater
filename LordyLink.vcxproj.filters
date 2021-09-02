@@ -40,7 +40,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Filehandler.cpp">
+    <ClCompile Include="Downloader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Parser.cpp">
@@ -66,7 +66,7 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Filehandler.h">
+    <QtMoc Include="Downloader.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="QUpdateDialog.h">

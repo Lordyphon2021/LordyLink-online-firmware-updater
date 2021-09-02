@@ -28,7 +28,7 @@
     </font>
    </property>
    <property name="text">
-    <string>lordyphon will be overwritten. do you want to proceed?</string>
+    <string>lordyphon memory will be overwritten. do you want to proceed?</string>
    </property>
   </widget>
   <widget class="QWidget" name="horizontalLayoutWidget">

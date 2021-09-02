@@ -8,9 +8,10 @@ using namespace std;
 
 
 //this method iterates through the hexfile-string-vector, (if record checksum is valid) 
-// extracts all elements to user defined type "RecordElements",
-//creates a std::vector<RecordElements>
-//from which the serial data can be retrieved via transmit-method without losing its corresponding metadata.
+// extracts all records to QVector<QByteArray> hexfile_data_vec, getter method is used
+//in worker class to send records to the microcontroller
+
+
 //----all values hexadecimal----
 
 
@@ -47,23 +48,20 @@ bool Parser::parse_hex()
 
 
 		}
-		
-		
-		
 		for (auto it : hex_file_vec) {
-			string std_it = it.toStdString();  //todo: convert parser to QT data types
+			string std_it = it.toStdString(); 
 			//parse string to individual elements
-			
-			
 			size_t len = 2;
 			//parse string to individual elements
 			string substr = std_it.substr(1, 2);
 			string pre = "0x";
 			string full_nib = pre + substr;
-			
+			/*
+			hier passiert etwas kurioses:
+			stoi() benötigt für den record-type den prefix "0x", um korrekte hexvalues auszugeben,
+			in der data-section ist es aber nicht notwendig. noch keine erklärung dafür gefunden.
+			*/
 			nibbles_in_data_section = static_cast<uint8_t>(stoi(full_nib, nullptr, 16));
-			
-			
 			
 			substr = std_it.substr(7, 2);
 			string full_rec_type = pre + substr;
@@ -71,13 +69,10 @@ bool Parser::parse_hex()
 			record_type = stoi(full_rec_type, nullptr, 16);
 			
 			
-			
-			
-			
 			if (record_type == 0x01) {  //exit condition (EOF), final record will not be parsed
 				return true;
 			}
-			else if (record_type == 0x03) {
+			else if (record_type == 0x03) { //this record type indicates that hexfile is bigger than 64kB
 				QMessageBox error;
 				error.setText("file too big!");
 				error.exec();
@@ -88,10 +83,6 @@ bool Parser::parse_hex()
 			
 			substr = std_it.substr(3, 4);
 			string full_address = pre + substr;
-			
-			
-			
-			
 			
 			address = static_cast<uint16_t>(stoi(full_address, nullptr, 16));
 			checksum_from_file = stoi(std_it.substr(9 + (nibbles_in_data_section * 2), 2), nullptr, 16);
@@ -108,10 +99,7 @@ bool Parser::parse_hex()
 				temp_data_vec.push_back(static_cast<char>(stoi(std_it.substr((9 + rec_pos), 2), nullptr, 16)));
 			
 			
-			
-			
-
-			//hand data to checksum validator
+			//hand data to checksum validator class
 			checksum_calculated.set_Data(temp_data_vec, checksum_from_file ); // data_vec without checksum
 			
 			if (checksum_calculated.is_valid()) {
@@ -119,7 +107,7 @@ bool Parser::parse_hex()
 				//add checksum to temp record vector
 				temp_data_vec.push_back(checksum_from_file); 
 				//add temp record to hexfile vec
-				hexfile_data_vec.push_back(temp_data_vec);
+				hexfile_data_vec.push_back(temp_data_vec); //THIS IS THE FINAL DATA CONTAINER
 			}
 			else {
 				QMessageBox error;
@@ -130,12 +118,10 @@ bool Parser::parse_hex()
 
 			//clear temp record for next iteration
 			temp_data_vec.clear();
-			
-			
+		
+		}//end: for (auto it : hex_file_vec) {
 
-		}
-
-	}
+	}//end: try
 	catch (exception& e) { 
 
 		qDebug() << e.what();
@@ -147,43 +133,26 @@ bool Parser::parse_hex()
 	}
 }
 
+//this method extracts data from saved set files
+
 bool Parser::parse_eeprom()
 {
-	
-	//std::vector<QString>eeprom_file_vec;  // filled with lordyphon set data
-	
-	
-	
-	
-	
-	
 	try {
 
 		
 		if (eeprom_file_vec.size() == 0) {
-			//QMessageBox error;
-			//error.setText("set file empty");
-			//error.exec();
 			qDebug() << "file empty";
 			return false;
-
-
 		}
-
-
-
 		for (auto it : eeprom_file_vec) {
-			string std_it = it.toStdString();  //todo: convert parser to QT data types
-			//parse string to individual bytes
-			//qDebug() << it;
-			
-			
+			string std_it = it.toStdString();   // no time to learn QString substring...
+	
 			for (size_t rec_pos = 0; rec_pos < 32; rec_pos += 2) {
 				
 				set_serial_data_array.push_back(static_cast<char>(stoi(std_it.substr((0 + rec_pos), 2), nullptr, 16)));
 			}
-			//qDebug() << set_serial_data_array;
-			eeprom_data_vec.push_back(set_serial_data_array);
+			
+			eeprom_data_vec.push_back(set_serial_data_array); //FINAL EEPROM DATA CONTAINER
 			set_serial_data_array.clear();
 		
 		}
@@ -193,10 +162,6 @@ bool Parser::parse_eeprom()
 	catch (exception& e) {
 
 		qDebug() << e.what();
-		//QMessageBox error;
-		//error.setText("parser error");
-		//error.exec();
-
 		return false;
 	}
 

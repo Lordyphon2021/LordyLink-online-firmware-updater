@@ -71,6 +71,7 @@ LordyLink::LordyLink(QWidget *parent)
     QObject::connect(ui.dirView->model(), SIGNAL(itemChanged(QStandardItem*)), SLOT(renameEnd(QStandardItem*)));
     //single click to select item and copy path
     QObject::connect(ui.dirView, SIGNAL(clicked(const QModelIndex&)), SLOT(selectItemToSend(const QModelIndex)));
+   
     //connect gui buttons
     QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(OnUpdateButton()));
     QObject::connect(ui.saveSetButton, SIGNAL(clicked()), this, SLOT(OnGetSetButton()));
@@ -405,6 +406,7 @@ void LordyLink::selectItemToSend(const QModelIndex mindex)
 {
     selected_set = ui.dirView->model()->index(mindex.row(), 0).data().toString();
 }
+
 
 
 
