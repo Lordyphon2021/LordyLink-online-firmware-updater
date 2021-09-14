@@ -35,7 +35,7 @@ bool SerialHandler::find_lordyphon_port()
 	return found;
 }
 
-bool SerialHandler::open_lordyphon_port()// open connection with correect port name
+bool SerialHandler::open_lordyphon_port()// open connection with correct port name
 {
 	lordyphon_port->setPortName(lordyphon_portname);	
 	lordyphon_port->open(QIODevice::OpenMode(QIODevice::ReadWrite));
@@ -108,9 +108,7 @@ bool SerialHandler::lordyphon_handshake()
 		
 	if (input_buffer == hand_shake_rx_phrase) //check response
 		return true;
-	else
-		
-	
+
 	return false;
 }
 
@@ -148,9 +146,6 @@ bool SerialHandler::lordyphon_port_is_open()
 	if(lordyphon_port->isOpen())
 		return true;
 	
-	else {
-		
-		return false;
-	}
+	return false;
 }
 

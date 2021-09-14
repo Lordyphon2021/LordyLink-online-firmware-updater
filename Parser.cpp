@@ -22,9 +22,8 @@ bool Parser::parse_hex()
 	size_t nibbles_in_data_section = 0x00;	//how many nibbles (2 nibbles == 1 byte) are in record
 	char record_type = 0x00;				//type of data in data-section
 	uint16_t address = 0x0000;				//address-offset for flash-memory of microcontroller
-	char checksum_from_file = 0x00;		//8-bit checksum at end of record
+	char checksum_from_file = 0x00;		    //8-bit checksum at end of record
 	uint32_t start_bytes_sum = 0x00;		//bytewise sum of all elements except start byte and checksum, used for checksum verification
-	//exception e;
 	ChecksumValidator checksum_calculated;
 
 	

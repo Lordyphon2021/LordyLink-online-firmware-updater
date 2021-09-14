@@ -22,7 +22,10 @@ LordyLink::LordyLink(QWidget *parent)
 {
     
     //setup gui
+
     ui.setupUi(this);
+    
+    
     ui.Q_UpdateLordyphonButton->setDisabled(true);
     //create model
     model = new QStandardItemModel();
@@ -124,7 +127,7 @@ LordyLink::LordyLink(QWidget *parent)
             }
 
         }//end: while (!usb_port->find_lordyphon_port())
-
+        
             
     }//lordyphon was connected from the start
     else if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && usb_port->lordyphon_handshake()) {
@@ -134,86 +137,110 @@ LordyLink::LordyLink(QWidget *parent)
     }
     
     
-    //assume that there are 10 different versions on the ftp server, try and load all, filehandler will delete empty files
+    
+    
+    //assume that there are 10 different versions on the ftp server, try and load all, downloader will delete empty files
     //this might seem a bit clumsy but I couldn't find a way to get the ftp directory list with QT
     //(QFtp class is now obsolete)
-    for (size_t i = 0; i < 10; ++i) {
-        Downloader* download_from_ftp = new Downloader;
-        connect(download_from_ftp, SIGNAL(download_finished()), this, SLOT(activate_install_button())); 
-        //set up proper paths for downloader
-        QString location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_firmware_V1.0" + QString::number(i) + ".hex";
-        QString path_first_part = QDir::homePath() + "/LordyLink/Firmware/lordyphon_firmware_V1.0"; //this is only part of the name
-        QString path_complete = path_first_part + QString::number(i) + ".txt"; //version number added here...
-        download_from_ftp->download(location, path_complete);  //pass to method
-    }// it's rather slow but it works.
+   
+    try_download();
+    download_timer = new QTimer(this);
+    connect(download_timer, SIGNAL(timeout()), this, SLOT(try_download()));
+    download_timer->start(20000);
+    
+   
+   
  }
 
 
 
  //"update firmware" button opens dialog, where all available releases are displayed in a QTableView window.
- // path to selected version will be passed to the parser class (in update_thread)
+ //path to selected version will be passed to the parser class via signal (in update_thread)
  //where it will be checked for validity and checksum errors (a line of a hexfile is called record)
  //and then stored in a container of plain record data vectors (std::vector<QByteArray>)
  //from which the data section will be transfered to lordyphon, one record at a time.
  //if lordyphon confirms correct checksum, next record will be sent until EOF.
- // -detailed error handling explained in parser class / update_worker...
+ // -error handling explained in parser class / update_worker...
  //when transmission is ok, lordyphon burns the data into the application section of its flash memory.
  //user is prompted to restart lordyphon
 void LordyLink::OnUpdateButton()
 {
-    usb_port->find_lordyphon_port();
-    usb_port->open_lordyphon_port();
-  
-   if (usb_port->lordyphon_update_call()) {  //lordyphon has to be in update mode for this, different response
-        if (usb_port->clear_buffer())       //than regular handshake
-            usb_port->close_usb_port();
-        
-        update_dialog = new QUpdateDialog;
-        update_dialog->show();
-        ui.QInstallLabel->hide();
-        ui.QInstallProgressBar->hide();
-        //pass path to firmware version as QString from update dialog
-        connect(update_dialog, SIGNAL(selected_version(QString)), this, SLOT(set_firmware_path_from_dialog(QString)));
-        int update_dialog_code = update_dialog->exec(); //evaluate dialog result
-        
-        if (update_dialog_code == QDialog::Accepted) {  //if update is confirmed, new thread is created
-           //assemble path string with selected firmware version from dialog
-            QString path_to_selected_firmware = QDir::homePath() +"/LordyLink/Firmware/" + update_dialog->get_firmware_version();
-            Worker* update_worker = new Worker(path_to_selected_firmware, true); //the boolean is a dummy to have a dedicated ctor for this
-            USBThread* update_thread = new USBThread;
-            //setup gui feedback
-            ui.QInstallLabel->show();
-            ui.QInstallProgressBar->show();
-            ui.QInstallProgressBar->valueChanged(0); //progress bar to zero
-            //worker class contains most of lordylink business logic 
-            update_worker->moveToThread(update_thread);
-            //setup signals and slots
-            //QT does cleanup when thread is finished
-            connect(update_thread, &QThread::started, update_worker, &Worker::update);
-            connect(update_worker, &Worker::finished, update_thread, &QThread::quit);
-            connect(update_worker, &Worker::finished, update_worker, &Worker::deleteLater);
-            connect(update_thread, &QThread::finished, update_thread, &QThread::deleteLater);
-            //no GUI operations in thread, worker signals send GUI values to local slots
-            connect(update_worker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-            connect(update_worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-            connect(update_worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-            //one message box to serve all threads
-            connect(update_worker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
-            //during threads "update", "getSet" and "sendSet" all pushbuttons are deactivated
-            connect(update_worker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
-            //and reactivated when thread is finished
-            connect(update_worker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
+    //exception e;
+    
+    
+    try {
+
+        if(usb_port->find_lordyphon_port())
+            usb_port->open_lordyphon_port();
+
+        else {
             
-            update_thread->start(); 
+            throw runtime_error("Lordyphon not connected");
+
+
         }
-    }//end: if(usb_port->lordyphon_update_call()) 
-   
-    else { //lordyphon is not in update mode
-        QMessageBox info;
-        info.setText("please activate update mode (power on with rec button pressed)");
-        info.exec();
-        if (usb_port->clear_buffer())
-            usb_port->close_usb_port();
+
+        if (usb_port->lordyphon_update_call()) {  //lordyphon has to be in update mode for this, different response
+            ui.hardware_connected_label->setText("Lordyphon updater on");
+            if (usb_port->clear_buffer())       //than regular handshake
+                usb_port->close_usb_port();
+
+            update_dialog = new QUpdateDialog;
+            update_dialog->show();
+            ui.QInstallLabel->hide();
+            ui.QInstallProgressBar->hide();
+            //pass path to firmware version as QString from update dialog
+            connect(update_dialog, SIGNAL(selected_version(QString)), this, SLOT(set_firmware_path_from_dialog(QString)));
+            int update_dialog_code = update_dialog->exec(); //evaluate dialog result
+
+            if (update_dialog_code == QDialog::Accepted) {  //if update is confirmed, new thread is created
+               //assemble path string with selected firmware version from dialog
+                QString path_to_selected_firmware = QDir::homePath() + "/LordyLink/Firmware/" + update_dialog->get_firmware_version();
+                Worker* update_worker = new Worker(path_to_selected_firmware, true); //the boolean is a dummy to have a dedicated ctor for this
+                USBThread* update_thread = new USBThread;
+                //setup gui feedback
+                ui.QInstallLabel->show();
+                ui.QInstallProgressBar->show();
+                ui.QInstallProgressBar->valueChanged(0); //progress bar to zero
+                //worker class contains most of lordylink business logic 
+                update_worker->moveToThread(update_thread);
+                //setup signals and slots
+                //QT does cleanup when thread is finished
+                connect(update_thread, &QThread::started, update_worker, &Worker::update);
+                connect(update_worker, &Worker::finished, update_thread, &QThread::quit);
+                connect(update_worker, &Worker::finished, update_worker, &Worker::deleteLater);
+                connect(update_thread, &QThread::finished, update_thread, &QThread::deleteLater);
+                //no GUI operations in thread, worker signals send GUI values to local slots
+                connect(update_worker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+                connect(update_worker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+                connect(update_worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+                //one message box to serve all threads
+                connect(update_worker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+                //during threads "update", "getSet" and "sendSet" all pushbuttons are deactivated
+                connect(update_worker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
+                //and reactivated when thread is finished
+                connect(update_worker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
+
+                update_thread->start();
+            }
+        }//end: if(usb_port->lordyphon_update_call()) 
+       
+        else { //lordyphon is not in update mode
+            QMessageBox info;
+            info.setText("please activate update mode (power on with rec button pressed)");
+            ui.hardware_connected_label->setText("Lordyphon updater off");
+            info.exec();
+            if (usb_port->clear_buffer())
+                usb_port->close_usb_port();
+        }
+    }
+    catch (exception& e) {
+        QFont Font("Lucida Typewriter", 10, QFont::Bold);
+        QMessageBox error;
+        error.setFont(Font);
+        error.setText(e.what());
+        error.exec();
+        ui.hardware_connected_label->setText("Lordyphon disconnected");
     }
 }
 
@@ -228,40 +255,62 @@ void LordyLink::OnUpdateButton()
 
 void LordyLink::OnGetSetButton()
 {   //always check if lordyphon is connected, no hot plugging detection implemented( QT doesn't offer one)
-    if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && !usb_port->lordyphon_update_call()) {
-        if (usb_port->clear_buffer())
-           usb_port->close_usb_port();
+    
+    try {
 
-        ui.QInstallProgressBar->reset();
+        if (usb_port->find_lordyphon_port())
+            usb_port->open_lordyphon_port();
 
-        Worker* getSetWorker = new Worker;;
-        USBThread* getSetThread = new USBThread;
-        //update GUI
-        ui.QInstallLabel->setText("reading file");
-        ui.QInstallLabel->show();
-        ui.QInstallProgressBar->show();
+        else {
 
-        getSetWorker->moveToThread(getSetThread);
-        
-        connect(getSetWorker, SIGNAL(newItem(QString)), this, SLOT(addNewSet(QString)));
-        connect(getSetThread, &QThread::started, getSetWorker, &Worker::get_eeprom_content);
-        connect(getSetWorker, &Worker::finished, getSetThread, &QThread::quit);
-        connect(getSetWorker, &Worker::finished, getSetWorker, &Worker::deleteLater);
-        connect(getSetThread, &QThread::finished, getSetThread, &QThread::deleteLater);
-        connect(getSetWorker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-        connect(getSetWorker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-        connect(getSetWorker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-        connect(getSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
-        connect(getSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
-        connect(getSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
-        
-        getSetThread->start();
-        
-    }
-    else { //lordyphon is in update mode
-        QMessageBox info;
-        info.setText("not possible in update mode");
-        info.exec();
+            throw runtime_error("Lordyphon not connected");
+
+
+        }
+
+        if (!usb_port->lordyphon_update_call()) {
+            if (usb_port->clear_buffer())
+                usb_port->close_usb_port();
+
+            ui.QInstallProgressBar->reset();
+            ui.hardware_connected_label->setText("Lordyphon connected");
+            Worker* getSetWorker = new Worker;;
+            USBThread* getSetThread = new USBThread;
+            //update GUI
+            ui.QInstallLabel->setText("reading file");
+            ui.QInstallLabel->show();
+            ui.QInstallProgressBar->show();
+
+            getSetWorker->moveToThread(getSetThread);
+
+            connect(getSetWorker, SIGNAL(newItem(QString)), this, SLOT(addNewSet(QString)));
+            connect(getSetThread, &QThread::started, getSetWorker, &Worker::get_eeprom_content);
+            connect(getSetWorker, &Worker::finished, getSetThread, &QThread::quit);
+            connect(getSetWorker, &Worker::finished, getSetWorker, &Worker::deleteLater);
+            connect(getSetThread, &QThread::finished, getSetThread, &QThread::deleteLater);
+            connect(getSetWorker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+            connect(getSetWorker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+            connect(getSetWorker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+            connect(getSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+            connect(getSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
+            connect(getSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
+
+            getSetThread->start();
+
+        }
+        else { //lordyphon is in update mode
+            QMessageBox info;
+            info.setText("not possible in update mode");
+            info.exec();
+        }
+    }catch (exception& e) {
+
+        QFont Font("Lucida Typewriter", 10, QFont::Bold);
+        QMessageBox error;
+        error.setFont(Font);
+        error.setText(e.what());
+        error.exec();
+        ui.hardware_connected_label->setText("Lordyphon disconnected");
     }
 }
 
@@ -270,55 +319,80 @@ void LordyLink::OnGetSetButton()
 
 void LordyLink::OnSendSetButton()
 {
-   if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && !usb_port->lordyphon_update_call()) {
-        if(usb_port->clear_buffer())
-            usb_port->close_usb_port();
+    
+    try {
 
-        //file selection must be valid
-        if (selected_set != "") {
-            QtSendDialog* send_dialog = new QtSendDialog;
-            send_dialog->show();
-            int send_dialog_code = send_dialog->exec();
-            //user is sure
-            if (send_dialog_code == QDialog::Accepted) {
-                ui.QInstallProgressBar->reset();
-                
-                Worker* sendSetWorker = new Worker(selected_set);  //hand path to selected item to constructor
+        if (usb_port->find_lordyphon_port())
+            usb_port->open_lordyphon_port();
 
-                USBThread* sendSetThread = new USBThread;
-                //update GUI
-                ui.QInstallLabel->setText("sending file");
-                ui.QInstallLabel->show();
-                ui.QInstallProgressBar->show();
+        else {
 
-                sendSetWorker->moveToThread(sendSetThread);
+            throw runtime_error("Lordyphon not connected");
 
-                connect(sendSetThread, &QThread::started, sendSetWorker, &Worker::send_eeprom_content);
-                connect(sendSetWorker, &Worker::finished, sendSetThread, &QThread::quit);
-                connect(sendSetWorker, &Worker::finished, sendSetWorker, &Worker::deleteLater);
-                connect(sendSetThread, &QThread::finished, sendSetThread, &QThread::deleteLater);
-                connect(sendSetWorker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
-                connect(sendSetWorker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
-                connect(sendSetWorker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
-                connect(sendSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
-                connect(sendSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
-                connect(sendSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
-                
-                sendSetThread->start();
+
+        }
+
+
+        if (!usb_port->lordyphon_update_call()) {
+            if (usb_port->clear_buffer())
+                usb_port->close_usb_port();
+
+            ui.hardware_connected_label->setText("Lordyphon connected");
+
+            //file selection must be valid
+            if (selected_set != "") {
+                QtSendDialog* send_dialog = new QtSendDialog;
+                send_dialog->show();
+                int send_dialog_code = send_dialog->exec();
+                //user is sure
+                if (send_dialog_code == QDialog::Accepted) {
+                    ui.QInstallProgressBar->reset();
+
+                    Worker* sendSetWorker = new Worker(selected_set);  //hand path to selected item to constructor
+
+                    USBThread* sendSetThread = new USBThread;
+                    //update GUI
+                    ui.QInstallLabel->setText("sending file");
+                    ui.QInstallLabel->show();
+                    ui.QInstallProgressBar->show();
+
+                    sendSetWorker->moveToThread(sendSetThread);
+
+                    connect(sendSetThread, &QThread::started, sendSetWorker, &Worker::send_eeprom_content);
+                    connect(sendSetWorker, &Worker::finished, sendSetThread, &QThread::quit);
+                    connect(sendSetWorker, &Worker::finished, sendSetWorker, &Worker::deleteLater);
+                    connect(sendSetThread, &QThread::finished, sendSetThread, &QThread::deleteLater);
+                    connect(sendSetWorker, SIGNAL(ProgressBar_setMax(int)), this, SLOT(ProgressBar_OnsetMax(int)));
+                    connect(sendSetWorker, SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+                    connect(sendSetWorker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
+                    connect(sendSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+                    connect(sendSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
+                    connect(sendSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
+
+                    sendSetThread->start();
+                }
+
+            } //end: if (selected_set != "") 
+            else {//selection is not valid
+                QMessageBox info;
+                info.setText("select a set");
+                info.exec();
             }
-
-        } //end: if (selected_set != "") 
-        else {//selection is not valid
+        }
+        else {
+            //lordyphon in update mode
             QMessageBox info;
-            info.setText("select a set");
+            info.setText("not possible in update mode");
             info.exec();
         }
-    }
-    else {
-        //lordyphon in update mode
-        QMessageBox info;
-        info.setText("not possible in update mode");
-        info.exec();
+    }catch (exception& e) {
+
+        QFont Font("Lucida Typewriter", 10, QFont::Bold);
+        QMessageBox error;
+        error.setFont(Font);
+        error.setText(e.what());
+        error.exec();
+        ui.hardware_connected_label->setText("Lordyphon disconnected");
     }
 
 }
@@ -330,7 +404,10 @@ void LordyLink::OnSendSetButton()
 //this message box is controlled from worker methods
 void LordyLink::OnRemoteMessageBox(QString message)
 {
+    
+    QFont Font("Lucida Typewriter", 10, QFont::Bold);
     QMessageBox fromRemote;
+    fromRemote.setFont(Font);
     fromRemote.setText(message);
     fromRemote.exec();
 }
@@ -407,6 +484,24 @@ void LordyLink::selectItemToSend(const QModelIndex mindex)
     selected_set = ui.dirView->model()->index(mindex.row(), 0).data().toString();
 }
 
+void LordyLink::try_download() {
 
+    qDebug() << "timer on";
+    
+   
+    
+    QDir firm = QDir::homePath() + "/LordyLink/Firmware";
+    
+    if (firm.isEmpty()) {
 
-
+        for (size_t i = 0; i < 10; ++i) {
+            Downloader* download_from_ftp = new Downloader;
+            connect(download_from_ftp, SIGNAL(download_finished()), this, SLOT(activate_install_button()));
+            //set up proper paths for downloader
+            QString location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_firmware_V1.0" + QString::number(i) + ".hex";
+            QString path_first_part = QDir::homePath() + "/LordyLink/Firmware/lordyphon_firmware_V1.0"; //this is only part of the name
+            QString path_complete = path_first_part + QString::number(i) + ".txt"; //version number added here...
+            download_from_ftp->download(location, path_complete);  //pass to method
+        }
+    }
+}

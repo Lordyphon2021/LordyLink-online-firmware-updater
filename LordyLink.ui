@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>384</width>
-    <height>521</height>
+    <width>372</width>
+    <height>504</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>40</y>
+      <y>10</y>
       <width>311</width>
       <height>51</height>
      </rect>
@@ -79,7 +79,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>180</y>
+      <y>140</y>
       <width>311</width>
       <height>21</height>
      </rect>
@@ -99,14 +99,21 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>390</y>
+      <y>410</y>
       <width>311</width>
-      <height>80</height>
+      <height>31</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="sendSetButton">
+       <property name="font">
+        <font>
+         <family>Lucida Sans Typewriter</family>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>send set</string>
        </property>
@@ -114,8 +121,15 @@
      </item>
      <item>
       <widget class="QPushButton" name="saveSetButton">
+       <property name="font">
+        <font>
+         <family>Lucida Sans Typewriter</family>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
-        <string>import / save current set</string>
+        <string>import / save set</string>
        </property>
       </widget>
      </item>
@@ -125,8 +139,8 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>150</y>
-      <width>381</width>
+      <y>120</y>
+      <width>961</width>
       <height>20</height>
      </rect>
     </property>
@@ -141,7 +155,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>120</y>
+      <y>90</y>
       <width>341</width>
       <height>16</height>
      </rect>
@@ -157,7 +171,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>100</y>
+      <y>70</y>
       <width>309</width>
       <height>12</height>
      </rect>
@@ -182,16 +196,16 @@
      <number>0</number>
     </property>
     <property name="text">
-     <string>installing firmware...</string>
+     <string/>
     </property>
    </widget>
    <widget class="QTableView" name="dirView">
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>210</y>
+      <y>170</y>
       <width>311</width>
-      <height>171</height>
+      <height>221</height>
      </rect>
     </property>
     <property name="font">
@@ -226,6 +240,40 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>372</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuinfo">
+    <property name="font">
+     <font>
+      <family>Lucida Sans Typewriter</family>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
+    <property name="title">
+     <string>info</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuabout">
+    <property name="font">
+     <font>
+      <family>Lucida Sans Typewriter</family>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
+    <property name="title">
+     <string>about</string>
+    </property>
+   </widget>
+   <addaction name="menuinfo"/>
+   <addaction name="menuabout"/>
+  </widget>
   <action name="actionProgramm">
    <property name="text">
     <string>App</string>

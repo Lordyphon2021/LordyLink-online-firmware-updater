@@ -41,6 +41,18 @@ private:
 public:
     LordyLink(QWidget *parent = Q_NULLPTR);
     
+    ~LordyLink() {
+        QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
+        firmware.setNameFilters(QStringList() << "*.*");
+        firmware.setFilter(QDir::Files);
+
+        foreach(QString dirFile, firmware.entryList())
+        {
+            firmware.remove(dirFile);
+        }
+    }
+    
+    
     Ui::LordyLinkClass ui;
     
 signals:
@@ -67,7 +79,7 @@ public slots:
     //HELPER
     void set_firmware_path_from_dialog(QString path){ firmware_path = path; }
     void OnRemoteMessageBox(QString message);
-   
+    void try_download();
 
 private:
     
@@ -79,7 +91,8 @@ private:
     QString home;
     QString oldName;
     QString selected_set;
-   
+    QTimer* download_timer = nullptr;
+    
     QString firmware_path;
 
     inline void delay(int millisecondsWait)

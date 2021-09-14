@@ -29,8 +29,12 @@ public:
 
 	bool is_valid()  
 	{
-		data_vec.remove(0, 1); // remove header ':' for calculation
-		uint32_t vec_sum = std::accumulate(data_vec.begin(), data_vec.end(), 0);
+		
+		if(data_vec.at(0) == ':')
+			data_vec.remove(0, 1); // remove hexfile-header ':' for calculation
+		
+		
+		uint32_t vec_sum = std::accumulate(data_vec.begin(), data_vec.end(), 0); 
 		checksum_calculated =  ~(vec_sum & 0x00ff ) + 0x01 ;
 		
 		return(checksum_from_file == checksum_calculated);

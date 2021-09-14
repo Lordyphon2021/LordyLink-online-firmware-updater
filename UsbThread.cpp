@@ -42,6 +42,7 @@ void Worker::update()
     hex_parser = new Parser(selected_firmware);
 
     //PARSE DOWNLOADED HEXFILE
+    emit setLabel("validating hexfile     ");
     
     if (hex_parser->parse_hex()) {  //BOOL METHOD, PARSER IS RESPONSIBLE FOR VALIDATING HEXFILE
                                    //IF TRUE, HEXFILE IS VALID
@@ -55,13 +56,9 @@ void Worker::update()
         emit ProgressBar_setMax(hexfilesize);  //SET PROGRESSBAR MAXIMUM
 
         delay(1000);            //ALLOW FOR SETTLING TIME
-        //usb_port_update_thread->write_serial_data("§");  //RESET ADDRESS VARIABLES AND COUNTERS ON CONTROLLER
-        delay(1000);           //ALLOW FOR SETTLING TIME
-        
         
         //THIS LOOP SENDS PARSED HEX RECORDS TO CONTROLLER AND WAITS FOR CHECKSUM CONFIRMATION BEFORE SENDING THE
         //NEXT RECORD: IF CALCULATED CHECKSUM ON CONTROLLER IS "ok",  "index" IS INCREMENTED
-        //
         
         while (index < hexfilesize && hexfilesize != 0) {  //TRIPLE CHECK HEXFILE SIZE
 
@@ -99,7 +96,7 @@ void Worker::update()
                 delay(1000);
                 carry_on_flag = false;
             }
-            if (bad_checksum_ctr > 100) {  //EXIT CONDITION: CHECKSUM ERROR
+            if (bad_checksum_ctr > 8) {  //EXIT CONDITION: CHECKSUM ERROR
                 emit setLabel("file corrupted...");
                 carry_on_flag = false;
                 break;
@@ -124,7 +121,8 @@ void Worker::update()
             delay(10000);
             emit setLabel("restart lordyphon");
             delay(2000);
-
+            
+           
         }
         else
             emit setLabel("transfer aborted");
@@ -139,6 +137,11 @@ void Worker::update()
         emit ProgressBar_valueChanged(0);
        
     }
+    
+    
+    
+    
+    
     //delete usb_port_update_thread;
     delete hex_parser; //no child of QObject
     emit activateButtons();
@@ -356,7 +359,7 @@ void Worker::send_eeprom_content()
                 usb_port_send_thread->write_serial_data(temp_record);  //send record
                 usb_port_send_thread->set_buffer_size(3);   //expected confirmation mnessage size
                 usb_port_send_thread->wait_for_ready_read(1000);      //wait for confirmation
-                //any message could be used here, this is just for synchronizing
+                //any 3 byte message could be used here, this is just for synchronizing
                 usb_port_send_thread->getInputBuffer(); //dummy read
 
                 index++;
@@ -417,10 +420,10 @@ void Worker::send_eeprom_content()
         }//end: if (response == "doit") {  //play mode is off
         else if (response == "DONT") {  //play mode is on
             emit remoteMessageBox("lordyphon memory busy, press stop button");
-            emit activateButtons();
-            mutex.unlock();
-            delete eeprom_parser; //not child of QObject
-            emit finished();
+            //emit activateButtons();
+            //mutex.unlock();
+            //delete eeprom_parser; //not child of QObject
+            //emit finished();
 
         }
         else {
