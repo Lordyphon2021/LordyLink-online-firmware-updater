@@ -39,10 +39,6 @@ LordyLink::LordyLink(QWidget *parent)
     if (!firmware.exists())
         firmware.mkpath(".");
     
-    QDir versioncount(QDir::homePath() + "/LordyLink/versioncount");
-    if (!versioncount.exists())
-        versioncount.mkpath(".");
-    
     QDir log(QDir::homePath() + "/LordyLink/log");
     if (!log.exists())
         log.mkpath(".");

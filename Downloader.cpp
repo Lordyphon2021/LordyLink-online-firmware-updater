@@ -22,8 +22,8 @@ void Downloader::download(QString location, QString path) //location and path vi
     QUrl url(location);
     
     url.setPort(21);
-    url.setUserName("stefandeisenberger86881"); //TODO: find different ftp setting for anonymous login
-    url.setPassword("3333Sync!!!");
+    url.setUserName("stefandeisenbergerxxxxxx"); //TODO: find different ftp setting for anonymous login
+    url.setPassword("xxxxxxx");
    
     QNetworkRequest request = QNetworkRequest(url);
     QNetworkReply* reply = manager.get(request);

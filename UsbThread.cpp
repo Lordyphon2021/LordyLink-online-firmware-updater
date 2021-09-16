@@ -33,8 +33,9 @@ void Worker::update()
     carry_on_flag = true;  //START CONDITION TO GET FIRST RECORD
 
     //OPEN LOGFILE
-    
-    eeprom_content_logfile.setFileName(QDir::homePath() + "/LordyLink/log/firmware_transfer_log.txt");
+    QDateTime now = QDateTime::currentDateTime();
+    QString timestamp = now.toString("dd_MM_yyyy___h_m_s");
+    eeprom_content_logfile.setFileName(QDir::homePath() + "/LordyLink/log/firmware_transfer_log_" + timestamp + ".txt");
     eeprom_content_logfile.open(QIODevice::ReadWrite | QIODevice::Text);
     QTextStream out(&eeprom_content_logfile);
     
