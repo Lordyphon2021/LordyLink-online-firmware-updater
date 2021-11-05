@@ -1,4 +1,5 @@
 #include "UsbThread.h"
+#include "ChecksumValidator.h"
 #include <QTextStream>
 #include <qdebug.h>
 #include <iomanip>
@@ -167,6 +168,7 @@ void Worker::get_eeprom_content()
    
     usb_port_get_thread = new SerialHandler;
     
+    
     //check if lordyphon is still connected
     if (!usb_port_get_thread->find_lordyphon_port()) {
         emit setLabel("lordyphon disconnected!");
@@ -197,8 +199,8 @@ void Worker::get_eeprom_content()
     set_file.open(new_filepath_qstring.toStdString());
     
     if (set_file.is_open()) {
-        checksum_lordyphon = 0;
-        eeprom_local_checksum = 0;
+        uint16_t checksum_lordyphon = 0;
+       
         //GUI feedback
         emit setLabel("reading set data");
         emit ProgressBar_setMax(128000);
@@ -212,11 +214,6 @@ void Worker::get_eeprom_content()
         //waits
         usb_port_get_thread->set_buffer_size(1000);
         usb_port_get_thread->clear_buffer(); //flush out old data
-        
-       
-        //readAll() didn't work here, too slow, data was lost
-        //read(quint64 bytes) works perfectly
-        
         //read all in a loop, add input buffer to eeprom byte array
         while (eeprom.size() < 128000) {
             usb_port_get_thread->wait_for_ready_read(20);
@@ -227,10 +224,6 @@ void Worker::get_eeprom_content()
         //checksum verification
 
         usb_port_get_thread->set_buffer_size(2); //set buffer size for 16bit checksum from lordyphon
-
-        for (auto i : eeprom)
-            eeprom_local_checksum += static_cast<unsigned char>(i);  //qbytearray returns signed char, need unsigned for correct value
-
         tx_data = "s"; //request uint16 checksum from lordyphon
         usb_port_get_thread->write_serial_data(tx_data);
         usb_port_get_thread->wait_for_ready_read(2000);
@@ -240,21 +233,11 @@ void Worker::get_eeprom_content()
         uint8_t lsb = checksum_from_lordyphon.at(1);
 
         checksum_lordyphon = (msb << 8) | lsb;  //assemble uint16_t checksum
+        ChecksumValidator eeprom_checker;
+        eeprom_checker.set_Data(eeprom, checksum_lordyphon);
 
-        qDebug() << "checksum from uc: " << checksum_lordyphon;
-        qDebug() << "local checksum : " << eeprom_local_checksum;
-
-        //compare checksums
-        if (checksum_lordyphon != eeprom_local_checksum) {
-            eeprom_local_checksum = 0;
-            emit remoteMessageBox("checksum error, try again");
-            set_file.close();
-            //delete temp file
-            QDir sets = new_filepath_qstring;
-            sets.remove(new_filepath_qstring);
-        }
-        else {
-            eeprom_local_checksum = 0; //reset checksum
+        if (eeprom_checker.is_valid()) {
+            
             emit setLabel("writing file");
             delay(1000);
 
@@ -263,18 +246,25 @@ void Worker::get_eeprom_content()
                 int temp = static_cast<unsigned char>(eeprom.at(i));
                 //set format for parser
                 if (i != 0 && i % 16 == 0) {
-                        set_file << endl;
+                    set_file << endl;
                 }
-                set_file << setw(2) << setfill('0') << hex << temp; 
+                set_file << setw(2) << setfill('0') << hex << temp;
             }
             set_file.close();
             //add new set to model/QTableView
             emit newItem(new_filename);
             emit ProgressBar_valueChanged(128000);
             emit setLabel("done");
-            
-            
         }
+        else {
+            
+            emit remoteMessageBox("checksum error, try again");
+            set_file.close();
+            //delete temp file
+            QDir sets = new_filepath_qstring;
+            sets.remove(new_filepath_qstring);
+        }
+        
     }//end:  if (set_file.is_open())
     else
         emit remoteMessageBox("file not found!");
@@ -383,16 +373,15 @@ void Worker::send_eeprom_content()
             uint8_t lsb = checksum_from_lordyphon.at(1);
 
             
-            checksum_lordyphon = (msb << 8) | lsb;  //assemble uint16_t checksum
+            uint16_t checksum_lordyphon = (msb << 8) | lsb;  //assemble uint16_t checksum
             uint16_t checksum_local = 0;
 
-            for (auto i : checksum_vec)
-                checksum_local += static_cast<unsigned char>(i);
-           
-            qDebug() << "checksum local: " << checksum_local;
-            qDebug() << "checksum from lordyphon: " << checksum_lordyphon;
+            ChecksumValidator eeprom_checker2;
+            eeprom_checker2.set_Data(checksum_vec, checksum_lordyphon);
 
-            if (checksum_lordyphon == eeprom_parser->get_eeprom_checksum()) {
+            
+
+            if (eeprom_checker2.is_valid()) {
                 emit setLabel("checksum ok  ");
                 delay(1000);
                 QByteArray call_lordyphon = "ß";  //DATA CORRECT, SEND BURN EEPROM MESSAGE
@@ -416,15 +405,17 @@ void Worker::send_eeprom_content()
                
                 emit setLabel("done ");
             }
+            else {
+                emit setLabel("checksum error");
+                emit remoteMessageBox("data transfer incomplete, please try again");
+
+            }
 
 
         }//end: if (response == "doit") {  //play mode is off
         else if (response == "DONT") {  //play mode is on
             emit remoteMessageBox("lordyphon memory busy, press stop button");
-            //emit activateButtons();
-            //mutex.unlock();
-            //delete eeprom_parser; //not child of QObject
-            //emit finished();
+           
 
         }
         else {

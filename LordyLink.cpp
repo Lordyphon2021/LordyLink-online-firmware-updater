@@ -93,6 +93,8 @@ LordyLink::LordyLink(QWidget *parent)
 
         int ctr = 0;  // alternates through different message boxes
         
+        
+        
         while (!usb_port->find_lordyphon_port()) {
             ui.hardware_connected_label->setText("Lordyphon disconnected");
             dialog_no_hardware_found->setWindowTitle("Lordyphon not found!");
@@ -134,11 +136,9 @@ LordyLink::LordyLink(QWidget *parent)
     
     
     
-    
     //assume that there are 10 different versions on the ftp server, try and load all, downloader will delete empty files
-    //this might seem a bit clumsy but I couldn't find a way to get the ftp directory list with QT
-    //(QFtp class is now obsolete)
    
+    
     try_download();
     download_timer = new QTimer(this);
     connect(download_timer, SIGNAL(timeout()), this, SLOT(try_download()));
@@ -161,20 +161,14 @@ LordyLink::LordyLink(QWidget *parent)
  //user is prompted to restart lordyphon
 void LordyLink::OnUpdateButton()
 {
-    //exception e;
-    
-    
     try {
 
         if(usb_port->find_lordyphon_port())
             usb_port->open_lordyphon_port();
 
-        else {
-            
+        else 
             throw runtime_error("Lordyphon not connected");
-
-
-        }
+        
 
         if (usb_port->lordyphon_update_call()) {  //lordyphon has to be in update mode for this, different response
             ui.hardware_connected_label->setText("Lordyphon updater on");
@@ -321,14 +315,10 @@ void LordyLink::OnSendSetButton()
         if (usb_port->find_lordyphon_port())
             usb_port->open_lordyphon_port();
 
-        else {
-
+        else 
             throw runtime_error("Lordyphon not connected");
 
-
-        }
-
-
+       
         if (!usb_port->lordyphon_update_call()) {
             if (usb_port->clear_buffer())
                 usb_port->close_usb_port();
@@ -371,16 +361,17 @@ void LordyLink::OnSendSetButton()
             } //end: if (selected_set != "") 
             else {//selection is not valid
                 QMessageBox info;
-                info.setText("select a set");
+                info.setText("please select a set! ");
                 info.exec();
             }
         }
-        else {
+        else{
             //lordyphon in update mode
             QMessageBox info;
-            info.setText("not possible in update mode");
+            info.setText("not possible in update mode ");
             info.exec();
         }
+    
     }catch (exception& e) {
 
         QFont Font("Lucida Typewriter", 10, QFont::Bold);
@@ -400,7 +391,6 @@ void LordyLink::OnSendSetButton()
 //this message box is controlled from worker methods
 void LordyLink::OnRemoteMessageBox(QString message)
 {
-    
     QFont Font("Lucida Typewriter", 10, QFont::Bold);
     QMessageBox fromRemote;
     fromRemote.setFont(Font);
@@ -483,8 +473,12 @@ void LordyLink::selectItemToSend(const QModelIndex mindex)
 void LordyLink::try_download() {
 
     qDebug() << "timer on";
+
+    QUrl url = "stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/";
+    QFileInfo fileinfo(url.path());
+    QString filename = fileinfo.fileName();
     
-   
+    qDebug() << "listing:" << filename;
     
     QDir firm = QDir::homePath() + "/LordyLink/Firmware";
     

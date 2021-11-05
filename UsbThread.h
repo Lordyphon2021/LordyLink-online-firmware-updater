@@ -74,14 +74,7 @@ signals:
 
 private:
 
-	//Hier bin ich mir unsicher, wie man da mit Membervariablen versus lokalen Variablen
-	//umgehen soll. Die Worker-Klasse ist eher ein Spezialfall, 
-	//der private-Bereich wird von drei Threads benutzt, 
-	//das macht die Sache recht unübersichtlich, weil wegen USB immer nur ein Thread aktiv sein darf.
-	//Doch alles eher lokal in den Methoden erzeugen? Besser lesbar war's nämlich schon vorher...
-	
 
-	
 	Parser* hex_parser = nullptr;
 	Parser* eeprom_parser = nullptr;
 	
@@ -108,15 +101,12 @@ private:
 	
 	
 	QByteArray eeprom;  //data container 
-
-	uint16_t checksum_lordyphon = 0;
-	uint16_t eeprom_local_checksum = 0;
 	size_t progress_bar_ctr = 0;
 	size_t rec_ctr = 0;
 
 	
 
-	//essential for timing
+	//timing
 	inline void delay(int millisecondsWait)
 	{
 		QEventLoop loop;
