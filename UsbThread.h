@@ -15,8 +15,6 @@
 #include <QFileInfo>
 #include <qstring.h>
 #include <QDateTime>
-#include <filesystem>
-
 
 
 
@@ -43,9 +41,7 @@ class Worker : public QObject {
 
 public:
 	Worker(){} // default for get set
-	
 	Worker(QString path):selected_set(path){}  //ctor for send set
-	
 	Worker(QString path, bool ): selected_firmware(path){}  //ctor for firmware update, bool is a dummy
 
 public slots:
@@ -62,47 +58,36 @@ signals:
 	void ProgressBar_setMax(int val);
 	void setLabel(QString);
 	void remoteMessageBox(QString);
-	
 	void activateButtons();
 	void deactivateButtons();
 	// pass to QTableview
 	void newItem(QString);
-	
+	//thread
 	void finished();
 	
-	//void error(QString); //debugging
-
 private:
 
-
-	Parser* hex_parser = nullptr;
-	Parser* eeprom_parser = nullptr;
-	
-	SerialHandler* usb_port_update_thread = nullptr;
-	SerialHandler* usb_port_get_thread = nullptr;
-	SerialHandler* usb_port_send_thread = nullptr;
-	
-	QString lordyphon_portname;
-	QString rx_status;
-	QString Message;
 	QString selected_set; //initialized in ctor
-	QFile eeprom_content_logfile;
-	QString set_dir;
 	QString selected_firmware;  //initialized in ctor
-	int version = 0;
-	QString checksum_status_message;
-    QByteArray header = "#";
-    QByteArray burn_flash = "w";
-    QByteArray tx_data;
-    size_t index = 0;
-    int bad_checksum_ctr = 0;       
-    int rx_error_ctr = 0;
-    bool carry_on_flag = true;  
+	
+	//Lordyphon message strings
+	struct LordyphonCall {
+		QByteArray burn_flash = "w";
+		QByteArray say_it_again = "?";
+		QByteArray dump_request = "r";
+		QByteArray request_checksum = "s";
+		QByteArray transfer_request = "R";
+		QByteArray begin_tansfer = "//";
+		QByteArray burn_eeprom = "ß";
+	}call_lordyphon;
+          
+    
+    
 	
 	
-	QByteArray eeprom;  //data container 
-	size_t progress_bar_ctr = 0;
-	size_t rec_ctr = 0;
+	
+	
+	
 
 	
 
