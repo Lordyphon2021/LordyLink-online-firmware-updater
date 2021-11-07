@@ -2,22 +2,14 @@
 #include "ChecksumValidator.h"
 #include <exception>
 
-
-
 using namespace std;
-
 
 //this method iterates through the hexfile-string-vector, (if record checksum is valid) 
 // extracts all records to QVector<QByteArray> hexfile_data_vec, getter method is used
 //in worker class to send records to the microcontroller
-
-
 //----all values hexadecimal----
 
-
-
-bool Parser::parse_hex()     
-{															
+bool Parser::parse_hex(){															
 	QByteArray temp_data_vec;				//holds the data-section of a single hexfile record
 	size_t nibbles_in_data_section = 0x00;	//how many nibbles (2 nibbles == 1 byte) are in record
 	char record_type = 0x00;				//type of data in data-section
@@ -26,8 +18,6 @@ bool Parser::parse_hex()
 	uint32_t start_bytes_sum = 0x00;		//bytewise sum of all elements except start byte and checksum, used for checksum verification
 	ChecksumValidator checksum_calculated;
 
-	
-	
 	try {
 
 		if(hexfile_data_vec.size() != 0 && hex_file_vec.back() != ":00000001FF"){
@@ -36,7 +26,6 @@ bool Parser::parse_hex()
 			error.exec();
 
 			return false;
-
 		}
 		else if (hexfile_data_vec.size() != 0) {
 			QMessageBox error;
@@ -44,8 +33,6 @@ bool Parser::parse_hex()
 			error.exec();
 
 			return false;
-
-
 		}
 		for (auto it : hex_file_vec) {
 			string std_it = it.toStdString(); 
@@ -55,18 +42,12 @@ bool Parser::parse_hex()
 			string substr = std_it.substr(1, 2);
 			string pre = "0x";
 			string full_nib = pre + substr;
-			/*
-			hier passiert etwas kurioses:
-			stoi() benötigt für den record-type den prefix "0x", um korrekte hexvalues auszugeben,
-			in der data-section ist es aber nicht notwendig. noch keine erklärung dafür gefunden.
-			*/
-			nibbles_in_data_section = static_cast<uint8_t>(stoi(full_nib, nullptr, 16));
 			
+			nibbles_in_data_section = static_cast<uint8_t>(stoi(full_nib, nullptr, 16));
 			substr = std_it.substr(7, 2);
 			string full_rec_type = pre + substr;
 			
 			record_type = stoi(full_rec_type, nullptr, 16);
-			
 			
 			if (record_type == 0x01) {  //exit condition (EOF), final record will not be parsed
 				return true;
@@ -79,7 +60,6 @@ bool Parser::parse_hex()
 				return false;
 			}
 
-			
 			substr = std_it.substr(3, 4);
 			string full_address = pre + substr;
 			
@@ -93,10 +73,8 @@ bool Parser::parse_hex()
 			temp_data_vec.push_back(static_cast<char>(address & 0xff));
 			temp_data_vec.push_back(record_type);
 
-			
 			for (size_t rec_pos = 0; rec_pos < nibbles_in_data_section * 2; rec_pos += 2)
 				temp_data_vec.push_back(static_cast<char>(stoi(std_it.substr((9 + rec_pos), 2), nullptr, 16)));
-			
 			
 			//hand data to checksum validator class
 			checksum_calculated.set_Data(temp_data_vec, checksum_from_file ); // data_vec without checksum
@@ -114,15 +92,12 @@ bool Parser::parse_hex()
 				error.exec();
 				return false;
 			}
-
-			//clear temp record for next iteration
+		//clear temp record for next iteration
 			temp_data_vec.clear();
 		
 		}//end: for (auto it : hex_file_vec) {
-
 	}//end: try
 	catch (exception& e) { 
-
 		qDebug() << e.what();
 		QMessageBox error;
 		error.setText("parser error");
@@ -130,45 +105,34 @@ bool Parser::parse_hex()
 
 		return false;
 	}
+	return true;
 }
 
 //this method extracts data from saved set files
 
-bool Parser::parse_eeprom()
-{
+bool Parser::parse_eeprom(){
+	
 	try {
 
-		
 		if (eeprom_file_vec.size() == 0) {
 			qDebug() << "file empty";
 			return false;
 		}
 		for (auto it : eeprom_file_vec) {
-			string std_it = it.toStdString();   // no time to learn QString substring...
+			string std_it = it.toStdString();  
 	
-			for (size_t rec_pos = 0; rec_pos < 32; rec_pos += 2) {
-				
+			for (size_t rec_pos = 0; rec_pos < 32; rec_pos += 2) 
 				set_serial_data_array.push_back(static_cast<char>(stoi(std_it.substr((0 + rec_pos), 2), nullptr, 16)));
-			}
 			
 			eeprom_data_vec.push_back(set_serial_data_array); //FINAL EEPROM DATA CONTAINER
 			set_serial_data_array.clear();
-		
 		}
-		
-
 	}
 	catch (exception& e) {
-
 		qDebug() << e.what();
 		return false;
 	}
-
-
-
-
-
-
+	return true;
 }
 
 

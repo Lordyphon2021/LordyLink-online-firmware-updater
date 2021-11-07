@@ -37,7 +37,6 @@ class LordyLink : public QMainWindow
 private:
     Q_OBJECT
     
-
 public:
     LordyLink(QWidget *parent = Q_NULLPTR);
     
@@ -47,11 +46,8 @@ public:
         firmware.setFilter(QDir::Files);
 
         foreach(QString dirFile, firmware.entryList())
-        {
             firmware.remove(dirFile);
-        }
     }
-    
     
     Ui::LordyLinkClass ui;
     
@@ -68,7 +64,6 @@ public slots:
     void renameStart(const QModelIndex);
     void renameEnd(QStandardItem*);
     void selectItemToSend(const QModelIndex mindex);
-   
     //GUI Feedback
     void ProgressBar_OnValueChanged(int val) { ui.QInstallProgressBar->setValue(val); }
     void ProgressBar_OnsetMax(int val) { ui.QInstallProgressBar->setMaximum(val); }
@@ -80,6 +75,9 @@ public slots:
     void set_firmware_path_from_dialog(QString path){ firmware_path = path; }
     void OnRemoteMessageBox(QString message);
     void try_download();
+    void check_for_lordyphon();
+    void hotplugtimer_on();
+    void hotplugtimer_off();
 
 private:
     
@@ -92,17 +90,16 @@ private:
     QString oldName;
     QString selected_set;
     QTimer* download_timer = nullptr;
-    
+    QTimer* hot_plug_timer = nullptr;
     QString firmware_path;
+   
 
-    inline void delay(int millisecondsWait)
-    {
+    inline void delay(int millisecondsWait){
         QEventLoop loop;
         QTimer t;
         t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
         t.start(millisecondsWait);
         loop.exec();
     }
-   
 };
 

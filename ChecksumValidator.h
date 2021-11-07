@@ -17,8 +17,6 @@ private:
 	uint8_t checksum_from_file = 0;
 	uint16_t checksum_from_lordyphon = 0;
 	
-	
-	
 public:
 	// data vec: complete record without checksum
 	void set_Data(const QByteArray& _data_vec, char _checksum_from_file){

@@ -14,6 +14,7 @@
 class Downloader : public QObject
 {
     Q_OBJECT
+
 public:
     Downloader(QObject* parent = nullptr);
     
@@ -30,13 +31,11 @@ private slots:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void error(QNetworkReply::NetworkError code);
    
-
 private:
     QNetworkAccessManager manager;
     QFile file;
     QListWidget* debug_list = nullptr;
     QMessageBox error_message;
     void wire(QNetworkReply* reply);
-    
 };
 

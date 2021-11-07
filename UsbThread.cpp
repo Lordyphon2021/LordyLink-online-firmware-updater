@@ -11,12 +11,11 @@ using namespace std;
 // THIS IS THE FIRMWARE UPDATE PROCESS, A BLOCKING MASTER DESIGN
 void Worker::update()
 {
-    
     //don't allow erratic user input
     emit deactivateButtons();
     //safety
     QMutex mutex;
-    mutex.lock();
+    mutex.lock(); 
     //OPEN USB PORT
     SerialHandler usb_port_update_thread;
     usb_port_update_thread.find_lordyphon_port();
@@ -64,16 +63,16 @@ void Worker::update()
                 out << "record nr. " << index << "  " << (tx_data.toHex()) << '\n';  //LOGFILE OUTPUT
             }
             usb_port_update_thread.wait_for_ready_read(1000);  //THREAD BLOCKS UNTIL INCOMING CONFIRMATION MESSAGE OR TIMEOUT 1000ms
-            QString checksum_status_message = usb_port_update_thread.getInputBuffer(); //GET INCOMING CONFIRMATION MESSAGE
+            QString checksum_status = usb_port_update_thread.getInputBuffer(); //GET INCOMING CONFIRMATION MESSAGE
 
-            if (checksum_status_message == "er") {  //CHECKSUM CALCULATION HAS GONE WRONG
+            if (checksum_status == lordyphon_response.is_checksum_error) {  //CHECKSUM CALCULATION HAS GONE WRONG
                 ++bad_checksum_ctr;                 //EXIT CONDITION, IF HEXFILE IS CORRUPTED, CTR WILL GO UP TO 8 BEFORE ABORTING
                 out << "--------------CHECKSUM ERROR AT INDEX " << index << "  " << (tx_data.toHex()) << '\n'; //LOGFILE OUTPUT
                 emit setLabel("checksum error...sending record again");
                 carry_on_flag = true;              //READ RECORD AGAIN AT SAME VECTOR INDEX
                 delay(1000);                 //ALLOW TIME FOR USER FEEDBACK
             }
-            else if (checksum_status_message == "ok") {      //CHECKSUM IS CORRECT   
+            else if (checksum_status == lordyphon_response.checksum_ok) {      //CHECKSUM IS CORRECT   
                 emit ProgressBar_valueChanged(static_cast<int>(index)); //UPDATE PROGRESS BAR
                 emit setLabel("sending file ");
                 rx_error_ctr = 0;
@@ -82,8 +81,8 @@ void Worker::update()
             }
             else {
                 // INCOMING CONFIRMATION MESSAGE IS CORRUPTED
-                usb_port_update_thread.write_serial_data(call_lordyphon.say_it_again);     //ASK AGAIN FOR CHECKSUM STATUS, CONTROLLER WILL SEND EITHER "ok" or "er"
-                qDebug() << checksum_status_message;
+                usb_port_update_thread.write_serial_data(call_lordyphon.get_checksum_status);     //ASK AGAIN FOR CHECKSUM STATUS, CONTROLLER WILL SEND EITHER "ok" or "er"
+                qDebug() << checksum_status;
                 emit setLabel("rx error, checking status... ");
                 out << "---------------RX ERROR AT INDEX---------------------- " << index << '\n'; //LOGFILE
                 ++rx_error_ctr;         //IF MESSAGE ISNT READABLE FOR MORE THAN 8 TIMES, CONNECTION MUST BE LOST
@@ -135,13 +134,12 @@ void Worker::update()
 
 //THIS IS THE GET SET METHOD, READS ALL 128kB AT ONCE, 
 //CHECKSUM IS CALCULATED AFTER LAST BYTE IS READ.
-void Worker::get_eeprom_content()
-{
+void Worker::get_eeprom_content(){
     //GUI/THREAD SAFETY MEASURES
     emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
-   
+   /*
     SerialHandler usb_port_get_thread;
     
     //check if lordyphon is still connected
@@ -243,6 +241,12 @@ void Worker::get_eeprom_content()
     //clean up, reactivate GUI buttons
     usb_port_get_thread.clear_buffer();
     usb_port_get_thread.close_usb_port();
+    
+    */
+    qDebug() << "starting 15s delay...";
+    delay(15000);
+    qDebug() << "end delay, emit finished";
+    
     emit activateButtons();
     mutex.unlock();
     emit finished();
@@ -254,8 +258,8 @@ void Worker::get_eeprom_content()
 //OTHERWISE THE MICROCONTROLLER GETS OVERWHELMED AND RESETS ITSELF.(TRIED ALL AVAILABLE BAUD RATES)
 //THUS, I DECIDED TO SEND 16 BYTE CHUNKS AND HAVE THEM CONFIRMED BEFORE CARRYING ON.
 //THIS SEMI-SYNCHRONIZED TRANSFER WORKS BEST SO FAR.
-void Worker::send_eeprom_content()
-{
+
+void Worker::send_eeprom_content(){
     emit deactivateButtons();
     QMutex mutex;
     mutex.lock();

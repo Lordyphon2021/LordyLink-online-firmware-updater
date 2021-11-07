@@ -117,6 +117,7 @@
     <QtMoc Include="QNoHardwareDialog.h" />
     <QtMoc Include="QUpdateDialog.h" />
     <QtMoc Include="Serial.h" />
+    <ClInclude Include="LordyphonMessageStrings.h" />
     <ClInclude Include="Parser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

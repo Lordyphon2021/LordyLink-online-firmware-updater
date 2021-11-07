@@ -6,6 +6,7 @@
 #include<QListWidget>
 #include <QMessageBox>
 #include <QBuffer>
+#include "LordyphonMessageStrings.h"
 
 //WRAPPER FOR QSERIALPORT
 
@@ -13,10 +14,7 @@ class SerialHandler : public QObject
 {
 	Q_OBJECT
 		
-
 public:
-
-
 	
 	SerialHandler( QObject* parent = nullptr );
 	bool find_lordyphon_port();
@@ -33,30 +31,17 @@ public:
 	
 signals:
 	
-	
-	
-
 public slots:
 
 	void onReadyRead();
 	
-	
-
 private:
-	bool message_received = false;
-	QSerialPort* lordyphon_port;
 	
+	QSerialPort* lordyphon_port;
 	QString lordyphon_portname;
 	QByteArray input_buffer = 0;
-	//HANDSHAKE CALL
-	const QByteArray hand_shake_tx_phrase = "!c++ is great!   ";
-	//HANDSHAKE RESPONSE
-	const QByteArray hand_shake_rx_phrase = "YES!";
-	//UPDATE MODE CALL
-	const QByteArray update_tx_phrase = "update";
-	//UPDATE MODE RESPONSE
-	const QByteArray update_rx_phrase_y = "sure";
-	//UPDATE MODE RESPONSE
-	const QByteArray update_rx_phrase_n = "nope";
+	
+	LordyphonCall lordyphon_call;
+	LordyphonResponse lordyphon_response;
 
 };

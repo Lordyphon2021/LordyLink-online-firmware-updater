@@ -15,7 +15,7 @@
 #include <QFileInfo>
 #include <qstring.h>
 #include <QDateTime>
-
+#include "LordyphonMessageStrings.h"
 
 
 class USBThread : public QThread
@@ -34,8 +34,6 @@ private:
 	
 };
 
-
-
 class Worker : public QObject {
 	Q_OBJECT
 
@@ -50,7 +48,6 @@ public slots:
 	void update();
 	void get_eeprom_content();
 	void send_eeprom_content();
-	
 
 signals:
 	//GUI update
@@ -71,34 +68,15 @@ private:
 	QString selected_firmware;  //initialized in ctor
 	
 	//Lordyphon message strings
-	struct LordyphonCall {
-		QByteArray burn_flash = "w";
-		QByteArray say_it_again = "?";
-		QByteArray dump_request = "r";
-		QByteArray request_checksum = "s";
-		QByteArray transfer_request = "R";
-		QByteArray begin_tansfer = "//";
-		QByteArray burn_eeprom = "ß";
-	}call_lordyphon;
+	LordyphonCall call_lordyphon;
+	LordyphonResponse lordyphon_response;
           
-    
-    
-	
-	
-	
-	
-	
-
-	
-
-	//timing
-	inline void delay(int millisecondsWait)
-	{
+    //timing
+	inline void delay(int millisecondsWait){
 		QEventLoop loop;
 		QTimer t;
 		t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
 		t.start(millisecondsWait);
 		loop.exec();
 	}
-	
 }; 

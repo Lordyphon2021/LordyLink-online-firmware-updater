@@ -7,9 +7,6 @@ class QNoHardwareDialog : public QDialog, public Ui::QNoHardwareDialog
 {
 	Q_OBJECT
 
-		
-
-
 private:
 
 	Ui::QNoHardwareDialog ui;
