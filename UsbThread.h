@@ -66,6 +66,7 @@ private:
 
 	QString selected_set; //initialized in ctor
 	QString selected_firmware;  //initialized in ctor
+	uint8_t ready_read_timeout_ctr = 0;
 	
 	//Lordyphon message strings
 	LordyphonCall call_lordyphon;

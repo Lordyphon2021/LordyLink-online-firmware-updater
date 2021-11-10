@@ -154,8 +154,8 @@ LordyLink::LordyLink(QWidget *parent)
     download_timer->start(20000);
 
     hot_plug_timer = new QTimer(this);
-    connect(hot_plug_timer, SIGNAL(timeout()), this, SLOT(check_for_lordyphon()));
-    hot_plug_timer->start(5000);
+    connect(hot_plug_timer, SIGNAL(timeout()), this, SLOT(check_manufacturer_ID()));
+    hot_plug_timer->start(2000);
 }
 
 
@@ -175,6 +175,8 @@ void LordyLink::OnUpdateButton(){
      
     try {
 
+        hotplugtimer_off();
+        
         if(usb_port->find_lordyphon_port())
             usb_port->open_lordyphon_port();
 
@@ -184,6 +186,7 @@ void LordyLink::OnUpdateButton(){
 
         if (usb_port->lordyphon_update_call()) {  //lordyphon has to be in update mode for this, different response
             ui.hardware_connected_label->setText("Lordyphon updater on");
+            
             if (usb_port->clear_buffer())       //than regular handshake
                 usb_port->close_usb_port();
 
@@ -226,6 +229,11 @@ void LordyLink::OnUpdateButton(){
                 connect(update_worker, SIGNAL(deactivateButtons()), this, SLOT(hotplugtimer_off()));
                 update_thread->start();
             }
+            else {
+                hotplugtimer_on();
+
+
+            }
         }//end: if(usb_port->lordyphon_update_call()) 
        
         else { //lordyphon is not in update mode
@@ -233,6 +241,7 @@ void LordyLink::OnUpdateButton(){
             info.setText("please activate update mode (power on with rec button pressed)");
             ui.hardware_connected_label->setText("Lordyphon updater off");
             info.exec();
+            hotplugtimer_on();
             if (usb_port->clear_buffer())
                 usb_port->close_usb_port();
         } 
@@ -260,7 +269,6 @@ void LordyLink::OnGetSetButton()
     
     
     try {
-
         if (usb_port->find_lordyphon_port())
             usb_port->open_lordyphon_port();
 
@@ -320,8 +328,7 @@ void LordyLink::OnGetSetButton()
 
 void LordyLink::OnSendSetButton()
 {
-    
-    try {
+   try {
 
         if (usb_port->find_lordyphon_port())
             usb_port->open_lordyphon_port();
@@ -329,8 +336,7 @@ void LordyLink::OnSendSetButton()
         else 
             throw runtime_error("Lordyphon not connected");
 
-       
-if (!usb_port->lordyphon_update_call()) {
+        if (!usb_port->lordyphon_update_call()) {
             if (usb_port->clear_buffer())
                 usb_port->close_usb_port();
 
@@ -414,6 +420,8 @@ void LordyLink::OnRemoteMessageBox(QString message){
 //enable all buttons on main window
 void LordyLink::OnActivateButtons(){
     
+    qDebug() << "activate Buttons";
+    
     if(!ui.Q_UpdateLordyphonButton->isEnabled())
         ui.Q_UpdateLordyphonButton->setEnabled(true); 
     if (!ui.saveSetButton->isEnabled())                 
@@ -423,11 +431,15 @@ void LordyLink::OnActivateButtons(){
 
     ui.QInstallProgressBar->hide();
     ui.QInstallLabel->hide();
+
+   
 }
 
 
 //deactivate main window buttons
 void LordyLink::OnDeactivateButtons(){
+    
+    qDebug() << "deactivate Buttons";
     
     if (ui.QInstallProgressBar->isHidden())
         ui.QInstallProgressBar->show();
@@ -439,6 +451,8 @@ void LordyLink::OnDeactivateButtons(){
         ui.saveSetButton->setDisabled(true);
     if (ui.sendSetButton->isEnabled())
         ui.sendSetButton->setDisabled(true);
+    
+   
 }
 
 
@@ -482,13 +496,13 @@ void LordyLink::selectItemToSend(const QModelIndex mindex){
 
 void LordyLink::try_download() {
 
-    qDebug() << "download timer on";
+    //qDebug() << "download timer on";
 
-    QUrl url = "stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/";
-    QFileInfo fileinfo(url.path());
-    QString filename = fileinfo.fileName();
+   // QUrl url = "stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/";
+   // QFileInfo fileinfo(url.path());
+   // QString filename = fileinfo.fileName();
     
-    qDebug() << "listing:" << filename;
+   // qDebug() << "listing:" << filename;
     
     QDir firm = QDir::homePath() + "/LordyLink/Firmware";
     
@@ -508,23 +522,41 @@ void LordyLink::try_download() {
 void LordyLink::hotplugtimer_on() {
 
     qDebug() << " hotplugtimer on";
-    hot_plug_timer->start(5000);
+    delay(500);
+    hot_plug_timer->start(2000);
 
 }
 void LordyLink::hotplugtimer_off() {
 
     qDebug() << "hotplugtimer off";
     hot_plug_timer->stop();
-
+    delay(500);
 }
 
 void LordyLink::check_for_lordyphon() {
     
-    qDebug() << "hotplug-timer scanning for lordyphon";
+    //qDebug() << "hotplug-timer scanning for lordyphon";
 
     if (!usb_port->find_lordyphon_port()) {
+        ui.hardware_connected_label->setText("Lordyphon disconnected");
         QMessageBox error;
         error.setText("Lordyphon disconnected!");
         error.exec();
+
     }
+    else
+        ui.hardware_connected_label->setText("Lordyphon connected");
 }
+void LordyLink::check_manufacturer_ID() {
+    if (!usb_port->check_with_manufacturer_ID()) {
+        QMessageBox error;
+        error.setText("Lordyphon disconnected!");
+        error.exec();
+
+    }
+    else
+        ui.hardware_connected_label->setText("Lordyphon connected");
+}
+
+
+

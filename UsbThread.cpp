@@ -13,6 +13,7 @@ void Worker::update()
 {
     //don't allow erratic user input
     emit deactivateButtons();
+    
     //safety
     QMutex mutex;
     mutex.lock(); 
@@ -26,6 +27,7 @@ void Worker::update()
     //SET VARIABLES
     bool carry_on_flag = true;  //START CONDITION TO GET FIRST RECORD
     QByteArray tx_data;
+    ready_read_timeout_ctr = 0;
     //OPEN LOGFILE
     QDateTime now = QDateTime::currentDateTime();
     QString timestamp = now.toString("dd_MM_yyyy___h_m_s");
@@ -62,7 +64,10 @@ void Worker::update()
                 usb_port_update_thread.write_serial_data(tx_data); //SEND RECORD TO USB
                 out << "record nr. " << index << "  " << (tx_data.toHex()) << '\n';  //LOGFILE OUTPUT
             }
-            usb_port_update_thread.wait_for_ready_read(1000);  //THREAD BLOCKS UNTIL INCOMING CONFIRMATION MESSAGE OR TIMEOUT 1000ms
+            if (!usb_port_update_thread.wait_for_ready_read(1000)) //THREAD BLOCKS UNTIL INCOMING CONFIRMATION MESSAGE OR TIMEOUT 1000ms
+                ready_read_timeout_ctr++;
+            
+            
             QString checksum_status = usb_port_update_thread.getInputBuffer(); //GET INCOMING CONFIRMATION MESSAGE
 
             if (checksum_status == lordyphon_response.is_checksum_error) {  //CHECKSUM CALCULATION HAS GONE WRONG
@@ -94,7 +99,7 @@ void Worker::update()
                 carry_on_flag = false;
                 break;
             }
-            if (rx_error_ctr > 8) {     //EXIT CONDITION: CONNECTION ERROR
+            if (rx_error_ctr > 8 || ready_read_timeout_ctr > 8) {     //EXIT CONDITION: CONNECTION ERROR
                 emit setLabel("rx error, check connection ");
                 carry_on_flag = false;
                 break;
@@ -139,8 +144,13 @@ void Worker::get_eeprom_content(){
     emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
-   /*
+    
     SerialHandler usb_port_get_thread;
+
+    //create container
+    QByteArray eeprom;
+
+    ready_read_timeout_ctr = 0;
     
     //check if lordyphon is still connected
     if (!usb_port_get_thread.find_lordyphon_port()) {
@@ -180,29 +190,40 @@ void Worker::get_eeprom_content(){
         emit ProgressBar_setMax(128000);
         //send dump request
         usb_port_get_thread.write_serial_data(call_lordyphon.dump_request); 
-        //incoming message size known, set buffer size
-        usb_port_get_thread.set_buffer_size(4);
-        usb_port_get_thread.wait_for_ready_read(20);
-        //waits
+        delay(10);
         usb_port_get_thread.set_buffer_size(1000);
         usb_port_get_thread.clear_buffer(); //flush out old data
-        //create container
-        QByteArray eeprom;
+       
+        
         //read all in a loop, add input buffer to eeprom byte array
+        
         while (eeprom.size() < 128000) {
-            usb_port_get_thread.wait_for_ready_read(20);
+            
+            if(ready_read_timeout_ctr > 0)
+                qDebug() << "timeout counter: " << ready_read_timeout_ctr;
+            
+            if (!usb_port_get_thread.wait_for_ready_read(300)) 
+                ready_read_timeout_ctr++;
+           
+            if (ready_read_timeout_ctr > 5) {
+                emit remoteMessageBox("connection error, try again");
+                break;
+            }
             eeprom += usb_port_get_thread.getInputBuffer();
             //update progress bar
             emit ProgressBar_valueChanged(eeprom.size());
         }
         //checksum verification
-
+        usb_port_get_thread.clear_buffer();
         usb_port_get_thread.set_buffer_size(2); //set buffer size for 16bit checksum from lordyphon
         usb_port_get_thread.write_serial_data(call_lordyphon.request_checksum);
         usb_port_get_thread.wait_for_ready_read(2000);
 
         QByteArray checksum16bit_from_lordyphon = usb_port_get_thread.getInputBuffer();
-        uint16_t checksum_lordyphon = (checksum16bit_from_lordyphon.at(0) << 8) | checksum16bit_from_lordyphon.at(1);  //assemble uint16_t checksum
+        uint8_t lsb = checksum16bit_from_lordyphon.at(1);
+        uint8_t msb = checksum16bit_from_lordyphon.at(0);
+        
+        uint16_t checksum_lordyphon = ((msb << 8) | lsb);  //assemble uint16_t checksum
         
         ChecksumValidator eeprom_checker;
         eeprom_checker.set_Data(eeprom, checksum_lordyphon);
@@ -241,12 +262,6 @@ void Worker::get_eeprom_content(){
     //clean up, reactivate GUI buttons
     usb_port_get_thread.clear_buffer();
     usb_port_get_thread.close_usb_port();
-    
-    */
-    qDebug() << "starting 15s delay...";
-    delay(15000);
-    qDebug() << "end delay, emit finished";
-    
     emit activateButtons();
     mutex.unlock();
     emit finished();
@@ -263,8 +278,10 @@ void Worker::send_eeprom_content(){
     emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
+   
     
     SerialHandler usb_port_send_thread;
+    ready_read_timeout_ctr = 0;
     
     emit setLabel("sending set");
     
@@ -278,7 +295,7 @@ void Worker::send_eeprom_content(){
     if (!usb_port_send_thread.lordyphon_port_is_open())
         usb_port_send_thread.open_lordyphon_port();
 
-    delay(500);
+   
     usb_port_send_thread.set_buffer_size(100);
     
     if(!usb_port_send_thread.clear_buffer())
@@ -319,7 +336,19 @@ void Worker::send_eeprom_content(){
                 checksum_vec += temp_record; // sum up all bytes for checksum calculation
                 usb_port_send_thread.write_serial_data(temp_record);  //send record
                 usb_port_send_thread.set_buffer_size(3);   //expected confirmation mnessage size
-                usb_port_send_thread.wait_for_ready_read(1000);      //wait for confirmation
+                
+                if (ready_read_timeout_ctr > 0)
+                    qDebug() << "timeout counter: " << ready_read_timeout_ctr;
+                
+                if (!usb_port_send_thread.wait_for_ready_read(200))
+                    ready_read_timeout_ctr++;
+
+                if (ready_read_timeout_ctr > 2) {
+                    emit remoteMessageBox("connection error, try again");
+                    emit setLabel("connection error");
+                    break;
+                }
+
                 //any 3 byte message could be used here, this is just for synchronizing
                 usb_port_send_thread.getInputBuffer(); //dummy read
 
@@ -333,7 +362,7 @@ void Worker::send_eeprom_content(){
             delay(500);
             usb_port_send_thread.write_serial_data(call_lordyphon.request_checksum);
             emit setLabel("waiting for checksum");
-            usb_port_send_thread.wait_for_ready_read(-1); // no timeout
+            usb_port_send_thread.wait_for_ready_read(1000); 
             
             QByteArray checksum_from_lordyphon = usb_port_send_thread.getInputBuffer();
             uint8_t msb = checksum_from_lordyphon.at(0); //big endian

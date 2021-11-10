@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QBuffer>
 #include "LordyphonMessageStrings.h"
+#include <exception>
 
 //WRAPPER FOR QSERIALPORT
 
@@ -21,12 +22,13 @@ public:
 	bool open_lordyphon_port();
 	bool lordyphon_handshake();
 	bool write_serial_data(const QByteArray& tx_data);
-	void wait_for_ready_read(int timeout)const;
+	bool wait_for_ready_read(int timeout)const;
 	bool lordyphon_update_call();
 	bool lordyphon_port_is_open();
 	void close_usb_port();
 	void set_buffer_size(qint64 size)const;
 	bool clear_buffer();
+	bool check_with_manufacturer_ID();
 	QByteArray& getInputBuffer(){ return input_buffer; }
 	
 signals:
@@ -34,13 +36,16 @@ signals:
 public slots:
 
 	void onReadyRead();
+	void check_for_lordyphon();
 	
+
 private:
 	
 	QSerialPort* lordyphon_port;
 	QString lordyphon_portname;
 	QByteArray input_buffer = 0;
-	
+	QSerialPortInfo save_info;
+	size_t port_index = 0;
 	LordyphonCall lordyphon_call;
 	LordyphonResponse lordyphon_response;
 

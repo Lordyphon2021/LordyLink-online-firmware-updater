@@ -76,6 +76,7 @@ public slots:
     void OnRemoteMessageBox(QString message);
     void try_download();
     void check_for_lordyphon();
+    void check_manufacturer_ID();
     void hotplugtimer_on();
     void hotplugtimer_off();
 
