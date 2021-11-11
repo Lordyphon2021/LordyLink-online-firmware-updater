@@ -47,12 +47,14 @@ public:
 
         foreach(QString dirFile, firmware.entryList())
             firmware.remove(dirFile);
+
+
     }
     
     Ui::LordyLinkClass ui;
     
 signals:
-    void rightMouseButtonClicked();
+    
     
 public slots:
     //MAIN FEATURES
@@ -64,6 +66,8 @@ public slots:
     void renameStart(const QModelIndex);
     void renameEnd(QStandardItem*);
     void selectItemToSend(const QModelIndex mindex);
+    void selectItemToDelete(const QModelIndex mindex);
+    void deleteSet();
     //GUI Feedback
     void ProgressBar_OnValueChanged(int val) { ui.QInstallProgressBar->setValue(val); }
     void ProgressBar_OnsetMax(int val) { ui.QInstallProgressBar->setMaximum(val); }
@@ -93,7 +97,7 @@ private:
     QTimer* download_timer = nullptr;
     QTimer* hot_plug_timer = nullptr;
     QString firmware_path;
-   
+    QString to_delete;
 
     inline void delay(int millisecondsWait){
         QEventLoop loop;

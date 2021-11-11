@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>372</width>
-    <height>504</height>
+    <width>1141</width>
+    <height>606</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,39 +26,13 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>10</y>
+      <x>50</x>
+      <y>60</y>
       <width>311</width>
       <height>51</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QLabel" name="hardware_connected_label">
-       <property name="font">
-        <font>
-         <family>Lucida Sans Typewriter</family>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::DefaultContextMenu</enum>
-       </property>
-       <property name="accessibleName">
-        <string>0</string>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Sunken</enum>
-       </property>
-       <property name="lineWidth">
-        <number>0</number>
-       </property>
-       <property name="text">
-        <string>USB status</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QPushButton" name="Q_UpdateLordyphonButton">
        <property name="font">
@@ -78,9 +52,9 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>140</y>
-      <width>311</width>
+      <x>920</x>
+      <y>340</y>
+      <width>81</width>
       <height>21</height>
      </rect>
     </property>
@@ -95,16 +69,101 @@
      <string>saved sets:</string>
     </property>
    </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QProgressBar" name="QInstallProgressBar">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>410</y>
-      <width>311</width>
-      <height>31</height>
+      <x>50</x>
+      <y>120</y>
+      <width>341</width>
+      <height>21</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="value">
+     <number>24</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="QInstallLabel">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>120</y>
+      <width>309</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Lucida Sans Typewriter</family>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
+    </property>
+    <property name="accessibleName">
+     <string>0</string>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="lineWidth">
+     <number>0</number>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QTableView" name="dirView">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>370</y>
+      <width>161</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Lucida Sans Typewriter</family>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
+    <property name="alternatingRowColors">
+     <bool>false</bool>
+    </property>
+    <property name="showGrid">
+     <bool>false</bool>
+    </property>
+    <property name="sortingEnabled">
+     <bool>true</bool>
+    </property>
+    <attribute name="horizontalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>330</y>
+      <width>160</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QPushButton" name="sendSetButton">
        <property name="font">
@@ -133,14 +192,28 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="delete_set_pushButton">
+       <property name="font">
+        <font>
+         <family>Lucida Sans Typewriter</family>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>delete set</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>120</y>
-      <width>961</width>
+      <x>710</x>
+      <y>320</y>
+      <width>401</width>
       <height>20</height>
      </rect>
     </property>
@@ -148,32 +221,78 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QProgressBar" name="QInstallProgressBar">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
+   <widget class="Line" name="line_2">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>90</y>
-      <width>341</width>
-      <height>16</height>
+      <x>700</x>
+      <y>330</y>
+      <width>20</width>
+      <height>211</height>
      </rect>
     </property>
-    <property name="value">
-     <number>24</number>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
     </property>
    </widget>
-   <widget class="QLabel" name="QInstallLabel">
-    <property name="enabled">
-     <bool>true</bool>
+   <widget class="Line" name="line_3">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>160</y>
+      <width>371</width>
+      <height>20</height>
+     </rect>
     </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_4">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>50</y>
+      <width>20</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_5">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>40</y>
+      <width>371</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_6">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>20</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="hardware_connected_label">
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>70</y>
+      <y>520</y>
       <width>309</width>
-      <height>12</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
@@ -189,6 +308,9 @@
     <property name="accessibleName">
      <string>0</string>
     </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
     <property name="frameShadow">
      <enum>QFrame::Sunken</enum>
     </property>
@@ -196,39 +318,37 @@
      <number>0</number>
     </property>
     <property name="text">
-     <string/>
+     <string>USB status</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QTableView" name="dirView">
+   <widget class="Line" name="line_7">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>170</y>
-      <width>311</width>
-      <height>221</height>
+      <x>710</x>
+      <y>530</y>
+      <width>401</width>
+      <height>20</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <family>Lucida Sans Typewriter</family>
-      <pointsize>8</pointsize>
-     </font>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
     </property>
-    <property name="alternatingRowColors">
-     <bool>false</bool>
+   </widget>
+   <widget class="Line" name="line_8">
+    <property name="geometry">
+     <rect>
+      <x>1100</x>
+      <y>330</y>
+      <width>20</width>
+      <height>211</height>
+     </rect>
     </property>
-    <property name="showGrid">
-     <bool>false</bool>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
     </property>
-    <property name="sortingEnabled">
-     <bool>true</bool>
-    </property>
-    <attribute name="horizontalHeaderVisible">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="verticalHeaderVisible">
-     <bool>false</bool>
-    </attribute>
    </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -245,7 +365,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>372</width>
+     <width>1141</width>
      <height>26</height>
     </rect>
    </property>

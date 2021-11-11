@@ -35,8 +35,8 @@ public:
 			data_vec.remove(0, 1); // remove hexfile-header ':' for calculation
 			uint32_t vec_sum = std::accumulate(data_vec.begin(), data_vec.end(), 0);
 			checksum8_calculated = ~(vec_sum & 0x00ff) + 0x01;
-			qDebug() << "checksum from file: " << checksum_from_file;
-			qDebug() << "local checksum: " << checksum8_calculated;
+			//qDebug() << "checksum from file: " << checksum_from_file;
+			//qDebug() << "local checksum: " << checksum8_calculated;
 			return (checksum_from_file == checksum8_calculated);
 		}
 		else {						// is eeprom data

@@ -20,16 +20,18 @@ public:
 	QUpdateDialog(QDialog* parent = Q_NULLPTR);
 	~QUpdateDialog();
 
-	QString get_firmware_version() { return selected_firmware; }
+	//QString get_firmware_version() { return selected_firmware; }
 
 public slots:
 	
 	
-void return_path(const QModelIndex mindex)
-{
+void send_path_to_lordylinkcpp(const QModelIndex mindex){
+	
 	selected_firmware = ui.tableView->model()->index(mindex.row(), 0).data().toString();
-	qDebug() << selected_firmware;
+	qDebug() << "emitting path string from dialog to lordylink.cpp" << selected_firmware;
 	ui.QInstallButton->setEnabled(true);
+	
+	emit selected_version(selected_firmware);
 }
 
 signals:
@@ -38,7 +40,7 @@ signals:
 private:
 	Ui::QUpdateDialog ui;
 	
-	void download_firmware();
+	void downloaded_firmware_versions();
 	
 	QStandardItemModel* model;
 	QString selected_firmware;

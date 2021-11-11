@@ -86,6 +86,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DeleteDialog.cpp" />
     <ClCompile Include="Downloader.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="QNoHardwareDialog.cpp" />
@@ -94,6 +95,7 @@
     <ClCompile Include="Serial.cpp" />
     <ClCompile Include="UsbThread.cpp" />
     <QtRcc Include="LordyLink.qrc" />
+    <QtUic Include="DeleteDialog.ui" />
     <QtUic Include="LordyLink.ui">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </QtUic>
@@ -117,6 +119,7 @@
     <QtMoc Include="QNoHardwareDialog.h" />
     <QtMoc Include="QUpdateDialog.h" />
     <QtMoc Include="Serial.h" />
+    <QtMoc Include="DeleteDialog.h" />
     <ClInclude Include="LordyphonMessageStrings.h" />
     <ClInclude Include="Parser.h" />
   </ItemGroup>

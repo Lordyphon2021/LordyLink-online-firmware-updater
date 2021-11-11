@@ -16,7 +16,7 @@ QUpdateDialog::QUpdateDialog(QDialog *parent)
 	QObject::connect(ui.QCancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 	
 	ui.QInstallButton->setDisabled(true);
-	download_firmware();
+	downloaded_firmware_versions();
 	
 }
 
@@ -25,7 +25,7 @@ QUpdateDialog::~QUpdateDialog()
 }
 
 
-void QUpdateDialog::download_firmware()
+void QUpdateDialog::downloaded_firmware_versions()
 {
 	
 	QString home = QDir::homePath() + "/LordyLink/Firmware";
@@ -51,7 +51,7 @@ void QUpdateDialog::download_firmware()
 		ui.tableView->setColumnWidth(col, 320);
 	
     //single click to select item
-    QObject::connect(ui.tableView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(return_path(const QModelIndex)));
+    QObject::connect(ui.tableView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(send_path_to_lordylinkcpp(const QModelIndex)));
    
 	
 

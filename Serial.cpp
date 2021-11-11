@@ -12,8 +12,6 @@ SerialHandler::SerialHandler(QObject* parent): QObject(parent){
 	lordyphon_port = new QSerialPort(this);
 	lordyphon_port->setReadBufferSize(10);
 	QObject::connect(lordyphon_port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-	//QObject::connect(lordyphon_port, SIGNAL(QSerialPort::errorOccurred()), this, SLOT(check_with_manufacturer_ID()));
-
 }
 
 //FINAL IDENTIFICATION INSTEAD OF CHECKING VENDOR ID		
@@ -34,22 +32,20 @@ bool SerialHandler::lordyphon_handshake() {
 bool SerialHandler::find_lordyphon_port(){
 	
 	try {
-
-		//qDebug() << "in find_lordyphon_port";
 		port_index = 0;
 		
 		foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts()){
 			
-			if (info.manufacturer() == "FTDI") {		//this in't enough for identification, I have no vendor ID
+			if (info.manufacturer() == "FTDI") {		//this in't enough for identification, I have no vendor ID yet, any FTDI based device will be found here...
 				lordyphon_portname = info.portName();  //handshake will confirm lordyphon ID
 				
-					if (open_lordyphon_port() && (lordyphon_handshake() || lordyphon_update_call())) {			//try handshake on each ftdi port to identify lordyphon
-						lordyphon_port->close();			//
+					if (open_lordyphon_port() && (lordyphon_handshake() || lordyphon_update_call())) {	 //try handshakes on each FTDI port to identify lordyphon
+						lordyphon_port->close();			
 					
 						return true;
 					}
 			}
-			++port_index;
+			++port_index;  // lordyphon usb port number stored here...
 
 		}
 		return false;
@@ -65,24 +61,20 @@ bool SerialHandler::check_with_manufacturer_ID() {
 	size_t check_index = 0;
 	
 	foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts()) {
-		if (info.manufacturer() == "FTDI" && port_index == check_index) {
+		if (info.manufacturer() == "FTDI" && port_index == check_index) {  //check if lordyphon is still on the same usb port
 			
-			qDebug() << " manufacturer found at same index";
+			qDebug() << " manufacturer ID found at same index";
 			return true;
 		}
-			
-		
 		++check_index;
 	}
 	qDebug() << " index not correct, searching port again";
-	find_lordyphon_port();
+	find_lordyphon_port();  //otherwise check again with handshakes
 	return false;
 }
 
 bool SerialHandler::open_lordyphon_port()// open connection with correct port name
 {
-	
-	
 		lordyphon_port->setPortName(lordyphon_portname);
 		lordyphon_port->open(QIODevice::OpenMode(QIODevice::ReadWrite));
 		lordyphon_port->setBaudRate(QSerialPort::Baud57600);
@@ -96,14 +88,11 @@ bool SerialHandler::open_lordyphon_port()// open connection with correct port na
 
 		return false;
 
-	
-	
-	
 }
 	
 bool SerialHandler::clear_buffer() { return lordyphon_port->clear(); } 
 
-//CLOSE PORT AFTER ACTION, THERE CAN ONLY BE ONE LORDYPHON PORT
+//CLOSE PORT AFTER ACTION
 void SerialHandler::close_usb_port(){ lordyphon_port->close(); }
 
 //ADJUST BUFFERSIZE TO MATCH EXPECTED MESSAGE SIZE
@@ -123,7 +112,7 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data) {
 
 //BLOCKING FUNCTION, WAITS UNTIL BUFFER IS FULL OR UNTIL TIMEOUT (MS)
 //TIMEOUT -1 => WAITS FOREVER
-//EMITS SIGNAL WHEN IT'S DONE
+//EMITS SIGNAL TO onReadyRead() WHEN IT'S DONE
 
 bool SerialHandler::wait_for_ready_read(int timeout)const {
 	return lordyphon_port->waitForReadyRead(timeout);
@@ -169,9 +158,4 @@ bool SerialHandler::lordyphon_port_is_open(){
 	return false;
 }
 
-void SerialHandler::check_for_lordyphon() {
 
-	
-		qDebug() << "disconnected";
-	
-}

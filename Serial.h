@@ -36,7 +36,7 @@ signals:
 public slots:
 
 	void onReadyRead();
-	void check_for_lordyphon();
+	
 	
 
 private:

@@ -8,6 +8,8 @@
 #include <QSerialPortInfo>
 #include <QIODevice>
 #include <QDialog>
+#include "DeleteDialog.h"
+
 
 
 
@@ -15,7 +17,7 @@ using namespace std;
 
 
 //GUI constructor, sets up file system, downloads all available firmware files
-// and checks for lordyphon on the usb ports
+// and checks for lordyphon on usb ports
 
 LordyLink::LordyLink(QWidget *parent)
     : QMainWindow(parent)
@@ -56,9 +58,9 @@ LordyLink::LordyLink(QWidget *parent)
     }
     //connect qtableview with model
     ui.dirView->setModel(model);
+    
     // set column size
-    for (int col = 0; col < model->rowCount(); col++)
-    {
+    for (int col = 0; col < model->rowCount(); col++){
         ui.dirView->setColumnWidth(col, 320);
     }
     
@@ -69,12 +71,12 @@ LordyLink::LordyLink(QWidget *parent)
     QObject::connect(ui.dirView->model(), SIGNAL(itemChanged(QStandardItem*)), SLOT(renameEnd(QStandardItem*)));
     //single click to select item and copy path
     QObject::connect(ui.dirView, SIGNAL(clicked(const QModelIndex&)), SLOT(selectItemToSend(const QModelIndex)));
-   
+    QObject::connect(ui.dirView, SIGNAL(clicked(const QModelIndex&)), SLOT(selectItemToDelete(const QModelIndex)));
     //connect gui buttons
     QObject::connect(ui.Q_UpdateLordyphonButton, SIGNAL(clicked()), this, SLOT(OnUpdateButton()));
     QObject::connect(ui.saveSetButton, SIGNAL(clicked()), this, SLOT(OnGetSetButton()));
     QObject::connect(ui.sendSetButton, SIGNAL(clicked()), this, SLOT(OnSendSetButton()));
-   
+    QObject::connect(ui.delete_set_pushButton, SIGNAL(clicked()), this, SLOT(deleteSet()));
     
     ui.hardware_connected_label->setText("       ");
     ui.QInstallLabel->hide();
@@ -131,63 +133,73 @@ LordyLink::LordyLink(QWidget *parent)
                 usb_port->open_lordyphon_port();
                 if (usb_port->lordyphon_handshake()) {
                     ui.hardware_connected_label->setText("Lordyphon connected");
-                    if (usb_port->clear_buffer())  //not sure if clear_buffer does exactly what it should
-                        usb_port->close_usb_port(); //but the whole thing does seem less glitchy
+                    if (usb_port->clear_buffer())  
+                        usb_port->close_usb_port(); 
                 }
             }
 
         }//end: while (!usb_port->find_lordyphon_port())
         
             
-    }//lordyphon was connected from the start
+    }//lordyphon found
     else if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && usb_port->lordyphon_handshake()) {
         ui.hardware_connected_label->setText("Lordyphon connected");
         if (usb_port->clear_buffer())
             usb_port->close_usb_port();
     }
     
-    //assume that there are 10 different versions on the ftp server, try and load all, downloader will delete empty files
+    //assume that there are 10 firmware files on the ftp server, try and load all, downloader will delete empty files
+    //TODO: display available files on server
    
     try_download();
     download_timer = new QTimer(this);
     connect(download_timer, SIGNAL(timeout()), this, SLOT(try_download()));
     download_timer->start(20000);
 
+    
+    //hotplug detection
     hot_plug_timer = new QTimer(this);
     connect(hot_plug_timer, SIGNAL(timeout()), this, SLOT(check_manufacturer_ID()));
     hot_plug_timer->start(2000);
+
+    QPixmap bkgnd(QDir::homePath() + "/LordyLink/lordi3drender.jpg");
+    bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
+    QPalette palette;
+    palette.setBrush(QPalette::Background, bkgnd);
+    this->setPalette(palette);
 }
 
 
 
  //"update firmware" button opens dialog, where all available releases are displayed in a QTableView window.
- //path to selected version will be passed to the parser class via signal (in update_thread)
- //where it will be checked for validity and checksum errors (a line of a hexfile is called record)
- //and then stored in a container of plain record data vectors (std::vector<QByteArray>)
+ //path to selected version will be passed to the parser object in a new thread via signal (in update_thread)
+ //where it will be checked for validity and checksum errors (a line of an intel hexfile is called record)
+ //and then stored in a container of plain record-data QByteArrays (QVector<QByteArray>)
  //from which the data section will be transfered to lordyphon, one record at a time.
  //if lordyphon confirms correct checksum, next record will be sent until EOF.
  // -error handling explained in parser class / update_worker...
- //when transmission is ok, lordyphon burns the data into the application section of its flash memory.
+ //when transmission is ok, lordyphon burns the firmware data into the application section of its flash memory.
  //user is prompted to restart lordyphon
 void LordyLink::OnUpdateButton(){
 
-    
-     
     try {
-
-        hotplugtimer_off();
+           
+        QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
+        if (firmware.isEmpty()) {
+            QMessageBox info;
+            info.setText("Folder empty, download still in progress. Please try again.");
+            info.exec();
+            return;
+        }
+            
         
-        if(usb_port->find_lordyphon_port())
-            usb_port->open_lordyphon_port();
-
-        else 
-            throw runtime_error("Lordyphon not connected");
         
+        usb_port->open_lordyphon_port();
 
-        if (usb_port->lordyphon_update_call()) {  //lordyphon has to be in update mode for this, different response
+        if (usb_port->lordyphon_update_call()) {  //lordyphon has to be in update mode for this
             ui.hardware_connected_label->setText("Lordyphon updater on");
             
-            if (usb_port->clear_buffer())       //than regular handshake
+            if (usb_port->clear_buffer())      
                 usb_port->close_usb_port();
 
             update_dialog = new QUpdateDialog;
@@ -196,11 +208,12 @@ void LordyLink::OnUpdateButton(){
             ui.QInstallProgressBar->hide();
             //pass path to firmware version as QString from update dialog
             connect(update_dialog, SIGNAL(selected_version(QString)), this, SLOT(set_firmware_path_from_dialog(QString)));
+            
             int update_dialog_code = update_dialog->exec(); //evaluate dialog result
 
             if (update_dialog_code == QDialog::Accepted) {  //if update is confirmed, new thread is created
                //assemble path string with selected firmware version from dialog
-                QString path_to_selected_firmware = QDir::homePath() + "/LordyLink/Firmware/" + update_dialog->get_firmware_version();
+                QString path_to_selected_firmware = QDir::homePath() + "/LordyLink/Firmware/" + firmware_path;
                 Worker* update_worker = new Worker(path_to_selected_firmware, true); //the boolean is a dummy to have a dedicated ctor for this
                 USBThread* update_thread = new USBThread;
                 //setup gui feedback
@@ -229,11 +242,7 @@ void LordyLink::OnUpdateButton(){
                 connect(update_worker, SIGNAL(deactivateButtons()), this, SLOT(hotplugtimer_off()));
                 update_thread->start();
             }
-            else {
-                hotplugtimer_on();
-
-
-            }
+            
         }//end: if(usb_port->lordyphon_update_call()) 
        
         else { //lordyphon is not in update mode
@@ -241,7 +250,7 @@ void LordyLink::OnUpdateButton(){
             info.setText("please activate update mode (power on with rec button pressed)");
             ui.hardware_connected_label->setText("Lordyphon updater off");
             info.exec();
-            hotplugtimer_on();
+           
             if (usb_port->clear_buffer())
                 usb_port->close_usb_port();
         } 
@@ -254,20 +263,18 @@ void LordyLink::OnUpdateButton(){
         error.exec();
         ui.hardware_connected_label->setText("Lordyphon disconnected");
     }
-    qDebug() << "starting hotplug timer from update function";
+    
    
 }
  
-//this worker method requests a full memory dump from lordyphon
+//this method starts a thread, which requests a full memory dump from lordyphon
 //and compares checksum from lordyphon with local checksum (summing up all bytes with an uint16_t
 //-overflow is the same on both systems)
 //if checksum is correct, file is saved in folder "Sets" and displayed in the QTableView Window
 //where it can be renamed. default name is "saved set" and a time stamp.
 
 void LordyLink::OnGetSetButton()
-{   //always check if lordyphon is connected, no hot plugging detection implemented( QT doesn't offer one)
-    
-    
+{  
     try {
         if (usb_port->find_lordyphon_port())
             usb_port->open_lordyphon_port();
@@ -323,7 +330,7 @@ void LordyLink::OnGetSetButton()
     }
 }
 
-//this worker sends a selected set to lordyphon and overwrites the internal memory.
+//this method sends a selected set in a new thread to lordyphon and overwrites the internal memory.
 //user is made aware that this operation is destructive.
 
 void LordyLink::OnSendSetButton()
@@ -428,6 +435,8 @@ void LordyLink::OnActivateButtons(){
         ui.saveSetButton->setEnabled(true);
     if (!ui.sendSetButton->isEnabled())
         ui.sendSetButton->setEnabled(true);
+    if (!ui.delete_set_pushButton->isEnabled())
+        ui.delete_set_pushButton->setEnabled(true);
 
     ui.QInstallProgressBar->hide();
     ui.QInstallLabel->hide();
@@ -451,7 +460,8 @@ void LordyLink::OnDeactivateButtons(){
         ui.saveSetButton->setDisabled(true);
     if (ui.sendSetButton->isEnabled())
         ui.sendSetButton->setDisabled(true);
-    
+    if (ui.delete_set_pushButton->isEnabled())
+        ui.delete_set_pushButton->setDisabled(true);
    
 }
 
@@ -494,15 +504,55 @@ void LordyLink::selectItemToSend(const QModelIndex mindex){
     selected_set = ui.dirView->model()->index(mindex.row(), 0).data().toString();
 }
 
+void LordyLink::selectItemToDelete(const QModelIndex mindex) {
+
+    to_delete = ui.dirView->model()->index(mindex.row(), 0).data().toString();
+}
+
+void LordyLink::deleteSet() {
+
+    DeleteDialog* delete_dialog = new DeleteDialog;
+    delete_dialog->show();
+    int delete_dialog_code = delete_dialog->exec();
+    //user is sure
+    if (delete_dialog_code == QDialog::Accepted) {
+
+        delete model;
+        model = new QStandardItemModel();
+        QFile::remove(QDir::homePath() + "/LordyLink/Sets/" + to_delete);  //set new name
+
+        home = QDir::homePath() + "/LordyLink/Sets";
+        QDir directory(home);
+        QStringList txtfiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
+
+        foreach(QString filename, txtfiles) {
+            qDebug() << filename;
+            QStandardItem* itemname = new QStandardItem(filename);
+            itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
+            model->appendRow(QList<QStandardItem*>() << itemname);
+        }
+        //connect qtableview with model
+        ui.dirView->setModel(model);
+
+        // set column size
+        for (int col = 0; col < model->rowCount(); col++) {
+            ui.dirView->setColumnWidth(col, 320);
+        }
+
+        qDebug() << " in delete set";
+
+    }else
+        return;
+}
+
+
+
+
+
+
+
+
 void LordyLink::try_download() {
-
-    //qDebug() << "download timer on";
-
-   // QUrl url = "stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/";
-   // QFileInfo fileinfo(url.path());
-   // QString filename = fileinfo.fileName();
-    
-   // qDebug() << "listing:" << filename;
     
     QDir firm = QDir::homePath() + "/LordyLink/Firmware";
     
@@ -523,14 +573,20 @@ void LordyLink::hotplugtimer_on() {
 
     qDebug() << " hotplugtimer on";
     delay(500);
-    hot_plug_timer->start(2000);
+   
+    if(!hot_plug_timer->isActive())
+        hot_plug_timer->start(2000);
 
 }
 void LordyLink::hotplugtimer_off() {
 
     qDebug() << "hotplugtimer off";
-    hot_plug_timer->stop();
-    delay(500);
+    
+    if (hot_plug_timer->isActive()) {
+        hot_plug_timer->stop();
+        delay(500);
+    }
+   
 }
 
 void LordyLink::check_for_lordyphon() {
@@ -549,6 +605,7 @@ void LordyLink::check_for_lordyphon() {
 }
 void LordyLink::check_manufacturer_ID() {
     if (!usb_port->check_with_manufacturer_ID()) {
+        ui.hardware_connected_label->setText("Lordyphon disconnected");
         QMessageBox error;
         error.setText("Lordyphon disconnected!");
         error.exec();
