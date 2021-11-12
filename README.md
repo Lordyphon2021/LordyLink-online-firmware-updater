@@ -16,7 +16,7 @@ USE CASE 3: SEND TO CONTROLLER:     app sends stored user data back to the contr
 
 
 LordyLink will only start if the controller is connected. hot plug detection scans the connection every 2 seconds.
-GUI pushbuttons ( and dialogues ) kick of all described use cases in a seperate thread each. pushbuttons are set to inactive, once
+GUI pushbuttons ( and dialogues ) kick off all described use cases in a seperate thread. pushbuttons are set to inactive, once
 one of the threads starts to prevent erratic behaviour.
 
 most of the business logic can be found in LordyLink.cpp and USBThread.cpp,
