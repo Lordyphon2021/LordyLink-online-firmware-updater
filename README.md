@@ -5,7 +5,7 @@ user-data management purposes via USB.
 
 
 USE CASE 1: FIRMWARE UPDATE:        app loads all available firmware versions from manufacturer website and displays them in a QTableView.
-                                    selected firmware updates the microcontroller after stringent checksum verifications.
+                                    selected firmware updates the microcontroller after successful checksum verifications.
 
 
 USE CASE 2: LOAD AND SAVE:          app loads eeprom data from controller and saves it to harddisk. files are displayed in another QTableView
