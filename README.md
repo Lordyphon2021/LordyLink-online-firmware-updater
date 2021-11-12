@@ -24,7 +24,11 @@ SerialHandler is a wrapper-class for QSerialPort to prevent code redundancy,
 detailed description in the comments.
 
 TODOs: -display available firmware-versions before downloading them. 
+       
        -implement "abort" message on controller and LordyLink.
+       
        -implement "delete set" on mouse right-click instead of push button.
+       
        -eliminate code redundancies and useless debugging branches
+       
        -make GUI design less hideous.
