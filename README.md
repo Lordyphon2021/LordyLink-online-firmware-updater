@@ -1,6 +1,6 @@
 # LordyLink
 
-this QT-based GUI application connects a PC to a ATMega 644PA microcontroller-based embedded Eurorack Synth Controller for updating and 
+this QT-based GUI application connects a PC to an ATMega 644PA microcontroller-based embedded Eurorack Synth Controller for updating and 
 user-data management purposes via USB.
 
 
