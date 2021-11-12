@@ -12,7 +12,7 @@ USE CASE 2: LOAD AND SAVE:          app loads eeprom data from controller and sa
                                     where they can be renamed and/or deleted. 
              
 
-USE CASE 3: SEND TO CONTROLLER:     app sends stored eprom data back to the controller, where it is burned to eeprom.
+USE CASE 3: SEND TO CONTROLLER:     app sends stored user data back to the controller, where it is burned to eeprom.
 
 
 LordyLink will only start if the controller is connected. hot plug detection scans the connection every 2 seconds.
