@@ -23,7 +23,8 @@ most of the business logic can be found in LordyLink.cpp and USBThread.cpp,
 SerialHandler is a wrapper-class for QSerialPort to prevent code redundancy,
 detailed description in the comments.
 
-TODOs: -display available firmware-versions before downloading them. 
+TODOs: 
+       -display available firmware-versions before downloading them. 
        
        -implement "abort" message on controller and LordyLink.
        
