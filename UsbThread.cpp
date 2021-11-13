@@ -229,6 +229,8 @@ void Worker::get_eeprom_content(){
                     delay(1000);
                     set_file.close();
                     usb_port_get_thread.write_serial_data(call_lordyphon.abort);
+                    delay(200);
+                    usb_port_get_thread.write_serial_data(call_lordyphon.abort);
                     usb_port_get_thread.close_usb_port();
                     QDir sets = new_filepath_qstring;
                     sets.remove(new_filepath_qstring);

@@ -458,6 +458,8 @@ void LordyLink::OnActivateButtons(){
     
     qDebug() << "activate Buttons";
     ui.abort_pushButton->hide();
+
+    delay(2000);
     
     if(!ui.Q_UpdateLordyphonButton->isEnabled())
         ui.Q_UpdateLordyphonButton->setEnabled(true); 
