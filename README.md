@@ -22,8 +22,7 @@ App sends stored user data back to the controller, where it is burned to eeprom.
 
 
 LordyLink will only start if the controller is connected. hot plug detection scans the connection every 2 seconds.
-GUI pushbuttons ( and dialogues ) kick off all described use cases in a seperate thread. pushbuttons are set to inactive, once
-one of the threads starts to prevent erratic behaviour.
+GUI pushbuttons ( and dialogues ) kick off all described use cases in seperate threads. 
 
 Most of the business logic can be found in LordyLink.cpp and USBThread.cpp,
 SerialHandler is a wrapper-class for QSerialPort to prevent code redundancy,
