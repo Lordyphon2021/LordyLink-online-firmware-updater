@@ -34,6 +34,6 @@ TODOs:
        
        -implement "delete set" on mouse right-click instead of push button.
        
-       -eliminate code redundancies and useless debugging branches
+       
        
      
