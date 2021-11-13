@@ -9,6 +9,8 @@
 #include <QIODevice>
 #include <QDialog>
 #include "DeleteDialog.h"
+#include <qpalette.h>
+
 
 
 
@@ -43,7 +45,7 @@ LordyLink::LordyLink(QWidget *parent)
     QDir log(QDir::homePath() + "/LordyLink/log");
     if (!log.exists())
         log.mkpath(".");
-    
+   
     
     // read sets from directory
     home = QDir::homePath() + "/LordyLink/Sets";
@@ -53,16 +55,35 @@ LordyLink::LordyLink(QWidget *parent)
     foreach(QString filename, txtfiles) {
         qDebug() << filename;
         QStandardItem* itemname = new QStandardItem(filename);
+        itemname->setBackground(QColor(Qt::lightGray));
         itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
         model->appendRow(QList<QStandardItem*>() << itemname);
     }
     //connect qtableview with model
     ui.dirView->setModel(model);
-    
+     
     // set column size
     for (int col = 0; col < model->rowCount(); col++){
         ui.dirView->setColumnWidth(col, 320);
+        
     }
+
+    
+    //resize update button
+    
+    QSize q;
+    q.setWidth(400);
+    q.setHeight(50);
+    ui.Q_UpdateLordyphonButton->setFixedSize(q);
+    QFont font("Lucida Typewriter", 20, QFont::Bold);
+   
+    
+    ui.Q_UpdateLordyphonButton->setFont(font);
+    ui.Q_UpdateLordyphonButton->setPalette(QColor(Qt::lightGray));
+    ui.Q_UpdateLordyphonButton->setText("update firmware        ");
+
+    
+   
     
     //connect slots
     
@@ -77,11 +98,13 @@ LordyLink::LordyLink(QWidget *parent)
     QObject::connect(ui.saveSetButton, SIGNAL(clicked()), this, SLOT(OnGetSetButton()));
     QObject::connect(ui.sendSetButton, SIGNAL(clicked()), this, SLOT(OnSendSetButton()));
     QObject::connect(ui.delete_set_pushButton, SIGNAL(clicked()), this, SLOT(deleteSet()));
+   
+    
     
     ui.hardware_connected_label->setText("       ");
     ui.QInstallLabel->hide();
     ui.QInstallProgressBar->hide();
-	
+    ui.abort_pushButton->hide();
     
     //GUI is only created if lordyphon is detected
     //without lordyphon user is forced to quit 
@@ -111,20 +134,8 @@ LordyLink::LordyLink(QWidget *parent)
                 ctr = 0;
                
                 QMessageBox error(QMessageBox::Information, "Information", "");
-               
-
-                //Change background color
-                QPalette palette;
-                palette.setColor(QPalette::Background, Qt::cyan);
-                error.setPalette(palette);
-
-                //Change font
-                QFont font("Lucida Typewriter");
-                font.setPointSize(10);
-                font.setBold(true);
-                
+                QFont font("Lucida Typewriter", 8, QFont::Bold);
                 error.setFont(font);
-                
                 error.setText("please connect Lordyphon...ain't no good without a Lordyphon! ");
                 error.exec();
             }
@@ -184,9 +195,13 @@ void LordyLink::OnUpdateButton(){
 
     try {
            
+       
+        
         QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
         if (firmware.isEmpty()) {
             QMessageBox info;
+            QFont font("Lucida Typewriter", 8, QFont::Bold);
+            info.setFont(font);
             info.setText("Folder empty, download still in progress. Please try again.");
             info.exec();
             return;
@@ -240,6 +255,8 @@ void LordyLink::OnUpdateButton(){
                 //and reactivated when thread is finished
                 connect(update_worker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
                 connect(update_worker, SIGNAL(deactivateButtons()), this, SLOT(hotplugtimer_off()));
+                connect(ui.abort_pushButton, &QPushButton::clicked, update_thread, &QThread::requestInterruption);
+                connect(update_worker, SIGNAL(deactivateAbortButton()), this, SLOT(OnHideAbortButton()));
                 update_thread->start();
             }
             
@@ -247,6 +264,8 @@ void LordyLink::OnUpdateButton(){
        
         else { //lordyphon is not in update mode
             QMessageBox info;
+            QFont font("Lucida Typewriter", 8, QFont::Bold);
+            info.setFont(font);
             info.setText("please activate update mode (power on with rec button pressed)");
             ui.hardware_connected_label->setText("Lordyphon updater off");
             info.exec();
@@ -256,7 +275,7 @@ void LordyLink::OnUpdateButton(){
         } 
     }
     catch (exception& e) {
-        QFont Font("Lucida Typewriter", 10, QFont::Bold);
+        QFont Font("Lucida Typewriter", 8, QFont::Bold);
         QMessageBox error;
         error.setFont(Font);
         error.setText(e.what());
@@ -308,25 +327,29 @@ void LordyLink::OnGetSetButton()
             connect(getSetWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
             connect(getSetWorker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
             connect(getSetWorker, SIGNAL(activateButtons()), this, SLOT(hotplugtimer_on()));
-
             connect(getSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
             connect(getSetWorker, SIGNAL(deactivateButtons()), this, SLOT(hotplugtimer_off()));
-
+            
+            //connect(this, &LordyLink::abort , getSetWorker, &Worker::finished);
+            
+            connect(ui.abort_pushButton, &QPushButton::clicked, getSetThread, &QThread::requestInterruption);
             getSetThread->start();
         }
         else { //lordyphon is in update mode
             QMessageBox info;
-            info.setText("not possible in update mode");
+            QFont font("Lucida Typewriter", 8, QFont::Bold);
+            info.setFont(font);
+            info.setText("not possible in update mode   ");
             info.exec();
         }
     }catch (exception& e) {
 
-        QFont Font("Lucida Typewriter", 10, QFont::Bold);
+        QFont Font("Lucida Typewriter", 8, QFont::Bold);
         QMessageBox error;
         error.setFont(Font);
         error.setText(e.what());
         error.exec();
-        ui.hardware_connected_label->setText("Lordyphon disconnected");
+        ui.hardware_connected_label->setText("Lordyphon disconnected    ");
     }
 }
 
@@ -380,29 +403,34 @@ void LordyLink::OnSendSetButton()
                     connect(sendSetWorker, SIGNAL(activateButtons()), this, SLOT(hotplugtimer_on()));
                     connect(sendSetWorker, SIGNAL(deactivateButtons()), this, SLOT(OnDeactivateButtons()));
                     connect(sendSetWorker, SIGNAL(deactivateButtons()), this, SLOT(hotplugtimer_off()));
-
+                    connect(ui.abort_pushButton, &QPushButton::clicked, sendSetThread, &QThread::requestInterruption);
                     sendSetThread->start();
                 }
 
             } //end: if (selected_set != "") 
             else {//selection is not valid
                 QMessageBox info;
-                info.setText("please select a set! ");
+                QFont font("Lucida Typewriter", 8, QFont::Bold);
+                info.setFont(font);
+                info.setText("please select a set!     ");
                 info.exec();
             }
         }
         else{
             //lordyphon in update mode
             QMessageBox info;
-            info.setText("not possible in update mode ");
+            QFont font("Lucida Typewriter", 8, QFont::Bold);
+            info.setFont(font);
+            info.setText("not possible in update mode    ");
             info.exec();
         }
     
     }catch (exception& e) {
 
-        QFont Font("Lucida Typewriter", 10, QFont::Bold);
+        
         QMessageBox error;
-        error.setFont(Font);
+        QFont font("Lucida Typewriter", 8, QFont::Bold);
+        error.setFont(font);
         error.setText(e.what());
         error.exec();
         ui.hardware_connected_label->setText("Lordyphon disconnected");
@@ -416,18 +444,20 @@ void LordyLink::OnSendSetButton()
 //this message box is controlled from worker methods
 void LordyLink::OnRemoteMessageBox(QString message){
     
-    QFont Font("Lucida Typewriter", 10, QFont::Bold);
+    QFont font("Lucida Typewriter", 8, QFont::Bold);
     QMessageBox fromRemote;
-    fromRemote.setFont(Font);
+    fromRemote.setFont(font);
     fromRemote.setText(message);
     fromRemote.exec();
 }
+
 
 
 //enable all buttons on main window
 void LordyLink::OnActivateButtons(){
     
     qDebug() << "activate Buttons";
+    ui.abort_pushButton->hide();
     
     if(!ui.Q_UpdateLordyphonButton->isEnabled())
         ui.Q_UpdateLordyphonButton->setEnabled(true); 
@@ -447,7 +477,7 @@ void LordyLink::OnActivateButtons(){
 
 //deactivate main window buttons
 void LordyLink::OnDeactivateButtons(){
-    
+    ui.abort_pushButton->show();
     qDebug() << "deactivate Buttons";
     
     if (ui.QInstallProgressBar->isHidden())
@@ -471,6 +501,7 @@ void LordyLink::addNewSet(QString filename){
     
     QStandardItem* itemname = new QStandardItem(filename);
     itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
+    itemname->setBackground(QColor(Qt::lightGray));
     model->appendRow(QList<QStandardItem*>() << itemname);
     model->setHeaderData(0, Qt::Horizontal, QObject::tr("saved sets: "));
     //setup column size for better looks
@@ -514,6 +545,7 @@ void LordyLink::deleteSet() {
     DeleteDialog* delete_dialog = new DeleteDialog;
     delete_dialog->show();
     int delete_dialog_code = delete_dialog->exec();
+    
     //user is sure
     if (delete_dialog_code == QDialog::Accepted) {
 
@@ -529,6 +561,7 @@ void LordyLink::deleteSet() {
             qDebug() << filename;
             QStandardItem* itemname = new QStandardItem(filename);
             itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
+            itemname->setBackground(QColor(Qt::lightGray));
             model->appendRow(QList<QStandardItem*>() << itemname);
         }
         //connect qtableview with model
@@ -539,16 +572,10 @@ void LordyLink::deleteSet() {
             ui.dirView->setColumnWidth(col, 320);
         }
 
-        qDebug() << " in delete set";
+        //qDebug() << " in delete set";
 
-    }else
-        return;
+    }
 }
-
-
-
-
-
 
 
 
@@ -569,6 +596,8 @@ void LordyLink::try_download() {
         }
     }
 }
+
+
 void LordyLink::hotplugtimer_on() {
 
     qDebug() << " hotplugtimer on";
@@ -578,6 +607,8 @@ void LordyLink::hotplugtimer_on() {
         hot_plug_timer->start(2000);
 
 }
+
+
 void LordyLink::hotplugtimer_off() {
 
     qDebug() << "hotplugtimer off";
@@ -586,13 +617,10 @@ void LordyLink::hotplugtimer_off() {
         hot_plug_timer->stop();
         delay(500);
     }
-   
 }
 
 void LordyLink::check_for_lordyphon() {
     
-    //qDebug() << "hotplug-timer scanning for lordyphon";
-
     if (!usb_port->find_lordyphon_port()) {
         ui.hardware_connected_label->setText("Lordyphon disconnected");
         QMessageBox error;
@@ -603,7 +631,10 @@ void LordyLink::check_for_lordyphon() {
     else
         ui.hardware_connected_label->setText("Lordyphon connected");
 }
+
+
 void LordyLink::check_manufacturer_ID() {
+   
     if (!usb_port->check_with_manufacturer_ID()) {
         ui.hardware_connected_label->setText("Lordyphon disconnected");
         QMessageBox error;

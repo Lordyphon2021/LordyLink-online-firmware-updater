@@ -25,6 +25,8 @@
    <property name="font">
     <font>
      <family>Lucida Sans Typewriter</family>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="text">
@@ -43,6 +45,8 @@
    <property name="font">
     <font>
      <family>Lucida Sans Typewriter</family>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="text">

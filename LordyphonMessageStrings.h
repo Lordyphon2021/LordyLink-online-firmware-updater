@@ -10,8 +10,10 @@ struct LordyphonCall {
 	const QByteArray dump_request = "r";
 	const QByteArray request_checksum = "s";
 	const QByteArray transfer_request = "R";
-	const QByteArray begin_tansfer = "//";
+	const QByteArray begin_tansfer = "/";
 	const QByteArray burn_eeprom = "ß";
+	const QByteArray abort = ".";
+	const QByteArray abort2 = ";";
 };
 
 
@@ -21,4 +23,6 @@ struct LordyphonResponse {
 	const QByteArray update_rx_phrase_n = "nope";	 //UPDATE MODE RESPONSE
 	const QByteArray is_checksum_error = "er";				 //checksum error
 	const QByteArray checksum_ok = "ok";					 //checksum ok
+	const QByteArray play_mode_is_off = "doit";
+	const QByteArray play_mode_is_on = "DONT";
 };

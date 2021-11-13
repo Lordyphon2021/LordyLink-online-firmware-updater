@@ -29,6 +29,30 @@ bool SerialHandler::lordyphon_handshake() {
 	return false;
 }
 
+//CHECK WHETHER LORDYPHON IS IN UPDATE MODE
+bool SerialHandler::lordyphon_update_call() {
+
+	while (!lordyphon_port->isOpen())
+		;
+
+	write_serial_data(lordyphon_call.update_tx_phrase);
+	wait_for_ready_read(1000);
+
+	if (input_buffer == lordyphon_response.update_rx_phrase_y)
+		return true;
+
+	else if (input_buffer == lordyphon_response.update_rx_phrase_n)
+		return false;
+
+	else {
+		QMessageBox error;
+		error.setText("rx error, please try again");
+		error.exec();
+
+		return false;
+	}
+}
+
 bool SerialHandler::find_lordyphon_port(){
 	
 	try {
@@ -123,31 +147,6 @@ void SerialHandler::onReadyRead(){
 	input_buffer = lordyphon_port->read(lordyphon_port->readBufferSize());
 }
 
-
-
-//CHECK WHETHER LORDYPHON IS IN UPDATE MODE
-bool SerialHandler::lordyphon_update_call(){
-	
-	while (!lordyphon_port->isOpen())
-		;
-
-	write_serial_data(lordyphon_call.update_tx_phrase);
-	wait_for_ready_read(1000);
-
-	if (input_buffer == lordyphon_response.update_rx_phrase_y)
-		return true;
-	
-	else if (input_buffer == lordyphon_response.update_rx_phrase_n)
-		return false;
-	
-	else {
-		QMessageBox error;
-		error.setText("rx error, please try again");
-		error.exec();
-		
-		return false;
-	}
-}
 
 //CHECK IF OPEN
 bool SerialHandler::lordyphon_port_is_open(){

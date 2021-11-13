@@ -24,13 +24,20 @@ class USBThread : public QThread
 
 public:
 	
+	
 
 signals:
+
+	
+
 	
 
 private:
-
+	
+	
+	
 	void run() override;
+	
 	
 };
 
@@ -38,9 +45,11 @@ class Worker : public QObject {
 	Q_OBJECT
 
 public:
-	Worker(){} // default for get set
-	Worker(QString path):selected_set(path){}  //ctor for send set
-	Worker(QString path, bool ): selected_firmware(path){}  //ctor for firmware update, bool is a dummy
+	Worker() {} // default for get set
+	Worker(QString path) :selected_set(path) {}  //ctor for send set
+	Worker(QString path, bool) : selected_firmware(path) {}  //ctor for firmware update, bool is a dummy
+
+	
 
 public slots:
 
@@ -48,6 +57,9 @@ public slots:
 	void update();
 	void get_eeprom_content();
 	void send_eeprom_content();
+	
+	
+
 
 signals:
 	//GUI update
@@ -57,6 +69,7 @@ signals:
 	void remoteMessageBox(QString);
 	void activateButtons();
 	void deactivateButtons();
+	void deactivateAbortButton();
 	// pass to QTableview
 	void newItem(QString);
 	//thread
@@ -67,6 +80,8 @@ private:
 	QString selected_set; //initialized in ctor
 	QString selected_firmware;  //initialized in ctor
 	uint8_t ready_read_timeout_ctr = 0;
+	
+	
 	
 	//Lordyphon message strings
 	LordyphonCall call_lordyphon;
@@ -80,4 +95,7 @@ private:
 		t.start(millisecondsWait);
 		loop.exec();
 	}
+	
+	
+
 }; 

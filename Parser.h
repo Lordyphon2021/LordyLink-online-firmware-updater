@@ -13,7 +13,7 @@
 
 
 
-//this class parses an intel hex-file (.txt) to serial data bytes for microcontroller bootloader section
+//this class parses intel hex-files (.txt) or custom set files to serial data bytes for the microcontroller.
 
 class Parser {
 

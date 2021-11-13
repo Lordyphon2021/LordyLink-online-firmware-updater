@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1141</width>
-    <height>606</height>
+    <width>1317</width>
+    <height>675</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,10 +26,10 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>60</y>
+      <x>460</x>
+      <y>220</y>
       <width>311</width>
-      <height>51</height>
+      <height>61</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -49,24 +49,86 @@
      </item>
     </layout>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QTableView" name="dirView">
     <property name="geometry">
      <rect>
-      <x>920</x>
-      <y>340</y>
-      <width>81</width>
-      <height>21</height>
+      <x>460</x>
+      <y>350</y>
+      <width>311</width>
+      <height>201</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>Lucida Sans Typewriter</family>
-      <weight>50</weight>
-      <bold>false</bold>
+      <pointsize>8</pointsize>
      </font>
     </property>
-    <property name="text">
-     <string>saved sets:</string>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <property name="lineWidth">
+     <number>1</number>
+    </property>
+    <property name="alternatingRowColors">
+     <bool>false</bool>
+    </property>
+    <property name="showGrid">
+     <bool>false</bool>
+    </property>
+    <property name="sortingEnabled">
+     <bool>true</bool>
+    </property>
+    <attribute name="horizontalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+   </widget>
+   <widget class="Line" name="line_2">
+    <property name="geometry">
+     <rect>
+      <x>1180</x>
+      <y>570</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_3">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>30</y>
+      <width>20</width>
+      <height>551</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_4">
+    <property name="geometry">
+     <rect>
+      <x>1220</x>
+      <y>30</y>
+      <width>20</width>
+      <height>551</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
     </property>
    </widget>
    <widget class="QProgressBar" name="QInstallProgressBar">
@@ -75,9 +137,9 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>120</y>
-      <width>341</width>
+      <x>70</x>
+      <y>590</y>
+      <width>1061</width>
       <height>21</height>
      </rect>
     </property>
@@ -91,10 +153,10 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>120</y>
-      <width>309</width>
-      <height>20</height>
+      <x>70</x>
+      <y>590</y>
+      <width>1041</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="font">
@@ -123,44 +185,81 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QTableView" name="dirView">
+   <widget class="QLabel" name="hardware_connected_label">
     <property name="geometry">
      <rect>
-      <x>920</x>
-      <y>370</y>
-      <width>161</width>
-      <height>151</height>
+      <x>80</x>
+      <y>570</y>
+      <width>211</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>Lucida Sans Typewriter</family>
       <pointsize>8</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
-    <property name="alternatingRowColors">
-     <bool>false</bool>
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
     </property>
-    <property name="showGrid">
-     <bool>false</bool>
+    <property name="accessibleName">
+     <string>0</string>
     </property>
-    <property name="sortingEnabled">
-     <bool>true</bool>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
     </property>
-    <attribute name="horizontalHeaderVisible">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="verticalHeaderVisible">
-     <bool>false</bool>
-    </attribute>
+    <property name="inputMethodHints">
+     <set>Qt::ImhLatinOnly|Qt::ImhNoTextHandles</set>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="lineWidth">
+     <number>0</number>
+    </property>
+    <property name="text">
+     <string>connection status</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="Line" name="line_5">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>20</y>
+      <width>1161</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>570</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>730</x>
-      <y>330</y>
+      <x>810</x>
+      <y>350</y>
       <width>160</width>
-      <height>231</height>
+      <height>201</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -193,6 +292,19 @@
       </widget>
      </item>
      <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <widget class="QPushButton" name="delete_set_pushButton">
        <property name="font">
         <font>
@@ -208,96 +320,19 @@
      </item>
     </layout>
    </widget>
-   <widget class="Line" name="line">
+   <widget class="QLabel" name="hardware_connected_label_2">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>320</y>
-      <width>401</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="Line" name="line_2">
-    <property name="geometry">
-     <rect>
-      <x>700</x>
-      <y>330</y>
-      <width>20</width>
-      <height>211</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
-   <widget class="Line" name="line_3">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>160</y>
-      <width>371</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="Line" name="line_4">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>50</y>
-      <width>20</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
-   <widget class="Line" name="line_5">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>40</y>
-      <width>371</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="Line" name="line_6">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>50</y>
-      <width>20</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="hardware_connected_label">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>520</y>
-      <width>309</width>
-      <height>31</height>
+      <x>990</x>
+      <y>570</y>
+      <width>211</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>Lucida Sans Typewriter</family>
+      <pointsize>8</pointsize>
       <weight>50</weight>
       <bold>false</bold>
      </font>
@@ -311,6 +346,9 @@
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
+    <property name="inputMethodHints">
+     <set>Qt::ImhLatinOnly|Qt::ImhNoTextHandles</set>
+    </property>
     <property name="frameShadow">
      <enum>QFrame::Sunken</enum>
     </property>
@@ -318,36 +356,36 @@
      <number>0</number>
     </property>
     <property name="text">
-     <string>USB status</string>
+     <string>www.lordyphon.com</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="Line" name="line_7">
+   <widget class="Line" name="line_6">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>530</y>
-      <width>401</width>
-      <height>20</height>
+      <x>290</x>
+      <y>570</y>
+      <width>731</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="Line" name="line_8">
+   <widget class="QPushButton" name="abort_pushButton">
     <property name="geometry">
      <rect>
-      <x>1100</x>
-      <y>330</y>
-      <width>20</width>
-      <height>211</height>
+      <x>1160</x>
+      <y>590</y>
+      <width>71</width>
+      <height>23</height>
      </rect>
     </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
+    <property name="text">
+     <string>abort</string>
     </property>
    </widget>
   </widget>
@@ -365,34 +403,10 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1141</width>
+     <width>1317</width>
      <height>26</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuinfo">
-    <property name="font">
-     <font>
-      <family>Lucida Sans Typewriter</family>
-      <pointsize>8</pointsize>
-     </font>
-    </property>
-    <property name="title">
-     <string>info</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuabout">
-    <property name="font">
-     <font>
-      <family>Lucida Sans Typewriter</family>
-      <pointsize>8</pointsize>
-     </font>
-    </property>
-    <property name="title">
-     <string>about</string>
-    </property>
-   </widget>
-   <addaction name="menuinfo"/>
-   <addaction name="menuabout"/>
   </widget>
   <action name="actionProgramm">
    <property name="text">

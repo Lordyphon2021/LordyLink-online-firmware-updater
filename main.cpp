@@ -16,7 +16,9 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     LordyLink w; 
    
-    w.setWindowTitle("LordyLink 1.0");
+    QFont font("Lucida Typewriter", 8, QFont::Bold);
+    w.setFont(font);
+    w.setWindowTitle("LordyLink V1.00");
    
     w.show();
     

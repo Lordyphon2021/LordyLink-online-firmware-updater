@@ -4,6 +4,7 @@
 #include <qdebug.h>
 #include <iomanip>
 #include <QMutex>
+#include <qexception.h>
 
 
 using namespace std;
@@ -13,7 +14,11 @@ void Worker::update()
 {
     //DEACTIVATE ALL BUTTONS DURING THREAD
     emit deactivateButtons();
+    emit deactivateAbortButton();
     emit setLabel("initializing....     ");
+
+    
+
     
     //THREAD SAFETY
     QMutex mutex;
@@ -39,10 +44,10 @@ void Worker::update()
     //CREATE TIMESTAMP & OPEN LOGFILE
     QDateTime now = QDateTime::currentDateTime();
     QString timestamp = now.toString("dd_MM_yyyy___h_m_s");
-    QFile eeprom_content_logfile;
-    eeprom_content_logfile.setFileName(QDir::homePath() + "/LordyLink/log/firmware_transfer_log_" + timestamp + ".txt");
-    eeprom_content_logfile.open(QIODevice::ReadWrite | QIODevice::Text);
-    QTextStream out(&eeprom_content_logfile);
+    QFile firmware_transfer_logfile;
+    firmware_transfer_logfile.setFileName(QDir::homePath() + "/LordyLink/log/firmware_transfer_log_" + timestamp + ".txt");
+    firmware_transfer_logfile.open(QIODevice::ReadWrite | QIODevice::Text);
+    QTextStream out(&firmware_transfer_logfile);
    
     //CREATE PARSER OBJECT
     Parser hex_parser(selected_firmware);
@@ -65,6 +70,19 @@ void Worker::update()
         //NEXT RECORD: IF CALCULATED CHECKSUM ON CONTROLLER IS "ok",  "index" IS INCREMENTED
         while (index < hexfilesize && hexfilesize != 0) { 
 
+            if (QThread::currentThread()->isInterruptionRequested()) {
+                emit setLabel("aborting....");
+                delay(1000);
+                firmware_transfer_logfile.close();
+                firmware_transfer_logfile.remove();
+                usb_port_update_thread.write_serial_data(call_lordyphon.abort);
+                usb_port_update_thread.close_usb_port();
+                emit activateButtons();
+                mutex.unlock();
+                emit finished();
+                return;
+
+            }
             if (carry_on_flag == true) {  //INITIAL STATE == TRUE
                 tx_data = hex_parser.get_hex_record(index);  //QByteArray txdata IS USED TO SEND DATA TO THE MICROCONTROLLER
                 usb_port_update_thread.write_serial_data(tx_data); //SEND RECORD TO USB
@@ -112,7 +130,7 @@ void Worker::update()
         }
         
         delay(1000); //THIS IS NECESSARY FOR THE NEXT MESSAGE TO BE RECEIVED CORRECTLY
-        eeprom_content_logfile.close(); // LOGFILE DONE
+        firmware_transfer_logfile.close(); // LOGFILE DONE
         emit ProgressBar_valueChanged(hexfilesize); //SET PROGRESSBAR TO MAX
       
         //DATA TRANSFER COMPLETE HERE, BURN FLASH ON MICROCONTROLLER
@@ -148,6 +166,8 @@ void Worker::get_eeprom_content(){
     emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
+
+    
     
     SerialHandler usb_port_get_thread;
 
@@ -203,6 +223,21 @@ void Worker::get_eeprom_content(){
         
         while (eeprom.size() < 128000) {  //128kB TOTAL EEPROM SIZE
             
+            //set clean exit if user aborts...
+            if (QThread::currentThread()->isInterruptionRequested()) {
+                    emit setLabel("aborting....");
+                    delay(1000);
+                    set_file.close();
+                    usb_port_get_thread.write_serial_data(call_lordyphon.abort);
+                    usb_port_get_thread.close_usb_port();
+                    QDir sets = new_filepath_qstring;
+                    sets.remove(new_filepath_qstring);
+                    emit activateButtons();
+                    mutex.unlock();
+                    emit finished();
+                    return;
+                
+            }
             if(ready_read_timeout_ctr > 0)  //DEBUGGING
                 qDebug() << "timeout counter: " << ready_read_timeout_ctr;
             
@@ -229,10 +264,12 @@ void Worker::get_eeprom_content(){
         
         uint16_t checksum_lordyphon = ((msb << 8) | lsb);  //ASSEMBLE 16BIT CHECKSUM
         
-        ChecksumValidator eeprom_checker;  //CREATE CHECKSUMVALIDATOR OBJECT
-        eeprom_checker.set_Data(eeprom, checksum_lordyphon);
+        ChecksumValidator checksum_checker;  //CREATE CHECKSUMVALIDATOR OBJECT
+        checksum_checker.set_Data(eeprom, checksum_lordyphon);
 
-        if (eeprom_checker.is_valid()) {  //BOOL METHOD COMPARES BOTH CHECKSUMS
+        if (checksum_checker.is_valid()) {  //BOOL METHOD COMPARES BOTH CHECKSUMS
+            emit setLabel("checksum ok ");
+            delay(500);
             emit setLabel("writing file"); 
             delay(1000);
 
@@ -282,6 +319,9 @@ void Worker::send_eeprom_content(){
     emit deactivateButtons();
     QMutex mutex;
     mutex.lock();
+
+  
+    
    
     SerialHandler usb_port_send_thread;
     ready_read_timeout_ctr = 0;
@@ -326,16 +366,25 @@ void Worker::send_eeprom_content(){
 
         QString response = usb_port_send_thread.getInputBuffer();
         QByteArray temp_record;
+        bool abortflag = false;
         
-        
-        if (response == "doit") {  //LORDYPHON PLAY MODE IS OFF
-            
+        if (response == lordyphon_response.play_mode_is_off) {  //LORDYPHON PLAY MODE IS OFF
+            qDebug() << " lordyphon confirmes playmode off";
             size_t index = 0;
             usb_port_send_thread.write_serial_data(call_lordyphon.begin_tansfer); 
             QByteArray checksum_vec;
-
+           
             //SEND DATA
             while (index < setfilesize && setfilesize != 0) {
+                //set clean exit if user aborts...
+                if (QThread::currentThread()->isInterruptionRequested()) {
+                    abortflag = true;
+
+                }
+                
+                
+                
+                
                 temp_record = eeprom_parser.get_eeprom_record(index); //GET EEPROM RECORD (16 BYTES)
                 checksum_vec += temp_record; // SUM UP ALL BYTES FOR CHECKSUM CALCULATION
                 usb_port_send_thread.write_serial_data(temp_record);  //SEND RECORD TO LORDYPHON
@@ -344,10 +393,10 @@ void Worker::send_eeprom_content(){
                 if (ready_read_timeout_ctr > 0)
                     qDebug() << "timeout counter: " << ready_read_timeout_ctr;
                 
-                if (!usb_port_send_thread.wait_for_ready_read(200))
+                if (!usb_port_send_thread.wait_for_ready_read(2000))
                     ready_read_timeout_ctr++;
 
-                if (ready_read_timeout_ctr > 2) {
+                if (ready_read_timeout_ctr > 5) {
                     emit remoteMessageBox("connection error, try again");
                     emit setLabel("connection error");
                     break;
@@ -355,7 +404,25 @@ void Worker::send_eeprom_content(){
 
                 //ANY 3-BYTE MESSAGE CAN BE USED HERE, THIS IS JUST FOR SYNCHRONIZING
                 usb_port_send_thread.getInputBuffer(); //DUMMY READ
-
+               
+                if (abortflag == false) {
+                    QByteArray dummy;
+                    dummy.append(0xff);
+                    usb_port_send_thread.write_serial_data(dummy);
+                }
+                else {
+                   for(int i = 0; i < 5; ++i)
+                     usb_port_send_thread.write_serial_data(call_lordyphon.abort2);
+                   
+                   usb_port_send_thread.close_usb_port();
+                   emit setLabel("aborting....");
+                   delay(1000);
+                  
+                   emit activateButtons();
+                   mutex.unlock();
+                   emit finished();
+                   return;
+               }
                 index++;
 
                 emit ProgressBar_valueChanged(static_cast<int>(index));
@@ -374,10 +441,10 @@ void Worker::send_eeprom_content(){
             uint16_t checksum_lordyphon = (msb << 8) | lsb;  //assemble uint16_t checksum
             uint16_t checksum_local = 0;
             //SAME PROCEDURE AS IN GET SET THREAD
-            ChecksumValidator eeprom_checker2;
-            eeprom_checker2.set_Data(checksum_vec, checksum_lordyphon);
+            ChecksumValidator checksum_checker;
+            checksum_checker.set_Data(checksum_vec, checksum_lordyphon);
 
-            if (eeprom_checker2.is_valid()) {
+            if (checksum_checker.is_valid()) {
                 emit setLabel("checksum ok  ");
                 delay(1000);
                 usb_port_send_thread.write_serial_data(call_lordyphon.burn_eeprom); //CHECKSUM CORRECT, CALL EEPROM BURN FUNCTION ON LORDAPHON
@@ -401,7 +468,7 @@ void Worker::send_eeprom_content(){
 
             }
         }//end: if (response == "doit") {  //PLAY MODE IS OFF
-        else if (response == "DONT") {  //PLAY MODE IS ON, PROMPT USER
+        else if (response == lordyphon_response.play_mode_is_on) {  //PLAY MODE IS ON, PROMPT USER
             emit remoteMessageBox("lordyphon memory busy, press stop button");
         }
         else {

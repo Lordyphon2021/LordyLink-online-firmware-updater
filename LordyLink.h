@@ -41,12 +41,32 @@ public:
     LordyLink(QWidget *parent = Q_NULLPTR);
     
     ~LordyLink() {
+        
+        //remove downloads
         QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
         firmware.setNameFilters(QStringList() << "*.*");
-        firmware.setFilter(QDir::Files);
+        //firmware.setFilter(QDir::Files);
 
-        foreach(QString dirFile, firmware.entryList())
-            firmware.remove(dirFile);
+        foreach(QString firmwareFile, firmware.entryList())
+            firmware.remove(firmwareFile);
+
+        //cleanup empty files from crashes
+        QDir set_path(QDir::homePath() + "/LordyLink/Sets");
+        set_path.setNameFilters(QStringList() << "*.*");
+        
+
+        foreach(QString setfile, set_path.entryList()) {
+            QFile tempfile(set_path.absoluteFilePath(setfile));
+            tempfile.open((QIODevice::ReadWrite | QIODevice::Text));
+            
+            if (tempfile.size() == 0) {
+                tempfile.close();
+                tempfile.remove();
+
+            }else
+                tempfile.close();
+            
+        }
 
 
     }
@@ -54,6 +74,8 @@ public:
     Ui::LordyLinkClass ui;
     
 signals:
+
+   
     
     
 public slots:
@@ -74,6 +96,7 @@ public slots:
     void OnsetLabel(QString message){ ui.QInstallLabel->setText(message); }
     void OnActivateButtons();
     void OnDeactivateButtons();
+    void OnHideAbortButton() { ui.abort_pushButton->hide(); }
     void activate_install_button(){ ui.Q_UpdateLordyphonButton->setEnabled(true); }
     //HELPER
     void set_firmware_path_from_dialog(QString path){ firmware_path = path; }
@@ -83,6 +106,7 @@ public slots:
     void check_manufacturer_ID();
     void hotplugtimer_on();
     void hotplugtimer_off();
+    
 
 private:
     
