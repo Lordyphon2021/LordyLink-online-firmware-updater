@@ -30,7 +30,7 @@ detailed description in the comments.
 
 TODOs: 
        
-       -display available firmware versions before downloading them. 
+       -display available firmware versions before downloading. 
        
        -implement "delete set" on mouse right-click instead of push button.
        
