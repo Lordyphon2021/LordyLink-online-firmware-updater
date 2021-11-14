@@ -21,7 +21,7 @@ USE CASE 3: SEND TO CONTROLLER:
 App sends stored user data back to the controller, where it is burned to eeprom.
 
 
-LordyLink will only start if the controller is connected. hot plug detection scans the connection every 2 seconds.
+LordyLink will only start if the controller is connected. Hotplug detection scans the connection every 2 seconds.
 GUI pushbuttons ( and dialogues ) kick off all described use cases in seperate threads. 
 
 Most of the business logic can be found in LordyLink.cpp and USBThread.cpp,
