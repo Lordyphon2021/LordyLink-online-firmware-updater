@@ -15,9 +15,7 @@ using namespace std;
 //GUI constructor, sets up file system, downloads all available firmware files
 // and checks for lordyphon on usb ports
 
-LordyLink::LordyLink(QWidget *parent)
-    : QMainWindow(parent)
-{
+LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
      //setup gui
 
     ui.setupUi(this);
