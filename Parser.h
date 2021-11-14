@@ -11,8 +11,6 @@
 #include <qdebug>
 
 
-
-
 //this class parses intel hex-files (.txt) or custom set files to serial data bytes for the microcontroller.
 
 class Parser {

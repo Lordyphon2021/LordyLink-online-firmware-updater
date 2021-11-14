@@ -18,6 +18,7 @@ class SerialHandler : public QObject
 public:
 	
 	SerialHandler( QObject* parent = nullptr );
+	
 	bool find_lordyphon_port();
 	bool open_lordyphon_port();
 	bool lordyphon_handshake();
@@ -37,8 +38,6 @@ public slots:
 
 	void onReadyRead();
 	
-	
-
 private:
 	
 	QSerialPort* lordyphon_port;

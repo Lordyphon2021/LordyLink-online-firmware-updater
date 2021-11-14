@@ -1,6 +1,4 @@
 #include "LordyLink.h"
-
-
 #include <qstring.h>
 #include<qlistwidget.h>
 #include <QApplication>
@@ -11,10 +9,6 @@
 #include "DeleteDialog.h"
 #include <qpalette.h>
 
-
-
-
-
 using namespace std;
 
 
@@ -24,8 +18,7 @@ using namespace std;
 LordyLink::LordyLink(QWidget *parent)
     : QMainWindow(parent)
 {
-    
-    //setup gui
+     //setup gui
 
     ui.setupUi(this);
     
@@ -67,24 +60,24 @@ LordyLink::LordyLink(QWidget *parent)
         ui.dirView->setColumnWidth(col, 320);
         
     }
-
-    
     //resize update button
-    
     QSize q;
     q.setWidth(400);
     q.setHeight(50);
     ui.Q_UpdateLordyphonButton->setFixedSize(q);
     QFont font("Lucida Typewriter", 20, QFont::Bold);
    
-    
     ui.Q_UpdateLordyphonButton->setFont(font);
     ui.Q_UpdateLordyphonButton->setPalette(QColor(Qt::lightGray));
     ui.Q_UpdateLordyphonButton->setText("update firmware        ");
 
-    
-   
-    
+    //set background foto
+    QPixmap bkgnd(QDir::homePath() + "/LordyLink/lordi3drender.jpg");
+    bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
+    QPalette palette;
+    palette.setBrush(QPalette::Background, bkgnd);
+    this->setPalette(palette);
+
     //connect slots
     
     //double click to rename, item changed for rename end
@@ -99,8 +92,6 @@ LordyLink::LordyLink(QWidget *parent)
     QObject::connect(ui.sendSetButton, SIGNAL(clicked()), this, SLOT(OnSendSetButton()));
     QObject::connect(ui.delete_set_pushButton, SIGNAL(clicked()), this, SLOT(deleteSet()));
    
-    
-    
     ui.hardware_connected_label->setText("       ");
     ui.QInstallLabel->hide();
     ui.QInstallProgressBar->hide();
@@ -148,11 +139,9 @@ LordyLink::LordyLink(QWidget *parent)
                         usb_port->close_usb_port(); 
                 }
             }
-
-        }//end: while (!usb_port->find_lordyphon_port())
+         }//end: while (!usb_port->find_lordyphon_port())
         
-            
-    }//lordyphon found
+   }//lordyphon found
     else if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && usb_port->lordyphon_handshake()) {
         ui.hardware_connected_label->setText("Lordyphon connected");
         if (usb_port->clear_buffer())
@@ -166,20 +155,12 @@ LordyLink::LordyLink(QWidget *parent)
     download_timer = new QTimer(this);
     connect(download_timer, SIGNAL(timeout()), this, SLOT(try_download()));
     download_timer->start(20000);
-
     
     //hotplug detection
     hot_plug_timer = new QTimer(this);
     connect(hot_plug_timer, SIGNAL(timeout()), this, SLOT(check_manufacturer_ID()));
     hot_plug_timer->start(2000);
-
-    QPixmap bkgnd(QDir::homePath() + "/LordyLink/lordi3drender.jpg");
-    bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
-    QPalette palette;
-    palette.setBrush(QPalette::Background, bkgnd);
-    this->setPalette(palette);
 }
-
 
 
  //"update firmware" button opens dialog, where all available releases are displayed in a QTableView window.
@@ -194,10 +175,8 @@ LordyLink::LordyLink(QWidget *parent)
 void LordyLink::OnUpdateButton(){
 
     try {
-           
-       
-        
         QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
+        
         if (firmware.isEmpty()) {
             QMessageBox info;
             QFont font("Lucida Typewriter", 8, QFont::Bold);
@@ -206,9 +185,6 @@ void LordyLink::OnUpdateButton(){
             info.exec();
             return;
         }
-            
-        
-        
         usb_port->open_lordyphon_port();
 
         if (usb_port->lordyphon_update_call()) {  //lordyphon has to be in update mode for this
@@ -282,19 +258,18 @@ void LordyLink::OnUpdateButton(){
         error.exec();
         ui.hardware_connected_label->setText("Lordyphon disconnected");
     }
-    
-   
 }
  
 //this method starts a thread, which requests a full memory dump from lordyphon
 //and compares checksum from lordyphon with local checksum (summing up all bytes with an uint16_t
 //-overflow is the same on both systems)
 //if checksum is correct, file is saved in folder "Sets" and displayed in the QTableView Window
-//where it can be renamed. default name is "saved set" and a time stamp.
+//where it can be renamed and/ or deleted. default name is "saved set" and a time stamp.
 
 void LordyLink::OnGetSetButton()
 {  
     try {
+
         if (usb_port->find_lordyphon_port())
             usb_port->open_lordyphon_port();
 
@@ -342,6 +317,7 @@ void LordyLink::OnGetSetButton()
             info.setText("not possible in update mode   ");
             info.exec();
         }
+   
     }catch (exception& e) {
 
         QFont Font("Lucida Typewriter", 8, QFont::Bold);
@@ -438,8 +414,7 @@ void LordyLink::OnSendSetButton()
 }
 
 
-//slot method implementation
-
+//slot method implementations
 
 //this message box is controlled from worker methods
 void LordyLink::OnRemoteMessageBox(QString message){
@@ -451,9 +426,7 @@ void LordyLink::OnRemoteMessageBox(QString message){
     fromRemote.exec();
 }
 
-
-
-//enable all buttons on main window
+//enable all buttons in main window, hide abort button
 void LordyLink::OnActivateButtons(){
     
     qDebug() << "activate Buttons";
@@ -476,9 +449,9 @@ void LordyLink::OnActivateButtons(){
    
 }
 
-
-//deactivate main window buttons
+//deactivate main window buttons, show abort button
 void LordyLink::OnDeactivateButtons(){
+    
     ui.abort_pushButton->show();
     qDebug() << "deactivate Buttons";
     
@@ -573,9 +546,6 @@ void LordyLink::deleteSet() {
         for (int col = 0; col < model->rowCount(); col++) {
             ui.dirView->setColumnWidth(col, 320);
         }
-
-        //qDebug() << " in delete set";
-
     }
 }
 

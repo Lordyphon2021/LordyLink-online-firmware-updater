@@ -17,9 +17,6 @@ void Worker::update()
     emit deactivateAbortButton();
     emit setLabel("initializing....     ");
 
-    
-
-    
     //THREAD SAFETY
     QMutex mutex;
     mutex.lock(); 
@@ -81,7 +78,6 @@ void Worker::update()
                 mutex.unlock();
                 emit finished();
                 return;
-
             }
             if (carry_on_flag == true) {  //INITIAL STATE == TRUE
                 tx_data = hex_parser.get_hex_record(index);  //QByteArray txdata IS USED TO SEND DATA TO THE MICROCONTROLLER
@@ -167,8 +163,6 @@ void Worker::get_eeprom_content(){
     QMutex mutex;
     mutex.lock();
 
-    
-    
     SerialHandler usb_port_get_thread;
 
     //CREATE DATA CONTAINER
@@ -176,7 +170,7 @@ void Worker::get_eeprom_content(){
 
     ready_read_timeout_ctr = 0;
     
-    //CHECK IF LORDYPHON IS STILLL CONNECTED
+    //CHECK IF LORDYPHON IS STILL CONNECTED
     if (!usb_port_get_thread.find_lordyphon_port()) {
         emit setLabel("lordyphon disconnected!");
         mutex.unlock();
@@ -218,19 +212,17 @@ void Worker::get_eeprom_content(){
         usb_port_get_thread.set_buffer_size(1000);
         usb_port_get_thread.clear_buffer(); 
        
-        
         //READ LORDYPHON DATA IN LOOP, ADD INPUT BUFFER TO eeprom QByteArray
-        
         while (eeprom.size() < 128000) {  //128kB TOTAL EEPROM SIZE
             
-            //set clean exit if user aborts...
+            //clean exit if user aborts...
             if (QThread::currentThread()->isInterruptionRequested()) {
                     emit setLabel("aborting....");
                     delay(1000);
                     set_file.close();
                     usb_port_get_thread.write_serial_data(call_lordyphon.abort);
                     delay(200);
-                    usb_port_get_thread.write_serial_data(call_lordyphon.abort);
+                    usb_port_get_thread.write_serial_data(call_lordyphon.abort);  //sending twice works better...
                     usb_port_get_thread.close_usb_port();
                     QDir sets = new_filepath_qstring;
                     sets.remove(new_filepath_qstring);
@@ -238,7 +230,6 @@ void Worker::get_eeprom_content(){
                     mutex.unlock();
                     emit finished();
                     return;
-                
             }
             if(ready_read_timeout_ctr > 0)  //DEBUGGING
                 qDebug() << "timeout counter: " << ready_read_timeout_ctr;
@@ -322,9 +313,6 @@ void Worker::send_eeprom_content(){
     QMutex mutex;
     mutex.lock();
 
-  
-    
-   
     SerialHandler usb_port_send_thread;
     ready_read_timeout_ctr = 0;
     
@@ -340,7 +328,6 @@ void Worker::send_eeprom_content(){
     if (!usb_port_send_thread.lordyphon_port_is_open())
         usb_port_send_thread.open_lordyphon_port();
 
-   
     usb_port_send_thread.set_buffer_size(100);
     
     if(!usb_port_send_thread.clear_buffer())
@@ -379,14 +366,9 @@ void Worker::send_eeprom_content(){
             //SEND DATA
             while (index < setfilesize && setfilesize != 0) {
                 //set clean exit if user aborts...
-                if (QThread::currentThread()->isInterruptionRequested()) {
+                if (QThread::currentThread()->isInterruptionRequested()) 
                     abortflag = true;
 
-                }
-                
-                
-                
-                
                 temp_record = eeprom_parser.get_eeprom_record(index); //GET EEPROM RECORD (16 BYTES)
                 checksum_vec += temp_record; // SUM UP ALL BYTES FOR CHECKSUM CALCULATION
                 usb_port_send_thread.write_serial_data(temp_record);  //SEND RECORD TO LORDYPHON
@@ -426,9 +408,8 @@ void Worker::send_eeprom_content(){
                    return;
                }
                 index++;
-
                 emit ProgressBar_valueChanged(static_cast<int>(index));
-            }
+            }//END: while(index < setfilesize && setfilesize != 0)
            
             usb_port_send_thread.clear_buffer();
             //EXPECTING LORDYPHON CHECKSUM
@@ -441,7 +422,7 @@ void Worker::send_eeprom_content(){
             uint8_t msb = checksum_from_lordyphon.at(0); //big endian
             uint8_t lsb = checksum_from_lordyphon.at(1);
             uint16_t checksum_lordyphon = (msb << 8) | lsb;  //assemble uint16_t checksum
-            uint16_t checksum_local = 0;
+            
             //SAME PROCEDURE AS IN GET SET THREAD
             ChecksumValidator checksum_checker;
             checksum_checker.set_Data(checksum_vec, checksum_lordyphon);

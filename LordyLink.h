@@ -65,19 +65,13 @@ public:
 
             }else
                 tempfile.close();
-            
         }
-
-
     }
     
     Ui::LordyLinkClass ui;
     
 signals:
 
-   
-    
-    
 public slots:
     //MAIN FEATURES
     void OnUpdateButton();

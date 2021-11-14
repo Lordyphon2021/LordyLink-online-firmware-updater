@@ -21,24 +21,9 @@
 class USBThread : public QThread
 {
 	Q_OBJECT
-
-public:
-	
-	
-
-signals:
-
-	
-
-	
-
-private:
-	
-	
 	
 	void run() override;
-	
-	
+
 };
 
 class Worker : public QObject {
@@ -49,8 +34,6 @@ public:
 	Worker(QString path) :selected_set(path) {}  //ctor for send set
 	Worker(QString path, bool) : selected_firmware(path) {}  //ctor for firmware update, bool is a dummy
 
-	
-
 public slots:
 
 	//MAIN FEATURES OF LORDYLINK
@@ -58,9 +41,6 @@ public slots:
 	void get_eeprom_content();
 	void send_eeprom_content();
 	
-	
-
-
 signals:
 	//GUI update
 	void ProgressBar_valueChanged(int val);
@@ -81,8 +61,6 @@ private:
 	QString selected_firmware;  //initialized in ctor
 	uint8_t ready_read_timeout_ctr = 0;
 	
-	
-	
 	//Lordyphon message strings
 	LordyphonCall call_lordyphon;
 	LordyphonResponse lordyphon_response;
@@ -95,7 +73,4 @@ private:
 		t.start(millisecondsWait);
 		loop.exec();
 	}
-	
-	
-
 }; 

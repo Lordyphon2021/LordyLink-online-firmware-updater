@@ -21,8 +21,8 @@ struct LordyphonResponse {
 	const QByteArray hand_shake_rx_phrase = "YES!";  //HANDSHAKE RESPONSE
 	const QByteArray update_rx_phrase_y = "sure";	 //UPDATE MODE RESPONSE
 	const QByteArray update_rx_phrase_n = "nope";	 //UPDATE MODE RESPONSE
-	const QByteArray is_checksum_error = "er";				 //checksum error
-	const QByteArray checksum_ok = "ok";					 //checksum ok
-	const QByteArray play_mode_is_off = "doit";
-	const QByteArray play_mode_is_on = "DONT";
+	const QByteArray is_checksum_error = "er";		 //checksum error
+	const QByteArray checksum_ok = "ok";			 //checksum ok
+	const QByteArray play_mode_is_off = "doit";		 //data rx confirmed
+	const QByteArray play_mode_is_on = "DONT";		 //data rx declined
 };

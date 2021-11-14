@@ -20,8 +20,8 @@ void Downloader::download(QString location, QString path){ //location and path v
     
     QUrl url(location);
     url.setPort(21);
-    url.setUserName("**************");
-    url.setPassword("**************");
+    url.setUserName("***********");
+    url.setPassword("***********");
    
     QNetworkRequest request = QNetworkRequest(url);
     QNetworkReply* reply = manager.get(request);

@@ -87,12 +87,12 @@ bool SerialHandler::check_with_manufacturer_ID() {
 	foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts()) {
 		if (info.manufacturer() == "FTDI" && port_index == check_index) {  //check if lordyphon is still on the same usb port
 			
-			qDebug() << " manufacturer ID found at same index";
+			//qDebug() << " manufacturer ID found at same index";
 			return true;
 		}
 		++check_index;
 	}
-	qDebug() << " index not correct, searching port again";
+	//qDebug() << " index not correct, searching port again";
 	find_lordyphon_port();  //otherwise check again with handshakes
 	return false;
 }
