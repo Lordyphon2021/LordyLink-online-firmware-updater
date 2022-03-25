@@ -11,7 +11,7 @@ using namespace std;
 
 bool Parser::parse_hex(){															
 	QByteArray temp_data_vec;				//holds the data-section of a single hexfile record
-	size_t nibbles_in_data_section = 0x00;	//how many nibbles (2 nibbles == 1 byte) are in record
+	size_t data_section_size = 0x00;	//how many nibbles (2 nibbles == 1 byte) are in record
 	char record_type = 0x00;				//type of data in data-section
 	uint16_t address = 0x0000;				//address-offset for flash-memory of microcontroller
 	char checksum_from_file = 0x00;		    //8-bit checksum at end of record
@@ -43,7 +43,7 @@ bool Parser::parse_hex(){
 			string pre = "0x";
 			string full_nib = pre + substr;
 			
-			nibbles_in_data_section = static_cast<uint8_t>(stoi(full_nib, nullptr, 16));
+			data_section_size = static_cast<uint8_t>(stoi(full_nib, nullptr, 16));
 			substr = std_it.substr(7, 2);
 			string full_rec_type = pre + substr;
 			
@@ -64,16 +64,16 @@ bool Parser::parse_hex(){
 			string full_address = pre + substr;
 			
 			address = static_cast<uint16_t>(stoi(full_address, nullptr, 16));
-			checksum_from_file = stoi(std_it.substr(9 + (nibbles_in_data_section * 2), 2), nullptr, 16);
+			checksum_from_file = stoi(std_it.substr(9 + (data_section_size * 2), 2), nullptr, 16);
 
 			//fill data_bytes_vec with single bytes of record
 			temp_data_vec.push_back(':'); // header for data recognition on uC
-			temp_data_vec.push_back(static_cast<char>(nibbles_in_data_section));
+			temp_data_vec.push_back(static_cast<char>(data_section_size));
 			temp_data_vec.push_back(static_cast<char>((address & 0xff00) >> 8));
 			temp_data_vec.push_back(static_cast<char>(address & 0xff));
 			temp_data_vec.push_back(record_type);
 
-			for (size_t rec_pos = 0; rec_pos < nibbles_in_data_section * 2; rec_pos += 2)
+			for (size_t rec_pos = 0; rec_pos < data_section_size * 2; rec_pos += 2)
 				temp_data_vec.push_back(static_cast<char>(stoi(std_it.substr((9 + rec_pos), 2), nullptr, 16)));
 			
 			//hand data to checksum validator class

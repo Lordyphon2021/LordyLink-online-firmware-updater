@@ -70,7 +70,7 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     ui.Q_UpdateLordyphonButton->setText("update firmware        ");
 
     //set background foto
-    QPixmap bkgnd(QDir::homePath() + "/LordyLink/lordi3drender.jpg");
+    QPixmap bkgnd(QDir::homePath() + "/LordyLink/lordylink_background.jpeg");
     bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
     QPalette palette;
     palette.setBrush(QPalette::Background, bkgnd);
@@ -179,7 +179,7 @@ void LordyLink::OnUpdateButton(){
             QMessageBox info;
             QFont font("Lucida Typewriter", 8, QFont::Bold);
             info.setFont(font);
-            info.setText("Folder empty, download still in progress. Please try again.");
+            info.setText("no internet connection!");
             info.exec();
             return;
         }

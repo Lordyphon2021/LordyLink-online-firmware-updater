@@ -21,8 +21,8 @@ bool SerialHandler::lordyphon_handshake() {
 		;  //wait till port is open (might take a couple of ms)
 
 	write_serial_data(lordyphon_call.hand_shake_tx_phrase); //call
-	wait_for_ready_read(1000);
-
+	wait_for_ready_read(2000);
+	qDebug() << input_buffer << endl;
 	if (input_buffer == lordyphon_response.hand_shake_rx_phrase) //check response
 		return true;
 
@@ -46,7 +46,7 @@ bool SerialHandler::lordyphon_update_call() {
 
 	else {
 		QMessageBox error;
-		error.setText("rx error, please try again");
+		error.setText("Activate USB-Mode on Lordyphon (press global + looper button)");
 		error.exec();
 
 		return false;
@@ -60,13 +60,15 @@ bool SerialHandler::find_lordyphon_port(){
 		
 		foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts()){
 			
+			qDebug() << info.manufacturer() << endl;
+			
 			if (info.manufacturer() == "FTDI") {		//this in't enough for identification, I have no vendor ID yet, any FTDI based device will be found here...
 				lordyphon_portname = info.portName();  //handshake will confirm lordyphon ID
 				
 					if (open_lordyphon_port() && (lordyphon_handshake() || lordyphon_update_call())) {	 //try handshakes on each FTDI port to identify lordyphon
 						lordyphon_port->close();			
 					
-						return true;
+						return true; 
 					}
 			}
 			++port_index;  // lordyphon usb port number stored here...
