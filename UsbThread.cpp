@@ -151,6 +151,7 @@ void Worker::update()
     }
    
     emit activateButtons();
+    
     mutex.unlock();
     emit finished();  //THREAD CLOSED
 }

@@ -50,6 +50,7 @@ signals:
 	void activateButtons();
 	void deactivateButtons();
 	void deactivateAbortButton();
+	
 	// pass to QTableview
 	void newItem(QString);
 	//thread

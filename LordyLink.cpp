@@ -8,6 +8,7 @@
 #include <QDialog>
 #include "DeleteDialog.h"
 #include <qpalette.h>
+#include <qstandardpaths>
 
 using namespace std;
 
@@ -59,6 +60,7 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
         
     }
     //resize update button
+    /*
     QSize q;
     q.setWidth(400);
     q.setHeight(50);
@@ -68,14 +70,15 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     ui.Q_UpdateLordyphonButton->setFont(font);
     ui.Q_UpdateLordyphonButton->setPalette(QColor(Qt::lightGray));
     ui.Q_UpdateLordyphonButton->setText("update firmware        ");
-
+    */
     //set background foto
-    QPixmap bkgnd(QDir::homePath() + "/LordyLink/lordylink_background.jpeg");
+    /*
+    QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.png");
     bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
     QPalette palette;
     palette.setBrush(QPalette::Background, bkgnd);
     this->setPalette(palette);
-
+    */
     //connect slots
     
     //double click to rename, item changed for rename end
@@ -440,11 +443,12 @@ void LordyLink::OnActivateButtons(){
         ui.sendSetButton->setEnabled(true);
     if (!ui.delete_set_pushButton->isEnabled())
         ui.delete_set_pushButton->setEnabled(true);
-
+    
+    delay(200);
     ui.QInstallProgressBar->hide();
     ui.QInstallLabel->hide();
 
-   
+    
 }
 
 //deactivate main window buttons, show abort button
