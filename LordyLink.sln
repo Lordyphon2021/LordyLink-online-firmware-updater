@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LordyLink", "LordyLink.vcxproj", "{CF8A1639-1B4F-4B02-B027-75E2420279C9}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Pandemic_Instruments", "..\Pandemic_Instruments\Pandemic_Instruments.vdproj", "{5E1E0958-C171-4A5A-85A6-AEE9DB6EB647}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Pandemic_Instruments", "..\Pandemic_Instruments\Pandemic_Instruments.vdproj", "{F125344E-BEF2-45C4-B01A-4D386B23BF46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,10 +22,10 @@ Global
 		{CF8A1639-1B4F-4B02-B027-75E2420279C9}.Release|x64.Build.0 = Release|x64
 		{CF8A1639-1B4F-4B02-B027-75E2420279C9}.Release|x86.ActiveCfg = Release|x64
 		{CF8A1639-1B4F-4B02-B027-75E2420279C9}.Release|x86.Build.0 = Release|x64
-		{5E1E0958-C171-4A5A-85A6-AEE9DB6EB647}.Debug|x64.ActiveCfg = Debug
-		{5E1E0958-C171-4A5A-85A6-AEE9DB6EB647}.Debug|x86.ActiveCfg = Debug
-		{5E1E0958-C171-4A5A-85A6-AEE9DB6EB647}.Release|x64.ActiveCfg = Release
-		{5E1E0958-C171-4A5A-85A6-AEE9DB6EB647}.Release|x86.ActiveCfg = Debug
+		{F125344E-BEF2-45C4-B01A-4D386B23BF46}.Debug|x64.ActiveCfg = Debug
+		{F125344E-BEF2-45C4-B01A-4D386B23BF46}.Debug|x86.ActiveCfg = Debug
+		{F125344E-BEF2-45C4-B01A-4D386B23BF46}.Release|x64.ActiveCfg = Release
+		{F125344E-BEF2-45C4-B01A-4D386B23BF46}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -10,6 +10,7 @@
 #include <qpalette.h>
 #include <qstandardpaths>
 
+
 using namespace std;
 
 
@@ -59,8 +60,8 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
         ui.dirView->setColumnWidth(col, 320);
         
     }
-    //resize update button
-    /*
+   // resize update button
+    
     QSize q;
     q.setWidth(400);
     q.setHeight(50);
@@ -70,15 +71,15 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     ui.Q_UpdateLordyphonButton->setFont(font);
     ui.Q_UpdateLordyphonButton->setPalette(QColor(Qt::lightGray));
     ui.Q_UpdateLordyphonButton->setText("update firmware        ");
-    */
+    
     //set background foto
-    /*
-    QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.png");
+    
+    QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpeg");
     bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
     QPalette palette;
     palette.setBrush(QPalette::Background, bkgnd);
     this->setPalette(palette);
-    */
+    
     //connect slots
     
     //double click to rename, item changed for rename end
