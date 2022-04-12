@@ -158,13 +158,12 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     }
 
     
-    //assume that there are 10 firmware files on the ftp server, try and load all, downloader will delete empty files
-    //TODO: display available files on server
     
+    //get firmware releases from server
     try_download();
     download_timer = new QTimer(this);
     connect(download_timer, SIGNAL(timeout()), this, SLOT(try_download()));
-    download_timer->start(5000);
+    download_timer->start(5000); 
     
     //hotplug detection
     hot_plug_timer = new QTimer(this);
