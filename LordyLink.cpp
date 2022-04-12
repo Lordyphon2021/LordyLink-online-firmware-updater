@@ -538,7 +538,7 @@ void LordyLink::deleteSet() {
 
         delete model;
         model = new QStandardItemModel();
-        QFile::remove(QDir::homePath() + "/LordyLink/Sets/" + to_delete);  //set new name
+        QFile::remove(QDir::homePath() + "/LordyLink/Sets/" + to_delete);  
 
         home = QDir::homePath() + "/LordyLink/Sets";
         QDir directory(home);
