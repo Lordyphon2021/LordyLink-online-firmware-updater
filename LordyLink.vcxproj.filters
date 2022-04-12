@@ -64,6 +64,9 @@
     <ClCompile Include="DeleteDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextfileExtractor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -99,6 +102,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LordyphonMessageStrings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextfileExtractor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

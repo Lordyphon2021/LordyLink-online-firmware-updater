@@ -26,6 +26,8 @@ void Downloader::download(QString location, QString path){ //location and path v
     QNetworkRequest request = QNetworkRequest(url);
     QNetworkReply* reply = manager.get(request);
     wire(reply);
+
+    emit download_status(false);
 }
 
 void Downloader::readyRead(){
@@ -35,18 +37,30 @@ void Downloader::readyRead(){
     if (reply){
         QByteArray data = reply->readAll();
         file.write(data); // download data to file
+        
     }
     else {
         qDebug() << "readyread error";
     }
+    emit download_status(false);
 }
 
 void Downloader::finished(QNetworkReply* reply){
-    
+   
+    if (file.size() == 0) {
+        emit download_status(false);
+        qDebug() << "download unsuccessful";
+    }
+    else {
+        emit download_status(true);
+        qDebug() << "download success";
+    }
     file.close();
     reply->close();
-    emit download_finished();
-    qDebug() << "download finished"; 
+    
+    
+    
+    
 }
 
 
@@ -55,9 +69,10 @@ void Downloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal){
     if (bytesTotal <= 0) {
         
         qDebug() << "no data received... ";
-        emit no_data();
+       
         file.close();
         file.remove(); //if file empty, delete right away
+        emit download_status(false);
         return;
     }
 }
@@ -65,6 +80,7 @@ void Downloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal){
 void Downloader::error(QNetworkReply::NetworkError code){
    
     qDebug() << "error" << code;
+    emit download_status(false);
 }
 
 void Downloader::wire(QNetworkReply* reply){

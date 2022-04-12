@@ -91,7 +91,7 @@ public slots:
     void OnActivateButtons();
     void OnDeactivateButtons();
     void OnHideAbortButton() { ui.abort_pushButton->hide(); }
-    void activate_install_button(){ ui.Q_UpdateLordyphonButton->setEnabled(true); }
+    //void activate_install_button(){ ui.Q_UpdateLordyphonButton->setEnabled(true); }
     //HELPER
     void set_firmware_path_from_dialog(QString path){ firmware_path = path; }
     void OnRemoteMessageBox(QString message);
@@ -100,6 +100,7 @@ public slots:
     void check_manufacturer_ID();
     void hotplugtimer_on();
     void hotplugtimer_off();
+    void on_download_status(bool download_status) { download_done = download_status; }
     
 
 private:
@@ -116,6 +117,7 @@ private:
     QTimer* hot_plug_timer = nullptr;
     QString firmware_path;
     QString to_delete;
+    bool download_done= false;
 
     inline void delay(int millisecondsWait){
         QEventLoop loop;

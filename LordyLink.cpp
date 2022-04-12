@@ -9,6 +9,7 @@
 #include "DeleteDialog.h"
 #include <qpalette.h>
 #include <qstandardpaths>
+#include "TextfileExtractor.h"
 
 
 using namespace std;
@@ -39,7 +40,10 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     if (!log.exists())
         log.mkpath(".");
    
-    
+    QDir download_dir(QDir::homePath() + "/LordyLink/downloads");
+    if (!download_dir.exists())
+        download_dir.mkpath(".");
+
     // read sets from directory
     home = QDir::homePath() + "/LordyLink/Sets";
     QDir directory(home);
@@ -77,9 +81,12 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpeg");
     bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
     QPalette palette;
-    palette.setBrush(QPalette::Background, bkgnd);
+    palette.setBrush(QPalette::Window, bkgnd);
     this->setPalette(palette);
-    
+
+    ui.connection_label->setStyleSheet("QLabel { background-color : none; color : white; }");
+    ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : white; }");
+    ui.dirView ->setStyleSheet("QLabel { background-color : none; color : white; }");
     //connect slots
     
     //double click to rename, item changed for rename end
@@ -149,19 +156,21 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
         if (usb_port->clear_buffer())
             usb_port->close_usb_port();
     }
+
     
     //assume that there are 10 firmware files on the ftp server, try and load all, downloader will delete empty files
     //TODO: display available files on server
-   
+    
     try_download();
     download_timer = new QTimer(this);
     connect(download_timer, SIGNAL(timeout()), this, SLOT(try_download()));
-    download_timer->start(20000);
+    download_timer->start(5000);
     
     //hotplug detection
     hot_plug_timer = new QTimer(this);
     connect(hot_plug_timer, SIGNAL(timeout()), this, SLOT(check_manufacturer_ID()));
     hot_plug_timer->start(2000);
+    
 }
 
 
@@ -556,19 +565,35 @@ void LordyLink::deleteSet() {
 
 void LordyLink::try_download() {
     
+    QDir down= QDir::homePath() + "/LordyLink/downloads";
     QDir firm = QDir::homePath() + "/LordyLink/Firmware";
+    Downloader* download_from_ftp = new Downloader;
     
-    if (firm.isEmpty()) {
-
-        for (size_t i = 0; i < 10; ++i) {
-            Downloader* download_from_ftp = new Downloader;
-            connect(download_from_ftp, SIGNAL(download_finished()), this, SLOT(activate_install_button()));
-            //set up proper paths for downloader
-            QString location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/lordyphon_firmware_V1.0" + QString::number(i) + ".hex";
-            QString path_first_part = QDir::homePath() + "/LordyLink/Firmware/lordyphon_firmware_V1.0"; //this is only part of the name
-            QString path_complete = path_first_part + QString::number(i) + ".txt"; //version number added here...
-            download_from_ftp->download(location, path_complete);  //pass to method
+    connect(download_from_ftp, SIGNAL(download_status(bool)), this, SLOT(on_download_status(bool)));
+   
+    
+    if (download_done == false) {
+        
+        ui.Q_UpdateLordyphonButton->setDisabled(true);
+        QString ftp_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/firmware_versions.txt";
+        QString to_downloaded_file= QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt";
+        download_from_ftp->download(ftp_location, to_downloaded_file);  //pass to method
+        ui.connection_label->setText("attempting download...");
+    }
+    else if(download_done == true && firm.isEmpty()){
+        ui.connection_label->setText("downloading...");
+        delay(1000);
+        TextfileExtractor textextract;
+        ui.connection_label->setText("extracting...");
+        delay(600);
+        if (textextract.unzipper(QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt") == true) {
+            ui.connection_label->setText("extracting done...");
+            delay(600);
+            ui.connection_label->setText("download success");
+            delay(600);
+            ui.connection_label->setText("updater ready");
         }
+        ui.Q_UpdateLordyphonButton->setEnabled(true);
     }
 }
 

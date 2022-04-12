@@ -21,8 +21,9 @@ public:
 void download(QString location, QString path); //main method
     
 signals:
-    void no_data();
-    void download_finished();
+    //void no_data();
+    
+    void download_status(bool download_finished);
 
 
 private slots:

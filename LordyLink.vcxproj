@@ -93,6 +93,7 @@
     <ClCompile Include="QtSendDialog.cpp" />
     <ClCompile Include="QUpdateDialog.cpp" />
     <ClCompile Include="Serial.cpp" />
+    <ClCompile Include="TextfileExtractor.cpp" />
     <ClCompile Include="UsbThread.cpp" />
     <QtRcc Include="LordyLink.qrc" />
     <QtUic Include="DeleteDialog.ui" />
@@ -114,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChecksumValidator.h" />
+    <ClInclude Include="TextfileExtractor.h" />
     <QtMoc Include="QtSendDialog.h" />
     <QtMoc Include="UsbThread.h" />
     <QtMoc Include="QNoHardwareDialog.h" />
