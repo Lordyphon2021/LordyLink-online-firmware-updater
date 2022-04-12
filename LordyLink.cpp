@@ -562,31 +562,37 @@ void LordyLink::deleteSet() {
 }
 
 
-
+//download firmware_versions.txt from ftp_server, set off by QTimer and in CTOR
 void LordyLink::try_download() {
-    
+   
+    //set up dir
     QDir down= QDir::homePath() + "/LordyLink/downloads";
     QDir firm = QDir::homePath() + "/LordyLink/Firmware";
-    Downloader* download_from_ftp = new Downloader;
     
+    Downloader* download_from_ftp = new Downloader;
+    //get status from downloader class
     connect(download_from_ftp, SIGNAL(download_status(bool)), this, SLOT(on_download_status(bool)));
    
-    
-    if (download_done == false) {
+    if (download_done == false) { //this bool is set via signal
         
-        ui.Q_UpdateLordyphonButton->setDisabled(true);
+        ui.Q_UpdateLordyphonButton->setDisabled(true); //button inactive until file is downloaded and extracted
+        
         QString ftp_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/firmware_versions.txt";
         QString to_downloaded_file= QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt";
        
-        download_from_ftp->download(ftp_location, to_downloaded_file);  //pass to method
+        download_from_ftp->download(ftp_location, to_downloaded_file); 
         ui.connection_label->setText("connecting to server");
     }
-    else if(download_done == true && firm.isEmpty()){
+    else if(download_done == true && firm.isEmpty()){ 
+        //file is in folder "downloads" now
         ui.connection_label->setText("downloading...");
         delay(1000);
+        
         TextfileExtractor textextract;
+        
         ui.connection_label->setText("extracting...");
         delay(600);
+        //start unzipper method
         if (textextract.unzipper(QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt") == true) {
             ui.connection_label->setText("extracting done...");
             delay(600);
@@ -594,6 +600,7 @@ void LordyLink::try_download() {
             delay(600);
             ui.connection_label->setText("updater ready");
         }
+        //activate upddate button only if unzipper returns true
         ui.Q_UpdateLordyphonButton->setEnabled(true);
     }
 }
