@@ -579,7 +579,7 @@ void LordyLink::try_download() {
         QString to_downloaded_file= QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt";
        
         download_from_ftp->download(ftp_location, to_downloaded_file);  //pass to method
-        ui.connection_label->setText("attempting download...");
+        ui.connection_label->setText("connecting to server");
     }
     else if(download_done == true && firm.isEmpty()){
         ui.connection_label->setText("downloading...");
