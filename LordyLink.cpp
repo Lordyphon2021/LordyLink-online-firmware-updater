@@ -587,7 +587,6 @@ void LordyLink::try_download() {
         ui.connection_label->setText("connecting to server");
         ui.Q_UpdateLordyphonButton->setDisabled(true); //button inactive until file is downloaded and extracted
         
-
         QString ftp_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/firmware_versions.txt";
         QString to_downloaded_file= QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt";
        
