@@ -42,30 +42,7 @@ public:
     
     ~LordyLink() {
         
-        //remove downloads
-        QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
-        firmware.setNameFilters(QStringList() << "*.*");
-        //firmware.setFilter(QDir::Files);
-
-        foreach(QString firmwareFile, firmware.entryList())
-            firmware.remove(firmwareFile);
-
-        //cleanup empty files from crashes
-        QDir set_path(QDir::homePath() + "/LordyLink/Sets");
-        set_path.setNameFilters(QStringList() << "*.*");
-        
-
-        foreach(QString setfile, set_path.entryList()) {
-            QFile tempfile(set_path.absoluteFilePath(setfile));
-            tempfile.open((QIODevice::ReadWrite | QIODevice::Text));
-            
-            if (tempfile.size() == 0) {
-                tempfile.close();
-                tempfile.remove();
-
-            }else
-                tempfile.close();
-        }
+        file_cleanup();  //delete downloads, firmware versions and empty set files
     }
     
     Ui::LordyLinkClass ui;
@@ -101,6 +78,7 @@ public slots:
     void hotplugtimer_on();
     void hotplugtimer_off();
     void on_download_status(bool download_status) { download_done = download_status; }
+    void on_download_status_message(QString msg) { downloader_message = msg; }
     
 
 private:
@@ -117,7 +95,9 @@ private:
     QTimer* hot_plug_timer = nullptr;
     QString firmware_path;
     QString to_delete;
+    QString downloader_message;
     bool download_done= false;
+    const int firmware_size = 184360;
 
     inline void delay(int millisecondsWait){
         QEventLoop loop;
@@ -125,6 +105,43 @@ private:
         t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
         t.start(millisecondsWait);
         loop.exec();
+    }
+    void file_cleanup() {
+        //remove downloads
+        QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
+        firmware.setNameFilters(QStringList() << "*.*");
+        //firmware.setFilter(QDir::Files);
+
+        foreach(QString firmwareFile, firmware.entryList())
+            firmware.remove(firmwareFile);
+
+        //cleanup empty files from crashes
+
+        QFile firmware_versions = QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt";
+        if (firmware_versions.exists())
+            firmware_versions.remove();
+
+        QDir set_path(QDir::homePath() + "/LordyLink/Sets");
+        set_path.setNameFilters(QStringList() << "*.*");
+
+
+        foreach(QString setfile, set_path.entryList()) {
+            QFile tempfile(set_path.absoluteFilePath(setfile));
+            tempfile.open((QIODevice::ReadWrite | QIODevice::Text));
+
+            if (tempfile.size() == 0) {
+                tempfile.close();
+                tempfile.remove();
+
+            }
+            else
+                tempfile.close();
+        }
+
+
+
+
+
     }
 };
 

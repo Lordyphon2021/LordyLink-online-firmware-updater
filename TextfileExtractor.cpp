@@ -3,7 +3,7 @@
 //extracts individual intel hex firmware files from combined .txt file ( firmware_versions.txt )
 //and copies each firmware version into an individual text file ( compatible with parser class )
 
-bool TextfileExtractor::unzipper(QString path_to_file) {
+bool TextfileExtractor::unwrap(QString path_to_file) {
 
 	QFile firmware_versions(path_to_file);
 
@@ -50,7 +50,7 @@ bool TextfileExtractor::unzipper(QString path_to_file) {
 	} while (!firmware_versions.atEnd()); // END: do { // go through firmware versions file
 
 	firmware_versions.close();
-	firmware_versions.remove();
+	//firmware_versions.remove();
 	
 	return true;
 

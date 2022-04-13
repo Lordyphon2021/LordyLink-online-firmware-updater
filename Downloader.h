@@ -24,7 +24,7 @@ signals:
     //void no_data();
     
     void download_status(bool download_finished);
-
+    void download_status_msg(QString message);
 
 private slots:
     void readyRead();

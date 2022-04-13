@@ -49,6 +49,10 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     QDir directory(home);
     QStringList txtfiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
     
+    file_cleanup();  //delete downloads, firmware versions and empty set files on startup
+    
+    
+    
     foreach(QString filename, txtfiles) {
         qDebug() << filename;
         QStandardItem* itemname = new QStandardItem(filename);
@@ -102,6 +106,8 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     QObject::connect(ui.delete_set_pushButton, SIGNAL(clicked()), this, SLOT(deleteSet()));
    
     ui.hardware_connected_label->setText("       ");
+   
+   
     ui.QInstallLabel->hide();
     ui.QInstallProgressBar->hide();
     ui.abort_pushButton->hide();
@@ -160,6 +166,7 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     
     
     //get firmware releases from server
+    
     try_download();
     download_timer = new QTimer(this);
     connect(download_timer, SIGNAL(timeout()), this, SLOT(try_download()));
@@ -567,32 +574,47 @@ void LordyLink::try_download() {
     //set up dir
     QDir down= QDir::homePath() + "/LordyLink/downloads";
     QDir firm = QDir::homePath() + "/LordyLink/Firmware";
+    QFile firmware_versions(QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt");
     
     Downloader* download_from_ftp = new Downloader;
     //get status from downloader class
     connect(download_from_ftp, SIGNAL(download_status(bool)), this, SLOT(on_download_status(bool)));
-   
-    if (download_done == false) { //this bool is set via signal
-        
+    connect(download_from_ftp, SIGNAL(download_status_msg(QString)), this, SLOT(on_download_status_message(QString)));
+    
+    
+    
+    if (download_done == false && ( down.isEmpty() || firmware_versions.size() % firmware_size != 0 ) ) { //this bool is set via signal
+        ui.connection_label->setText("connecting to server");
         ui.Q_UpdateLordyphonButton->setDisabled(true); //button inactive until file is downloaded and extracted
         
+
         QString ftp_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/firmware_versions.txt";
         QString to_downloaded_file= QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt";
        
-        download_from_ftp->download(ftp_location, to_downloaded_file); 
-        ui.connection_label->setText("connecting to server");
+        if (down.isEmpty()) {
+            download_from_ftp->download(ftp_location, to_downloaded_file);
+            if(downloader_message.isEmpty())
+                ui.connection_label->setText("connecting to server");
+            else {
+                ui.connection_label->setText(downloader_message);
+                downloader_message.clear();
+            }
+
+        }
+       // ui.connection_label->setText(downloader_message);
     }
-    else if(download_done == true && firm.isEmpty()){ 
-        //file is in folder "downloads" now
+    else if(download_done == true && firmware_versions.size() % firmware_size == 0){
+        //file is in folder "downloads" now, and has the correct size 
+        
         ui.connection_label->setText("downloading...");
         delay(1000);
         
-        TextfileExtractor textextract;
+        TextfileExtractor extractor;
         
         ui.connection_label->setText("extracting...");
         delay(600);
         //start unzipper method
-        if (textextract.unzipper(QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt") == true) {
+        if (extractor.unwrap(QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt") == true) {
             ui.connection_label->setText("extracting done...");
             delay(600);
             ui.connection_label->setText("download success");
@@ -600,8 +622,15 @@ void LordyLink::try_download() {
             ui.connection_label->setText("updater ready");
         }
         //activate upddate button only if unzipper returns true
+        download_done = false;
         ui.Q_UpdateLordyphonButton->setEnabled(true);
     }
+    else if (firmware_versions.size() % firmware_size != 0) {  //handle incomplete downloads
+        ui.connection_label->setText("download incomplete");
+        download_done = false;
+    }
+
+
 }
 
 

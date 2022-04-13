@@ -41,6 +41,7 @@ void Downloader::readyRead(){
     }
     else {
         qDebug() << "readyread error";
+        emit download_status_msg("read error");
     }
     emit download_status(false);
 }
@@ -49,6 +50,7 @@ void Downloader::finished(QNetworkReply* reply){
    
     if (file.size() == 0) {
         emit download_status(false);
+        emit download_status_msg("offline");
         qDebug() << "download unsuccessful";
     }
     else {
@@ -58,9 +60,6 @@ void Downloader::finished(QNetworkReply* reply){
     file.close();
     reply->close();
     
-    
-    
-    
 }
 
 
@@ -69,7 +68,7 @@ void Downloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal){
     if (bytesTotal <= 0) {
         
         qDebug() << "no data received... ";
-       
+        emit download_status_msg("no data received...");
         file.close();
         file.remove(); //if file empty, delete right away
         emit download_status(false);
@@ -80,7 +79,9 @@ void Downloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal){
 void Downloader::error(QNetworkReply::NetworkError code){
    
     qDebug() << "error" << code;
+    QString errorcode = code;
     emit download_status(false);
+    emit download_status_msg(errorcode);
 }
 
 void Downloader::wire(QNetworkReply* reply){

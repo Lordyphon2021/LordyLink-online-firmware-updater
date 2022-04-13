@@ -19,7 +19,7 @@ class TextfileExtractor
 {
 public:
 	
-	bool unzipper(QString path_to_file);
+	bool unwrap(QString path_to_file);
 	
 
 private:
