@@ -30,13 +30,13 @@ public:
 	Parser( QString _path ) {
 		 //constructor takes path to file location
 	
-		if(! _path.contains(".txt"))
-			_path += ".txt";
+		if(! _path.contains(".hex"))
+			_path += ".hex";
 		qDebug() << "in parser : " <<_path;
 		
 		QFile data_file(_path);
 		QString temp_record;
-		data_file.open(QIODevice::ReadOnly);
+		data_file.open(QIODevice::ReadOnly | QIODevice::Text);
 
 		if (data_file.isOpen()) {				//copy hexfile to vector of strings
 			while (! data_file.atEnd()) {

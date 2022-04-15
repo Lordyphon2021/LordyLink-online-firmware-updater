@@ -30,7 +30,7 @@ void QUpdateDialog::downloaded_firmware_versions()
 	
 	QString home = QDir::homePath() + "/LordyLink/Firmware";
 	QDir directory(home);
-	QStringList txtfiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
+	QStringList txtfiles = directory.entryList(QStringList() << "*.*", QDir::Files);
 	
 	model = new QStandardItemModel();
     

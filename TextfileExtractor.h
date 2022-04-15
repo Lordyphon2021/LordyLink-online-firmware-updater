@@ -23,7 +23,7 @@ public:
 	
 
 private:
-	int version_number;
+	double version_number;
 	QString templine;
 	QString separator_string;
 };

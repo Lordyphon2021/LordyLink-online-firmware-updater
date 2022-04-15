@@ -22,16 +22,16 @@ bool TextfileExtractor::unwrap(QString path_to_file) {
 		separator_string = firmware_versions.readLine();
 		qDebug() << "sep_string: " << separator_string;
 		//if valid, extract version number...
-		if (separator_string.contains("LORDYPHON")) {
-			version_number = separator_string.mid(23, 2).toInt();
+		if (separator_string.contains("Lord")) {
+			version_number = separator_string.mid(19, 4).toDouble();
 			qDebug() << "version_number" << version_number;
 		}
 		else
 			qDebug() << "separator not found";
 		
 		//create text file for individual firmware version
-		QFile single_firmware(QDir::homePath() + "/LordyLink/Firmware/Version" + QString::number(version_number) + ".txt");
-		qDebug() << QDir::homePath() + "/LordyLink/Firmware/Version" + QString::number(version_number) + ".txt";
+		QFile single_firmware(QDir::homePath() + "/LordyLink/Firmware/LordyphonFirmwareV" + QString::number(version_number) + ".hex");
+		//qDebug() << QDir::homePath() + "/LordyLink/Firmware/Version" + QString::number(version_number) + ".txt";
 		
 		if (!single_firmware.open(QIODevice::WriteOnly | QIODevice::Text)) {
 			qDebug() << "file not found";
@@ -41,8 +41,11 @@ bool TextfileExtractor::unwrap(QString path_to_file) {
 		QTextStream out(&single_firmware);
 
 		do {
+			
 			templine = firmware_versions.readLine();
 			out << templine; //copy hex data to new file
+			out.flush();
+		
 		} while (!templine.contains(":00000001FF")); // end of firmware data
 		
 		single_firmware.close();

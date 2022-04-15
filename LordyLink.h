@@ -79,7 +79,7 @@ public slots:
     void hotplugtimer_off();
     void on_download_status(bool download_status) { download_done = download_status; }
     void on_download_status_message(QString msg) { downloader_message = msg; }
-    
+    void onAboutTriggered();
 
 private:
     
@@ -97,7 +97,7 @@ private:
     QString to_delete;
     QString downloader_message;
     bool download_done= false;
-    const int firmware_size = 184360;
+    const int firmware_size = 188459;
 
     inline void delay(int millisecondsWait){
         QEventLoop loop;

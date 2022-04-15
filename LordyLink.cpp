@@ -23,6 +23,14 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
 
     ui.setupUi(this);
     
+    QAction* about_triggered = new QAction("about", this);
+    QMenu* menu = menuBar()->addMenu("&info");
+    menu->addAction(about_triggered);
+    connect(about_triggered, SIGNAL(triggered()), this, SLOT(onAboutTriggered()));
+    
+    
+    
+    
     ui.Q_UpdateLordyphonButton->setDisabled(true);
     //create model
     model = new QStandardItemModel();
@@ -433,6 +441,21 @@ void LordyLink::OnSendSetButton()
 
 //slot method implementations
 
+//Menu "about"
+void LordyLink::onAboutTriggered() {
+
+  
+    QString info = "LordyLink (c)2022 by Stefan Plattner-Deisenberger.\nthis software falls under the Qt open source licence agreement. \ncheck it out on github:\nhttps://github.com/Lordyphon2021/LordyLink-online-firmware-updater\n";
+    QMessageBox about;
+    QFont font("Lucida Typewriter", 8, QFont::Bold);
+    about.setFont(font);
+    about.setButtonText(1,"FCK PTN");
+    about.setText(info);
+    about.exec();
+
+
+}
+
 //this message box is controlled from worker methods
 void LordyLink::OnRemoteMessageBox(QString message){
     
@@ -590,7 +613,7 @@ void LordyLink::try_download() {
         QString ftp_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/firmware_versions.txt";
         QString to_downloaded_file= QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt";
        
-        if (down.isEmpty()) {
+        //if (down.isEmpty()) {
             download_from_ftp->download(ftp_location, to_downloaded_file);
             if(downloader_message.isEmpty())
                 ui.connection_label->setText("connecting to server");
@@ -599,7 +622,7 @@ void LordyLink::try_download() {
                 downloader_message.clear();
             }
 
-        }
+       // }
        // ui.connection_label->setText(downloader_message);
     }
     else if(download_done == true && firmware_versions.size() % firmware_size == 0){
@@ -612,6 +635,7 @@ void LordyLink::try_download() {
         
         ui.connection_label->setText("extracting...");
         delay(600);
+        
         //start unzipper method
         if (extractor.unwrap(QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt") == true) {
             ui.connection_label->setText("extracting done...");

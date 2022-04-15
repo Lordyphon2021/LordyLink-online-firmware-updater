@@ -83,6 +83,7 @@ void Worker::update()
             if (carry_on_flag == true) {  //INITIAL STATE == TRUE
                 tx_data = hex_parser.get_hex_record(index);  //QByteArray txdata IS USED TO SEND DATA TO THE MICROCONTROLLER
                 usb_port_update_thread.write_serial_data(tx_data); //SEND RECORD TO USB
+                //qDebug() << "index nr. " << index << " data: " << tx_data.toHex();
                 out << "record nr. " << index << "  " << (tx_data.toHex()) << '\n';  //LOGFILE OUTPUT
             }
             if (!usb_port_update_thread.wait_for_ready_read(1000)) //THREAD BLOCKS UNTIL INCOMING CONFIRMATION MESSAGE OR TIMEOUT 1000ms
@@ -92,7 +93,7 @@ void Worker::update()
 
             if (checksum_status == lordyphon_response.is_checksum_error) {  //CHECKSUM CALCULATION HAS GONE WRONG
                 ++checksum_error_ctr;                 //EXIT CONDITION, IF HEXFILE IS CORRUPTED, CTR WILL GO UP TO 8 BEFORE ABORTING
-                out << "--------------CHECKSUM ERROR AT INDEX " << index << "  " << (tx_data.toHex()) << '\n'; //LOGFILE OUTPUT
+                out << "--------------CHECKSUM ERROR AT INDEX " << index << "  " << tx_data.toHex() << '\n'; //LOGFILE OUTPUT
                 emit setLabel("checksum error...sending record again");
                 carry_on_flag = true;              //READ RECORD AGAIN AT SAME VECTOR INDEX
                 delay(1000);                 //ALLOW TIME FOR USER FEEDBACK
@@ -114,12 +115,12 @@ void Worker::update()
                 delay(1000);
                 carry_on_flag = false;
             }
-            if (checksum_error_ctr > 8) {  //EXIT CONDITION: CHECKSUM ERROR
+            if (checksum_error_ctr > 30) {  //EXIT CONDITION: CHECKSUM ERROR
                 emit setLabel("file corrupted...");
                 carry_on_flag = false;
                 break;
             }
-            if (rx_error_ctr > 8 || ready_read_timeout_ctr > 8) {  //EXIT CONDITION: CONNECTION ERROR
+            if (rx_error_ctr > 30 || ready_read_timeout_ctr > 30) {  //EXIT CONDITION: CONNECTION ERROR
                 emit setLabel("rx error, check connection ");
                 carry_on_flag = false;
                 break;
