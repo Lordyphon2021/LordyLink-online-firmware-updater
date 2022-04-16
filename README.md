@@ -30,8 +30,8 @@ detailed description in the comments.
 
 TODOs: 
        
-       -display available firmware versions before downloading. 
-       -check controller whether firmware is up to date
+       
+       -alert user when new release is available.
        -implement "delete set" on mouse right-click instead of push button.
        
        
