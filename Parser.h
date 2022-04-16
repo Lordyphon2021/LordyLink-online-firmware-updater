@@ -30,10 +30,6 @@ public:
 	Parser( QString _path ) {
 		 //constructor takes path to file location
 	
-		if(! _path.contains(".hex"))
-			_path += ".hex";
-		qDebug() << "in parser : " <<_path;
-		
 		QFile data_file(_path);
 		QString temp_record;
 		data_file.open(QIODevice::ReadOnly | QIODevice::Text);
