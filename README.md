@@ -10,6 +10,10 @@ USE CASE 1: FIRMWARE UPDATE:
 App loads all available firmware versions from manufacturer website and displays them in a QTableView.
 Selected firmware updates the microcontroller after successful checksum verifications.
 
+( I am intending to provide access to all firmware releases in case something goes wrong on the controller.
+I have had issues with a well known synth manufacturer's firmware going weird every now and then and 
+would have wanted such a feature very badly )
+
 
 USE CASE 2: LOAD AND SAVE:         
 
