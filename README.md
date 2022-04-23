@@ -7,23 +7,23 @@ It is intended as a free download for every "Lordyphon" owner.
 
 USE CASE 1: FIRMWARE UPDATE:        
 
-  App loads all available firmware versions from manufacturer website and displays them in a QTableView.
-  Selected firmware updates the microcontroller after successful checksum verifications.
+    App loads all available firmware versions from manufacturer website and displays them in a QTableView.
+    Selected firmware updates the microcontroller after successful checksum verifications.
 
-  ( I am intending to provide access to all firmware releases in case something goes wrong on the controller.
-  I have had issues with a well known synth manufacturer's firmware going weird every now and then and 
-  would have wanted such a feature very badly )
+    ( I am intending to provide access to all firmware releases in case something goes wrong on the controller.
+    I have had issues with a well known synth manufacturer's firmware going weird every now and then and 
+    would have wanted such a feature very badly )
 
 
 USE CASE 2: LOAD AND SAVE:         
 
-  App loads eeprom data from controller and saves it to harddisk. Files are displayed in another QTableView
-  where they can be renamed and/or deleted. 
+    App loads eeprom data from controller and saves it to harddisk. Files are displayed in another QTableView
+    where they can be renamed and/or deleted. 
              
 
 USE CASE 3: SEND TO CONTROLLER:     
 
-  App sends stored user data back to the controller, where it is burned to eeprom.
+    App sends stored user data back to the controller, where it is burned to eeprom.
 
 
 LordyLink will only start if the controller is connected. Hotplug detection scans the connection every 2 seconds.
