@@ -1,7 +1,8 @@
 # LordyLink
 
-This Qt-based GUI application connects a PC to an ATMega 644PA-based Eurorack Synth Controller via USB
+This Qt-based GUI application connects a PC/Mac to an ATMega 644PA-based Eurorack Synth Controller via USB
 for online firmware updating and user-data management.
+It is intended as a free download for every "Lordyphon" owner.
 
 
 USE CASE 1: FIRMWARE UPDATE:        
@@ -47,6 +48,9 @@ TODOs:
 -implement "delete set" on mouse right-click instead of push button.
 
 -display github link and mandatory qt licence text in menu bar
+
+- newer macOS builds, it only works on catalina
+
 
        
      
