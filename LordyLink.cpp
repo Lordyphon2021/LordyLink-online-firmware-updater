@@ -361,13 +361,14 @@ void LordyLink::OnGetSetButton()
 void LordyLink::OnSendSetButton()
 {
    try {
-
+        //make sure controller is still connected and in usb mode
         if (usb_port->find_lordyphon_port())
             usb_port->open_lordyphon_port();
 
         else 
             throw runtime_error("Lordyphon not connected");
 
+        //this makes shure controller is NOT in update mode
         if (!usb_port->lordyphon_update_call()) {
             if (usb_port->clear_buffer())
                 usb_port->close_usb_port();
@@ -382,8 +383,8 @@ void LordyLink::OnSendSetButton()
                 //user is sure
                 if (send_dialog_code == QDialog::Accepted) {
                     ui.QInstallProgressBar->reset();
-
-                    Worker* sendSetWorker = new Worker(selected_set);  //hand path to selected item to constructor
+                    //hand path to selected item to constructor
+                    Worker* sendSetWorker = new Worker(selected_set); 
 
                     USBThread* sendSetThread = new USBThread;
                     //update GUI
@@ -450,7 +451,7 @@ void LordyLink::onAboutTriggered() {
     QMessageBox about;
     QFont font("Lucida Typewriter", 8, QFont::Bold);
     about.setFont(font);
-    about.setButtonText(1,"FCK PTN");
+    about.setButtonText(1,"NICE!");
     about.setText(info);
     about.exec();
 
