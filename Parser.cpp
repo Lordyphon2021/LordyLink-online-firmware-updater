@@ -34,6 +34,8 @@ bool Parser::parse_hex(){
 
 			return false;
 		}
+		
+		//TODO: change std::string to QString
 		for (auto it : hex_file_vec) {
 			string std_it = it.toStdString(); 
 			//parse string to individual elements
