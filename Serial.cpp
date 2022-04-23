@@ -14,6 +14,9 @@
 //as this will not interfere with controller performance.
 //TODO: handle more than one controllers in a system with unique addresses
 
+//Note: Asyncronous readAll() method is too slow for this task. 
+//I chose only to read known message sizes ( setReadBufferSize(expected size) ) for reliable results
+
 
 SerialHandler::SerialHandler(QObject* parent): QObject(parent){
 	lordyphon_port = new QSerialPort(this);
@@ -110,9 +113,10 @@ bool SerialHandler::check_with_manufacturer_ID() {
 
 bool SerialHandler::open_lordyphon_port()// open connection with correct port name
 {
+		//set parameters
 		lordyphon_port->setPortName(lordyphon_portname);
 		lordyphon_port->open(QIODevice::OpenMode(QIODevice::ReadWrite));
-		lordyphon_port->setBaudRate(QSerialPort::Baud57600);
+		lordyphon_port->setBaudRate(QSerialPort::Baud57600); //this is the fastest I could go
 		lordyphon_port->setDataBits(QSerialPort::Data8);
 		lordyphon_port->setParity(QSerialPort::NoParity);
 		lordyphon_port->setStopBits(QSerialPort::StopBits::OneStop);
