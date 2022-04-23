@@ -6,6 +6,13 @@
 
 
 //WRAPPER CLASS FOR QSERIALPORT
+//Controller has no vendor ID to be identified with.
+//Identification process works like this:
+//SerialHandler goes through all USB ports and checks for manufacturer ID "FTDI"
+//if present, controller is identified with call/response phrases.
+//hotplug detection remembers last known port of the controller and only scans for the manufacturer ID
+//as this will not interfere with controller performance.
+//TODO: handle more than one controllers in a system with unique addresses
 
 
 SerialHandler::SerialHandler(QObject* parent): QObject(parent){
@@ -33,7 +40,7 @@ bool SerialHandler::lordyphon_handshake() {
 bool SerialHandler::lordyphon_update_call() {
 
 	while (!lordyphon_port->isOpen())
-		;
+		; //wait until open
 
 	write_serial_data(lordyphon_call.update_tx_phrase);
 	wait_for_ready_read(1000);
@@ -57,15 +64,16 @@ bool SerialHandler::find_lordyphon_port(){
 	
 	try {
 		port_index = 0;
-		
-		foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts()){
+		//go through all available USB ports...
+		foreach(const QSerialPortInfo& info, QSerialPortInfo::availablePorts()){
 			
 			qDebug() << info.manufacturer() << endl;
-			
-			if (info.manufacturer() == "FTDI") {		//this in't enough for identification, I have no vendor ID yet, any FTDI based device will be found here...
-				lordyphon_portname = info.portName();  //handshake will confirm lordyphon ID
-				
-					if (open_lordyphon_port() && (lordyphon_handshake() || lordyphon_update_call())) {	 //try handshakes on each FTDI port to identify lordyphon
+			//this in't enough for identification, I have no vendor ID yet, any FTDI based devices will be found here...
+			if (info.manufacturer() == "FTDI") {		
+				//handshake will confirm lordyphon ID
+				lordyphon_portname = info.portName(); 
+					//try handshakes on each FTDI port to identify lordyphon
+					if (open_lordyphon_port() && (lordyphon_handshake() || lordyphon_update_call())) {	 
 						lordyphon_port->close();			
 					
 						return true; 
@@ -87,7 +95,8 @@ bool SerialHandler::check_with_manufacturer_ID() {
 	size_t check_index = 0;
 	
 	foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts()) {
-		if (info.manufacturer() == "FTDI" && port_index == check_index) {  //check if lordyphon is still on the same usb port
+		//check if lordyphon is still on the same usb port
+		if (info.manufacturer() == "FTDI" && port_index == check_index) {  
 			
 			//qDebug() << " manufacturer ID found at same index";
 			return true;
