@@ -51,6 +51,8 @@ TODOs:
 
 - newer macOS builds, it only works on catalina
 
+- create application shortcut to desktop (dialog??)
+
 
        
      
