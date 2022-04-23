@@ -23,16 +23,14 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
 
     ui.setupUi(this);
     
+    //setup menuBar
     QAction* about_triggered = new QAction("about", this);
     QMenu* menu = menuBar()->addMenu("&info");
     menu->addAction(about_triggered);
     connect(about_triggered, SIGNAL(triggered()), this, SLOT(onAboutTriggered()));
-    
-    
-    
-    
+    //hide update button on startup
     ui.Q_UpdateLordyphonButton->setDisabled(true);
-    //create model
+    //create model for set files
     model = new QStandardItemModel();
 
     //create directories for sets, logs and firmware if they don't exist already
@@ -59,8 +57,7 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     
     file_cleanup();  //delete downloads, firmware versions and empty set files on startup
     
-    
-    
+    //show sets in QTableView
     foreach(QString filename, txtfiles) {
         qDebug() << filename;
         QStandardItem* itemname = new QStandardItem(filename);
@@ -99,6 +96,7 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     ui.connection_label->setStyleSheet("QLabel { background-color : none; color : white; }");
     ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : white; }");
     ui.dirView ->setStyleSheet("QLabel { background-color : none; color : white; }");
+    
     //connect slots
     
     //double click to rename, item changed for rename end
@@ -114,8 +112,6 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     QObject::connect(ui.delete_set_pushButton, SIGNAL(clicked()), this, SLOT(deleteSet()));
    
     ui.hardware_connected_label->setText("       ");
-   
-   
     ui.QInstallLabel->hide();
     ui.QInstallProgressBar->hide();
     ui.abort_pushButton->hide();
@@ -125,6 +121,8 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     
     //create serial port
     usb_port = new SerialHandler;
+    
+    //scan for controller on usb ports
     
     if (!usb_port->find_lordyphon_port()) {
         dialog_no_hardware_found = new QNoHardwareDialog;
@@ -154,7 +152,7 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
                 error.exec();
             }
             else {
-                //open GUI on Lordyphon ID
+                //create GUI if controller is found
                 usb_port->open_lordyphon_port();
                 if (usb_port->lordyphon_handshake()) {
                     ui.hardware_connected_label->setText("Lordyphon connected");
@@ -173,11 +171,14 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
 
     
     
-    //get firmware releases from server
+    //get firmware releases from server: all releases are in one .txt file,
+    //TextfileExtracor class "unwraps" the file and creates individual firmware files for parser class
     
     try_download();
     download_timer = new QTimer(this);
     connect(download_timer, SIGNAL(timeout()), this, SLOT(try_download()));
+    //try download every 5 seconds if file not complete
+    //firmware now has fixed size so the combined file has to be a multiple of an individual firmware file
     download_timer->start(5000); 
     
     //hotplug detection
