@@ -31,7 +31,7 @@ detailed description in the comments.
 TODOs: 
        
        -use secure server connection and HIDE credentials!!!!
-       -enable support for more than one hardware units
+       -enable support for more than one hardware unit
        -alert user when new release is available.
        -implement "delete set" on mouse right-click instead of push button.
        -display github link and qt licence text in menu bar
