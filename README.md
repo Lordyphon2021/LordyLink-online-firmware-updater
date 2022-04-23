@@ -31,8 +31,8 @@ detailed description in the comments.
 TODOs: 
 -error handling: 
 
-  unpredictable behaviour of controller identification after update process,
-  automatically resume usb-mode on controller after restart.
+    unpredictable behaviour of controller identification after update process,
+    automatically resume usb-mode on controller after restart.
   
 -implement "lordylink disconnected" message on controller
 
