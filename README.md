@@ -31,23 +31,23 @@ detailed description in the comments.
 
 TODOs: 
 
--error handling: 
+- error handling: 
 
     unsuccessful controller identification after update process 
     (hardware is in default - MIDI mode after startup and will not respond to USB )
     solution: automatically resume usb-mode on controller after restart if LordyLink is connected.
   
--implement "lordylink disconnected" message on controller
+- implement "lordylink disconnected" message on controller
 
--use secure server connection and figure out how to HIDE server credentials in a public repository!!!!
+- use secure server connection and figure out how to HIDE server credentials in a public repository!!!!
 
--enable support for more than one hardware unit
+- enable support for more than one hardware unit
 
--alert user when new release is available.
+- alert user when new release is available.
 
--implement "delete set" on mouse right-click instead of push button.
+- implement "delete set" on mouse right-click instead of push button.
 
--display github link and mandatory qt licence text in menu bar
+- display github link and mandatory qt licence text in menu bar
 
 - newer macOS builds, it only works on catalina
 
