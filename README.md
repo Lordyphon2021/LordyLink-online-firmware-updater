@@ -38,7 +38,7 @@ TODOs:
   
 -implement "lordylink disconnected" message on controller
 
--use secure server connection and figure out how HIDE credentials, damnit!!!!
+-use secure server connection and figure out how to HIDE credentials, damnit!!!!
 
 -enable support for more than one hardware unit
 
