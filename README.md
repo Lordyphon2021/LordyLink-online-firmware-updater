@@ -30,7 +30,7 @@ detailed description in the comments.
 
 TODOs: 
        
-       
+       -use secure server connection and HIDE credentials!!!!
        -alert user when new release is available.
        -implement "delete set" on mouse right-click instead of push button.
        
