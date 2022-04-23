@@ -34,7 +34,7 @@ TODOs:
        -enable support for more than one hardware units
        -alert user when new release is available.
        -implement "delete set" on mouse right-click instead of push button.
-       
+       -display github link and qt licence text in menu bar
        
        
      
