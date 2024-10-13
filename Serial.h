@@ -30,6 +30,7 @@ public:
 	void set_buffer_size(qint64 size)const;
 	bool clear_buffer();
 	bool check_with_manufacturer_ID();
+	void quit_message();
 	QByteArray& getInputBuffer(){ return input_buffer; }
 	
 signals:

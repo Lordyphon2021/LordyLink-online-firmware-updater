@@ -249,8 +249,9 @@ void Worker::get_eeprom_content(){
                     delay(1000);
                     set_file.close();
                     usb_port_get_thread.write_serial_data(call_lordyphon.abort);
-                    delay(200);
-                    usb_port_get_thread.write_serial_data(call_lordyphon.abort);  //sending twice works better...
+                    usb_port_get_thread.write_serial_data(call_lordyphon.abort);
+
+                    
                     usb_port_get_thread.close_usb_port();
                     QDir sets = new_filepath_qstring;
                     sets.remove(new_filepath_qstring);
@@ -394,7 +395,7 @@ void Worker::send_eeprom_content(){
         bool abortflag = false;
         
         if (response == lordyphon_response.play_mode_is_off) {  //LORDYPHON PLAY MODE IS OFF
-            qDebug() << " lordyphon confirmes playmode off";
+            qDebug() << " lordyphon confirms playmode off";
             size_t index = 0;
             delay(200);
             usb_port_send_thread.write_serial_data(call_lordyphon.begin_tansfer); 
@@ -434,8 +435,9 @@ void Worker::send_eeprom_content(){
                     usb_port_send_thread.write_serial_data(dummy);
                 }
                 else {
-                   for(int i = 0; i < 5; ++i)
-                     usb_port_send_thread.write_serial_data(call_lordyphon.abort2);
+                   
+                    usb_port_send_thread.write_serial_data(call_lordyphon.abort2);
+                     
                    
                    usb_port_send_thread.close_usb_port();
                    emit setLabel("aborting....");

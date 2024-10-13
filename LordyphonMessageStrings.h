@@ -14,6 +14,7 @@ struct LordyphonCall {
 	const QByteArray burn_eeprom = "ß";
 	const QByteArray abort = ".";
 	const QByteArray abort2 = ";";
+	const QByteArray lordylink_quit = "t";
 };
 
 

@@ -39,6 +39,16 @@ bool SerialHandler::lordyphon_handshake() {
 	return false;
 }
 
+void SerialHandler::quit_message() {
+
+	while (!lordyphon_port->isOpen())
+		;  //wait till port is open (might take a couple of ms)
+
+	write_serial_data(lordyphon_call.lordylink_quit); //call
+	lordyphon_port->close();
+	
+}
+
 //CHECK WHETHER LORDYPHON IS IN UPDATE MODE
 bool SerialHandler::lordyphon_update_call() {
 
@@ -76,14 +86,17 @@ bool SerialHandler::find_lordyphon_port(){
 				//handshake will confirm lordyphon ID
 				lordyphon_portname = info.portName(); 
 					//try handshakes on each FTDI port to identify lordyphon
-					if (open_lordyphon_port() && (lordyphon_handshake() || lordyphon_update_call())) {	 
-						lordyphon_port->close();			
+					open_lordyphon_port();
+					lordyphon_port->write("!");
+					QString test = lordyphon_port->readAll();
+					qDebug() << test << endl;
+					lordyphon_port->close();			
 					
 						return true; 
-					}
+				
 			}
 			++port_index;  // lordyphon usb port number stored here...
-
+			
 		}
 		return false;
 	}
@@ -101,12 +114,12 @@ bool SerialHandler::check_with_manufacturer_ID() {
 		//check if lordyphon is still on the same usb port
 		if (info.manufacturer() == "FTDI" && port_index == check_index) {  
 			
-			//qDebug() << " manufacturer ID found at same index";
+			qDebug() << " manufacturer ID found at same index";
 			return true;
 		}
 		++check_index;
 	}
-	//qDebug() << " index not correct, searching port again";
+	qDebug() << " index not correct, searching port again";
 	find_lordyphon_port();  //otherwise check again with handshakes
 	return false;
 }
@@ -116,7 +129,7 @@ bool SerialHandler::open_lordyphon_port()// open connection with correct port na
 		//set parameters
 		lordyphon_port->setPortName(lordyphon_portname);
 		lordyphon_port->open(QIODevice::OpenMode(QIODevice::ReadWrite));
-		lordyphon_port->setBaudRate(QSerialPort::Baud57600); //this is the fastest I could go
+		lordyphon_port->setBaudRate(QSerialPort::Baud115200);
 		lordyphon_port->setDataBits(QSerialPort::Data8);
 		lordyphon_port->setParity(QSerialPort::NoParity);
 		lordyphon_port->setStopBits(QSerialPort::StopBits::OneStop);

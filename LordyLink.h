@@ -43,6 +43,8 @@ public:
     ~LordyLink() {
         
         file_cleanup();  //delete downloads, firmware versions and empty set files
+        usb_port->quit_message();
+        usb_port->close_usb_port();
     }
     
     Ui::LordyLinkClass ui;
@@ -96,6 +98,7 @@ private:
     QString firmware_path;
     QString to_delete;
     QString downloader_message;
+   
     bool download_done= false;
     const int firmware_size = 188459;
 
@@ -137,10 +140,6 @@ private:
             else
                 tempfile.close();
         }
-
-
-
-
 
     }
 };

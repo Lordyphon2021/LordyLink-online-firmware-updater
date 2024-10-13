@@ -162,7 +162,7 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
             }
          }//end: while (!usb_port->find_lordyphon_port())
         
-   }//lordyphon found
+    }//lordyphon found
     else if (usb_port->find_lordyphon_port() && usb_port->open_lordyphon_port() && usb_port->lordyphon_handshake()) {
         ui.hardware_connected_label->setText("Lordyphon connected");
         if (usb_port->clear_buffer())
@@ -184,7 +184,10 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     //hotplug detection
     hot_plug_timer = new QTimer(this);
     connect(hot_plug_timer, SIGNAL(timeout()), this, SLOT(check_manufacturer_ID()));
+    
     hot_plug_timer->start(2000);
+
+
     
 }
 
@@ -692,6 +695,9 @@ void LordyLink::check_for_lordyphon() {
     else
         ui.hardware_connected_label->setText("Lordyphon connected");
 }
+
+
+
 
 
 void LordyLink::check_manufacturer_ID() {
