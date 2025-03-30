@@ -27,6 +27,8 @@
 #include <QStandardItemModel>
 #include <QDir>
 #include <QModelIndex>
+#include <QDesktopServices>
+#include <QTextBrowser> 
 
 
 
@@ -82,6 +84,7 @@ public slots:
     void on_download_status(bool download_status) { download_done = download_status; }
     void on_download_status_message(QString msg) { downloader_message = msg; }
     void onAboutTriggered();
+    void checkConnection();
 
 private:
     
@@ -96,11 +99,54 @@ private:
     QTimer* download_timer = nullptr;
     QTimer* hot_plug_timer = nullptr;
     QString firmware_path;
-    QString to_delete;
+    QString to_delete = "";
     QString downloader_message;
-   
+
+    bool lordyphon_connected = false;
+    bool update_mode = false;
     bool download_done= false;
     const int firmware_size = 188459;
+
+    inline void show_messagebox(QString message, QString button_text = "Ok", bool quit_button = false)
+    {
+            QMessageBox messagebox;
+            QFont font("Lucida Typewriter", 8, QFont::Bold);
+            messagebox.setFont(font);
+            messagebox.setButtonText(1, button_text);
+            messagebox.setText(message);
+
+            if (quit_button == true)
+            {
+                QPushButton* button = messagebox.addButton("Quit", QMessageBox::ActionRole);
+                QObject::connect(button, &QPushButton::clicked, []() {exit(1);});
+            }
+
+            messagebox.exec();
+    }
+
+    class AboutDialog : public QDialog {
+        public:
+            AboutDialog(QWidget* parent = nullptr) : QDialog(parent) {
+                setWindowTitle("About");
+
+                // Layout für den Dialog
+                QVBoxLayout* layout = new QVBoxLayout(this);
+
+                // QTextBrowser für HTML-Inhalt
+                QTextBrowser* textBrowser = new QTextBrowser(this);
+                textBrowser->setOpenExternalLinks(true); // Links werden automatisch geöffnet
+                textBrowser->setText("LordyLink (c)2025 by Stefan Deisenberger<br>"
+                    "Check it out on GitHub: <a href=\"https://github.com/Lordyphon2021/LordyLink-online-firmware-updater\">GitHub Link</a><br>"
+                    "This application uses Qt, licensed under the <a href=\"http://www.gnu.org/licenses/gpl-2.0.html\">GPL 2.0 License</a>");
+
+                layout->addWidget(textBrowser);
+
+                // Ok-Button
+                QPushButton* okButton = new QPushButton("OK", this);
+                layout->addWidget(okButton);
+                connect(okButton, &QPushButton::clicked, this, &AboutDialog::accept);
+            }
+    };
 
     inline void delay(int millisecondsWait){
         QEventLoop loop;

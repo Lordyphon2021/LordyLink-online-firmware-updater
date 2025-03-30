@@ -43,8 +43,10 @@ void Worker::update()
     QDateTime now = QDateTime::currentDateTime();
     QString timestamp = now.toString("dd_MM_yyyy___h_m_s");
     QFile firmware_transfer_logfile;
+
     firmware_transfer_logfile.setFileName(QDir::homePath() + "/LordyLink/log/firmware_transfer_log_" + timestamp + ".txt");
     firmware_transfer_logfile.open(QIODevice::ReadWrite | QIODevice::Text);
+    
     QTextStream out(&firmware_transfer_logfile);
    
     //CREATE PARSER OBJECT
@@ -57,23 +59,29 @@ void Worker::update()
                                    //IF TRUE, HEXFILE IS VALID
         int hexfilesize = hex_parser.get_hexfile_size();   //GET SIZE FOR PROGRESS BAR AND LOOP
 
-        if (hexfilesize == 0) {    //DOUBLE CHECK
+        if (hexfilesize == 0) 
+        {    
             emit setLabel("error: no file found");
             carry_on_flag = false;
         }
+
         emit ProgressBar_setMax(hexfilesize);  //SET PROGRESSBAR MAXIMUM
         delay(1000);            
         
         //THIS LOOP SENDS PARSED HEX RECORDS TO MICROCONTROLLER AND WAITS FOR CHECKSUM CONFIRMATION BEFORE SENDING THE
         //NEXT RECORD: IF CALCULATED CHECKSUM ON CONTROLLER IS "ok",  "index" IS INCREMENTED
-        while (index < hexfilesize && hexfilesize != 0) { 
-
-            if (QThread::currentThread()->isInterruptionRequested()) {
+        while (index < hexfilesize && hexfilesize != 0)
+        { 
+            if (QThread::currentThread()->isInterruptionRequested()) 
+            {
                 emit setLabel("aborting....");
                 delay(1000);
                 firmware_transfer_logfile.close();
                 firmware_transfer_logfile.remove();
                 usb_port_update_thread.write_serial_data(call_lordyphon.abort);
+                delay(200);
+                usb_port_update_thread.write_serial_data(call_lordyphon.abort);
+                delay(200);
                 usb_port_update_thread.close_usb_port();
                 emit activateButtons();
                 mutex.unlock();
@@ -136,9 +144,9 @@ void Worker::update()
             emit setLabel("transfer complete");
             usb_port_update_thread.write_serial_data(call_lordyphon.hexfile_send_complete); //CALLS BURN FUNCTION ON LORDYPHON
             delay(1000);
-            emit setLabel("burning flash, don't turn off");
+            emit setLabel("writing firmware, don't turn off");
             delay(18000);       //NO PROGRESS BAR ANIMATION DURING FLASH BURN
-            emit setLabel("restart lordyphon");
+            emit setLabel("done. lordyphon restarts automatically ");
             delay(2000);
         }
         else
@@ -172,6 +180,7 @@ void Worker::get_eeprom_content(){
     QByteArray eeprom;
 
     ready_read_timeout_ctr = 0;
+    
     
     //CHECK IF LORDYPHON IS STILL CONNECTED
     if (!usb_port_get_thread.find_lordyphon_port()) {
@@ -249,10 +258,12 @@ void Worker::get_eeprom_content(){
                     delay(1000);
                     set_file.close();
                     usb_port_get_thread.write_serial_data(call_lordyphon.abort);
+                    delay(200);
                     usb_port_get_thread.write_serial_data(call_lordyphon.abort);
-
+                    delay(200);
                     
                     usb_port_get_thread.close_usb_port();
+
                     QDir sets = new_filepath_qstring;
                     sets.remove(new_filepath_qstring);
                     emit activateButtons();
