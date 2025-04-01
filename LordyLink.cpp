@@ -10,6 +10,7 @@
 #include <qpalette.h>
 #include <qstandardpaths>
 #include "TextfileExtractor.h"
+#include <QScrollBar>
 
 
 using namespace std;
@@ -18,11 +19,11 @@ using namespace std;
 //GUI constructor, sets up file system, downloads all available firmware files
 // and checks for lordyphon on usb ports
 
-LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
-     //setup gui
+LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent) {
+    //setup gui
 
     ui.setupUi(this);
-    
+
     //setup menuBar
     QAction* about_triggered = new QAction("about", this);
     QMenu* menu = menuBar()->addMenu("&info");
@@ -37,15 +38,15 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     QDir sets(QDir::homePath() + "/LordyLink/Sets");
     if (!sets.exists())
         sets.mkpath(".");
-    
+
     QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
     if (!firmware.exists())
         firmware.mkpath(".");
-    
+
     QDir log(QDir::homePath() + "/LordyLink/log");
     if (!log.exists())
         log.mkpath(".");
-   
+
     QDir download_dir(QDir::homePath() + "/LordyLink/downloads");
     if (!download_dir.exists())
         download_dir.mkpath(".");
@@ -54,48 +55,82 @@ LordyLink::LordyLink(QWidget *parent) : QMainWindow(parent) {
     home = QDir::homePath() + "/LordyLink/Sets";
     QDir directory(home);
     QStringList txtfiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
-    
+
     file_cleanup();  //delete downloads, firmware versions and empty set files on startup
+
+    
+    QScrollBar* verticalScrollBar = ui.dirView->verticalScrollBar();
+    
+    verticalScrollBar->setStyleSheet("QScrollBar:vertical {"
+        "  background: lightblue;"
+        "  width: 7px;"
+        "  border:3px lightblue;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "  background: steelblue;"
+        "  border-radius: 5px;"
+        "}");
+
+    ui.QInstallProgressBar->setStyleSheet("QProgressBar {"
+        "border: lightblue;"
+        "border-radius: 1px;"
+        "background-color: transparent"
+        "}"
+        "QProgressBar {"
+        "   text-align: right;"
+        "   font-size: 14px;"
+        "   color: white;"  // Textfarbe (kann je nach Qt-Version nicht immer wirken)
+        "}"
+        "QProgressBar::chunk {"
+        "background-color: lightblue;" // Farbe des Fortschritts
+        "border-radius: 5px;"
+        "}");
+
+    ui.delete_set_pushButton->setStyleSheet("QPushButton {"
+    "background - color: transparent;"  /* Hintergrundfarbe */
+    "color: transparent;"               /* Schriftfarbe */
+    "border: 2px transparent;"   /* Randfarbe und -dicke */
+    "border - radius: 5px;"          /* Abgerundete Ecken */
+    "padding: 10px 20px;"          /* Innenabstand */
+    "font - size: 16px;"             /* Schriftgröße */
+        " }");
+    
     
     //show sets in QTableView
     foreach(QString filename, txtfiles) {
         qDebug() << filename;
         QStandardItem* itemname = new QStandardItem(filename);
-        itemname->setBackground(QColor(Qt::lightGray));
+        itemname->setBackground(QColor(Qt::transparent));
         itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
+        
         model->appendRow(QList<QStandardItem*>() << itemname);
     }
+
+    
     //connect qtableview with model
     ui.dirView->setModel(model);
      
     // set column size
     for (int col = 0; col < model->rowCount(); col++){
-        ui.dirView->setColumnWidth(col, 320);
+        ui.dirView->setColumnWidth(col, 930);
         
     }
-   // resize update button
-    
-    QSize q;
-    q.setWidth(400);
-    q.setHeight(50);
-    ui.Q_UpdateLordyphonButton->setFixedSize(q);
-    QFont font("Lucida Typewriter", 20, QFont::Bold);
+
+
    
-    ui.Q_UpdateLordyphonButton->setFont(font);
-    ui.Q_UpdateLordyphonButton->setPalette(QColor(Qt::lightGray));
-    ui.Q_UpdateLordyphonButton->setText("update firmware        ");
-    
     //set background foto
-    
-    QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpeg");
+    QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpg");
+    bkgnd = bkgnd.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    //QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpg");
+    //qDebug() << QCoreApplication::applicationDirPath();
     bkgnd = bkgnd.scaled(this->size());
     QPalette palette;
     palette.setBrush(QPalette::Window, bkgnd);
     this->setPalette(palette);
 
-    ui.connection_label->setStyleSheet("QLabel { background-color : none; color : white; }");
-    ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : white; }");
-    ui.dirView ->setStyleSheet("QLabel { background-color : none; color : white; }");
+    ui.connection_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
+    ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
+    //ui.dirView ->setStyleSheet("QLabel { background-color : transparent; color : white; }");
     
     //connect slots
     
@@ -304,7 +339,6 @@ void LordyLink::OnGetSetButton()
             { //lordyphon is in update mode or midi mode
                 usb_port->close_usb_port();
                 show_messagebox("Exit Updater or activate USB on Lordyphon!");
-                throw runtime_error("Lordyphon not connected");
             }
         }
     }
@@ -413,17 +447,19 @@ void LordyLink::onAboutTriggered()
     
     list << "LordyLink (c)2025 by Stefan Deisenberger"
          << "check it out on github :\n"
+         << ""
          << github_link
          << ""
          << "This application uses Qt, a software framework developed by The Qt Company and others.\n"
          << "Qt is licensed under the GNU General Public License(GPL) version 2 or later."
          << ""
          << "You may obtain a copy of the GPL at\n "
+         << ""
          << gnu_link;
         
     QString info = list.join("\n");
        
-    show_messagebox(info, "FCK PTN");
+    show_messagebox(info, "FCK PTN, FCK TRMP, FCK MSK and FCK ALL PSYCHOS");
 }
 
 //this message box is controlled from worker methods
@@ -487,12 +523,12 @@ void LordyLink::addNewSet(QString filename){
     
     QStandardItem* itemname = new QStandardItem(filename);
     itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
-    itemname->setBackground(QColor(Qt::lightGray));
+    itemname->setBackground(QColor(Qt::transparent));
     model->appendRow(QList<QStandardItem*>() << itemname);
     model->setHeaderData(0, Qt::Horizontal, QObject::tr("saved sets: "));
     //setup column size for better looks
     for (int col = 0; col < model->rowCount(); col++)
-        ui.dirView->setColumnWidth(col, 320);
+        ui.dirView->setColumnWidth(col, 930);
  }
 
 
@@ -553,7 +589,7 @@ void LordyLink::deleteSet() {
                 qDebug() << filename;
                 QStandardItem* itemname = new QStandardItem(filename);
                 itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
-                itemname->setBackground(QColor(Qt::lightGray));
+                itemname->setBackground(QColor(Qt::transparent));
                 model->appendRow(QList<QStandardItem*>() << itemname);
             }
             //connect qtableview with model
@@ -562,7 +598,7 @@ void LordyLink::deleteSet() {
             // set column size
             for (int col = 0; col < model->rowCount(); col++) 
             {
-                ui.dirView->setColumnWidth(col, 320);
+                ui.dirView->setColumnWidth(col, 930);
             }
         }
     }
@@ -695,7 +731,9 @@ void LordyLink::checkConnection()
         {
             if (usb_port->find_lordyphon_port())
             {
-                if (usb_port->open_lordyphon_port() && usb_port->lordyphon_handshake())
+                usb_port->open_lordyphon_port();
+                
+                if (usb_port->lordyphon_handshake() == true || usb_port->lordyphon_update_call() == true)
                 {
                     lordyphon_connected = true;
                     
@@ -710,18 +748,20 @@ void LordyLink::checkConnection()
                 {
                     // (mssge str, button text, quit button on/off)
                     show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
-                    ui.hardware_connected_label->setText("Lordyhon not in USB mode");
+                    ui.hardware_connected_label->setText("Lordyhon USB mode off");
 
                     if (usb_port->clear_buffer())
                     {
                         usb_port->close_usb_port();
                     }
+                    
                     lordyphon_connected = false;
                     delay(3000);
                 }
             }
             else
             {
+                show_messagebox("Lordyphon not connected", "Proceed", true);
                 ui.hardware_connected_label->setText("Lordyphon not connected");
                 lordyphon_connected = false;
             }

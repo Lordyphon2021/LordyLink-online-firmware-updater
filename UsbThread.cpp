@@ -108,7 +108,7 @@ void Worker::update()
             }
             else if (checksum_status == lordyphon_response.checksum_ok) {      //CHECKSUM IS CORRECT   
                 emit ProgressBar_valueChanged(static_cast<int>(index));        //UPDATE PROGRESS BAR
-                emit setLabel("sending file ");
+                emit setLabel("transferring firmware ");
                 rx_error_ctr = 0;
                 carry_on_flag = true;  //ALLOW RECORD READ
                 ++index;               //FROM NEXT VECTOR INDEX
@@ -120,7 +120,6 @@ void Worker::update()
                 emit setLabel("rx error, checking status... ");
                 out << "---------------RX ERROR AT INDEX---------------------- " << index << '\n'; //LOGFILE
                 ++rx_error_ctr;         //IF MESSAGE ISNT READABLE FOR MORE THAN 8 TIMES, CONNECTION MUST BE LOST
-                delay(1000);
                 carry_on_flag = false;
             }
             if (checksum_error_ctr > 30) {  //EXIT CONDITION: CHECKSUM ERROR
@@ -144,9 +143,9 @@ void Worker::update()
             emit setLabel("transfer complete");
             usb_port_update_thread.write_serial_data(call_lordyphon.hexfile_send_complete); //CALLS BURN FUNCTION ON LORDYPHON
             delay(1000);
-            emit setLabel("writing firmware, don't turn off");
+            emit setLabel("writing firmware, don't turn off!");
             delay(18000);       //NO PROGRESS BAR ANIMATION DURING FLASH BURN
-            emit setLabel("done. lordyphon restarts automatically ");
+            emit setLabel("done. rebooting lordyphon... ");
             delay(2000);
         }
         else
