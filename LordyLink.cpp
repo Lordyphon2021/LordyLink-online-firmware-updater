@@ -265,6 +265,7 @@ void LordyLink::OnUpdateButton()
             //lordyphon is not in update mode
             { 
                 show_messagebox("please activate update mode (hold stop button and press rec for 2 sec)");
+                ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
                 ui.hardware_connected_label->setText("Lordyphon updater off");
                 update_mode = false;
 
@@ -278,6 +279,7 @@ void LordyLink::OnUpdateButton()
     catch (exception& e) 
     {
         show_messagebox(e.what());
+        ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
         ui.hardware_connected_label->setText("Lordyphon disconnected");
     }
 }
@@ -345,6 +347,7 @@ void LordyLink::OnGetSetButton()
     catch (exception& e)
     {
         show_messagebox(e.what());
+        ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
         ui.hardware_connected_label->setText("Lordyphon disconnected    ");
     }
 }
@@ -370,7 +373,7 @@ void LordyLink::OnSendSetButton()
                 {
                     usb_port->close_usb_port();
                 } 
-
+                ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
                 ui.hardware_connected_label->setText("Lordyphon connected");
 
                 //file selection must be valid
@@ -446,20 +449,19 @@ void LordyLink::onAboutTriggered()
     QString gnu_link = "http://www.gnu.org/licenses/gpl-2.0.html";
     
     list << "LordyLink (c)2025 by Stefan Deisenberger"
-         << "check it out on github :\n"
          << ""
+         << "check it out on github :\n"
          << github_link
          << ""
          << "This application uses Qt, a software framework developed by The Qt Company and others.\n"
          << "Qt is licensed under the GNU General Public License(GPL) version 2 or later."
          << ""
          << "You may obtain a copy of the GPL at\n "
-         << ""
          << gnu_link;
         
     QString info = list.join("\n");
        
-    show_messagebox(info, "FCK PTN, FCK TRMP, FCK MSK and FCK ALL PSYCHOS");
+    show_messagebox(info, "FCK PTN");
 }
 
 //this message box is controlled from worker methods
@@ -633,9 +635,12 @@ void LordyLink::try_download() {
        
         //if (down.isEmpty()) {
             download_from_ftp->download(ftp_location, to_downloaded_file);
-            if(downloader_message.isEmpty())
+            if (downloader_message.isEmpty())
+            {
                 ui.connection_label->setText("connecting to server");
-            else {
+            }  
+            else 
+            {
                 ui.connection_label->setText(downloader_message);
                 downloader_message.clear();
             }
@@ -645,7 +650,6 @@ void LordyLink::try_download() {
     }
     else if(download_done == true && firmware_versions.size() % firmware_size == 0){
         //file is in folder "downloads" now, and has the correct size 
-        
         ui.connection_label->setText("downloading...");
         delay(1000);
         
@@ -655,7 +659,8 @@ void LordyLink::try_download() {
         delay(600);
         
         //start unzipper method
-        if (extractor.unwrap(QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt") == true) {
+        if (extractor.unwrap(QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt") == true)
+        {
             ui.connection_label->setText("extracting done...");
             delay(600);
             ui.connection_label->setText("download success");
@@ -667,6 +672,7 @@ void LordyLink::try_download() {
         ui.Q_UpdateLordyphonButton->setEnabled(true);
     }
     else if (firmware_versions.size() % firmware_size != 0) {  //handle incomplete downloads
+        ui.connection_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
         ui.connection_label->setText("download incomplete");
         download_done = false;
     }
@@ -700,11 +706,13 @@ void LordyLink::check_for_lordyphon()
 {
     if (!usb_port->find_lordyphon_port()) 
     {
+        ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
         ui.hardware_connected_label->setText("Lordyphon disconnected");
         show_messagebox("Lordyphon disconnected!");
     }
     else
     {
+        ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
         ui.hardware_connected_label->setText("Lordyphon connected");
     }
 }
@@ -715,10 +723,12 @@ void LordyLink::check_manufacturer_ID()
     if (!usb_port->check_with_manufacturer_ID()) 
     { 
         show_messagebox("Lordyphon disconnected!", "Proceed", true);
+        ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
         ui.hardware_connected_label->setText("Lordyphon disconnected");
     }
     else
     {
+        ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
         ui.hardware_connected_label->setText("Lordyphon connected");
     } 
 }
@@ -736,7 +746,7 @@ void LordyLink::checkConnection()
                 if (usb_port->lordyphon_handshake() == true || usb_port->lordyphon_update_call() == true)
                 {
                     lordyphon_connected = true;
-                    
+                    ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
                     ui.hardware_connected_label->setText("Lordyphon connected");
 
                     if (usb_port->clear_buffer())
@@ -748,6 +758,7 @@ void LordyLink::checkConnection()
                 {
                     // (mssge str, button text, quit button on/off)
                     show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
+                    ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
                     ui.hardware_connected_label->setText("Lordyhon USB mode off");
 
                     if (usb_port->clear_buffer())
@@ -762,6 +773,7 @@ void LordyLink::checkConnection()
             else
             {
                 show_messagebox("Lordyphon not connected", "Proceed", true);
+                ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
                 ui.hardware_connected_label->setText("Lordyphon not connected");
                 lordyphon_connected = false;
             }
