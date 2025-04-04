@@ -27,6 +27,87 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
 
     ui.setupUi(this);
 
+    
+    // Stylesheet anwenden
+
+    ui.delete_set_pushButton->setStyleSheet(
+        // Heller Beige-Hintergrund (Vintage-Look)
+        "QPushButton {"
+        "    background-color: lightblue;"    // Dunklerer Hintergrund für Buttons
+        "    color: white;"                 // Weißer Text
+        "    border: 2px steelblue;"    // Dunklerer Rand für Buttons
+        "    border-radius: 3px;"           // Abgerundete Ecken für Buttons
+        "    padding: 8px;"
+
+        "}"
+        "QPushButton:hover {"
+        "    background-color: steelblue;"    // Hover-Effekt für Buttons
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #5a4e35;"    // Drück-Effekt für Buttons
+        "}"
+    );
+    
+    ui.sendSetButton->setStyleSheet(
+              // Heller Beige-Hintergrund (Vintage-Look)
+        "QPushButton {"
+        "    background-color: lightblue;"    // Dunklerer Hintergrund für Buttons
+        "    color: white;"                 // Weißer Text
+        "    border: 2px steelblue;"    // Dunklerer Rand für Buttons
+        "    border-radius: 3px;"           // Abgerundete Ecken für Buttons
+        "    padding: 8px;"
+       
+        "}"
+        "QPushButton:hover {"
+        "    background-color: steelblue;"    // Hover-Effekt für Buttons
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #5a4e35;"    // Drück-Effekt für Buttons
+        "}"
+    );
+
+    ui.saveSetButton->setStyleSheet(
+        // Heller Beige-Hintergrund (Vintage-Look)
+        "QPushButton {"
+        "    background-color: lightblue;"    // Dunklerer Hintergrund für Buttons
+        "    color: white;"                 // Weißer Text
+        "    border: 2px steelblue;"    // Dunklerer Rand für Buttons
+        "    border-radius: 3px;"           // Abgerundete Ecken für Buttons
+        "    padding: 8px;"
+
+        "}"
+        "QPushButton:hover {"
+        "    background-color: steelblue;"    // Hover-Effekt für Buttons
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #5a4e35;"    // Drück-Effekt für Buttons
+        "}"
+    );
+
+    ui.Q_UpdateLordyphonButton->setStyleSheet(
+        // Heller Beige-Hintergrund (Vintage-Look)
+        "QPushButton {"
+        "    background-color: lightblue;"    // Dunklerer Hintergrund für Buttons
+        "    color: white;"                 // Weißer Text
+        "    border: 2px solid steelblue;"    // Dunklerer Rand für Buttons
+        "    border-radius: 3px;"           // Abgerundete Ecken für Buttons
+        "    padding: 8px;"
+
+        "}"
+        "QPushButton:disabled {"
+        "    background-color: #b0bec5;"  // Graue Farbe für inaktive Buttons
+        "    color: #9e9e9e;"              // Graue Schriftfarbe
+        "}"
+        "QPushButton:hover {"
+        "    background-color: steelblue;"    // Hover-Effekt für Buttons
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #5a4e35;"    // Drück-Effekt für Buttons
+        "}"
+    );
+   
+   
+    
     //setup menuBar
     QAction* about_triggered = new QAction("about", this);
     QMenu* menu = menuBar()->addMenu("&info");
@@ -81,7 +162,7 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
         "}"
         "QProgressBar {"
         "   text-align: right;"
-        "   font-size: 14px;"
+        "   font-size: 11px;"
         "   color: white;"  // Textfarbe (kann je nach Qt-Version nicht immer wirken)
         "}"
         "QProgressBar::chunk {"
@@ -89,15 +170,7 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
         "border-radius: 5px;"
         "}");
 
-    ui.delete_set_pushButton->setStyleSheet("QPushButton {"
-    "background - color: transparent;"  /* Hintergrundfarbe */
-    "color: transparent;"               /* Schriftfarbe */
-    "border: 2px transparent;"   /* Randfarbe und -dicke */
-    "border - radius: 5px;"          /* Abgerundete Ecken */
-    "padding: 10px 20px;"          /* Innenabstand */
-    "font - size: 16px;"             /* Schriftgröße */
-        " }");
-    
+  
     
     //show sets in QTableView
     foreach(QString filename, txtfiles) 
@@ -191,7 +264,6 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
  //user is prompted to restart lordyphon
 void LordyLink::OnUpdateButton()
 {
-    
     
     QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
         
@@ -301,7 +373,9 @@ void LordyLink::OnUpdateButton()
 
 void LordyLink::OnGetSetButton()
 {  
-   
+    if (ui.Q_UpdateLordyphonButton->isEnabled())
+        ui.Q_UpdateLordyphonButton->setDisabled(true);
+
     checkConnection();
         
     try
@@ -368,6 +442,9 @@ void LordyLink::OnSendSetButton()
 {
 
     checkConnection();
+
+    if (ui.Q_UpdateLordyphonButton->isEnabled())
+        ui.Q_UpdateLordyphonButton->setDisabled(true);
 
     if (lordyphon_connected == true)
     {
@@ -675,7 +752,7 @@ void LordyLink::try_download() {
             delay(600);
             ui.connection_label->setText("download success");
             delay(600);
-            ui.connection_label->setText("updater ready");
+            ui.connection_label->hide();
         }
         //activate upddate button only if unzipper returns true
         download_done = false;
