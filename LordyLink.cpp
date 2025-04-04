@@ -13,6 +13,7 @@
 #include <QScrollBar>
 
 
+
 using namespace std;
 
 
@@ -187,6 +188,8 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent) {
  //user is prompted to restart lordyphon
 void LordyLink::OnUpdateButton()
 {
+    
+    
     QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
         
     if (firmware.isEmpty())
@@ -205,7 +208,7 @@ void LordyLink::OnUpdateButton()
             delay(200);
             
             //lordyphon has to be in update mode for this
-            if (usb_port->lordyphon_update_call()) 
+            if (usb_port->lordyphon_update_call())
             {  
                 ui.hardware_connected_label->setText("Lordyphon updater on");
 
@@ -247,6 +250,9 @@ void LordyLink::OnUpdateButton()
                     connect(update_worker, SIGNAL(ProgressBar_valueChanged(int)), this, SLOT(ProgressBar_OnValueChanged(int)));
                     //one message box to serve all threads
                     connect(update_worker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+                    connect(update_worker, SIGNAL(setAbortedThreadFlag()), this, SLOT(OnsetAbortedThreadFlag()));
+                    connect(update_worker, SIGNAL(clearAbortedThreadFlag()), this, SLOT(OnclearAbortedThreadFlag()));
+
                     //during threads "update", "getSet" and "sendSet" all pushbuttons are deactivated
                     connect(update_worker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
                     connect(update_worker, SIGNAL(activateButtons()), this, SLOT(hotplugtimer_on()));
@@ -268,7 +274,7 @@ void LordyLink::OnUpdateButton()
                 ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
                 ui.hardware_connected_label->setText("Lordyphon updater off");
                 update_mode = false;
-
+                
                 if(usb_port->clear_buffer())
                 {
                     usb_port->close_usb_port();
@@ -473,6 +479,7 @@ void LordyLink::OnRemoteMessageBox(QString message){
     fromRemote.setText(message);
     fromRemote.exec();
 }
+
 
 //enable all buttons in main window, hide abort button
 void LordyLink::OnActivateButtons(){

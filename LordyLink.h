@@ -72,6 +72,7 @@ public slots:
     void OnActivateButtons();
     void OnDeactivateButtons();
     void OnHideAbortButton() { ui.abort_pushButton->hide(); }
+   
     //void activate_install_button(){ ui.Q_UpdateLordyphonButton->setEnabled(true); }
     //HELPER
     void set_firmware_path_from_dialog(QString path){ firmware_path = path; }
@@ -85,6 +86,7 @@ public slots:
     void on_download_status_message(QString msg) { downloader_message = msg; }
     void onAboutTriggered();
     void checkConnection();
+    
 
 private:
     
@@ -106,6 +108,10 @@ private:
     bool update_mode = false;
     bool download_done= false;
     const int firmware_size = 188459;
+    bool aborted = false;
+
+    
+   
 
     inline void show_messagebox(QString message, QString button_text = "Ok", bool quit_button = false)
     {

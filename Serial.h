@@ -33,6 +33,7 @@ public:
 	void quit_message();
 	QByteArray& getInputBuffer(){ return input_buffer; }
 	
+	
 signals:
 	
 public slots:
@@ -48,5 +49,6 @@ private:
 	size_t port_index = 0;
 	LordyphonCall lordyphon_call;
 	LordyphonResponse lordyphon_response;
+	bool aborted = false;
 
 };

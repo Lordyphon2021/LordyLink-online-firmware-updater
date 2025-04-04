@@ -53,7 +53,8 @@ void Downloader::finished(QNetworkReply* reply){
         emit download_status_msg("offline");
         qDebug() << "download unsuccessful";
     }
-    else {
+    else 
+    {
         emit download_status(true);
         qDebug() << "download success";
     }

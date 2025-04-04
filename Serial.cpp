@@ -59,12 +59,16 @@ bool SerialHandler::lordyphon_update_call() {
 	wait_for_ready_read(1000);
 
 	if (input_buffer == lordyphon_response.update_rx_phrase_y)
+	{
+		input_buffer = "";
 		return true;
-
+	}
 	else if (input_buffer == lordyphon_response.update_rx_phrase_n)
+	{
 		return false;
-
-	else {
+	}
+	else 
+	{
 		QMessageBox error;
 		error.setText("Activate USB-Mode on Lordyphon (press global + looper button)");
 		error.exec();
