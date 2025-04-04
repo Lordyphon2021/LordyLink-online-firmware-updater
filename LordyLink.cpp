@@ -11,6 +11,7 @@
 #include <qstandardpaths>
 #include "TextfileExtractor.h"
 #include <QScrollBar>
+#include <QCloseEvent>
 
 
 
@@ -20,7 +21,8 @@ using namespace std;
 //GUI constructor, sets up file system, downloads all available firmware files
 // and checks for lordyphon on usb ports
 
-LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent) {
+LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
+{
     //setup gui
 
     ui.setupUi(this);
@@ -98,7 +100,8 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent) {
     
     
     //show sets in QTableView
-    foreach(QString filename, txtfiles) {
+    foreach(QString filename, txtfiles) 
+    {
         qDebug() << filename;
         QStandardItem* itemname = new QStandardItem(filename);
         itemname->setBackground(QColor(Qt::transparent));
@@ -112,12 +115,10 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent) {
     ui.dirView->setModel(model);
      
     // set column size
-    for (int col = 0; col < model->rowCount(); col++){
+    for (int col = 0; col < model->rowCount(); col++)
+    {
         ui.dirView->setColumnWidth(col, 930);
-        
     }
-
-
    
     //set background foto
     QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpg");
@@ -175,6 +176,8 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent) {
         hot_plug_timer->start(2000);
     }
 }
+
+
 
 
  //"update firmware" button opens dialog, where all available releases are displayed in a QTableView window.
@@ -724,6 +727,13 @@ void LordyLink::check_for_lordyphon()
     }
 }
 
+void QWidget::closeEvent(QCloseEvent* event) 
+{
+    qDebug() << "closeEvent wurde aufgerufen!";
+    event->accept();  // Das Fenster wird geschlossen
+    
+    exit(0);
+}
 
 void LordyLink::check_manufacturer_ID() 
 {
@@ -737,7 +747,7 @@ void LordyLink::check_manufacturer_ID()
     {
         ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
         ui.hardware_connected_label->setText("Lordyphon connected");
-    } 
+    }
 }
 
 void LordyLink::checkConnection()
