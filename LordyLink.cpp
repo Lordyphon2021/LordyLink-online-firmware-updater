@@ -838,9 +838,29 @@ void QWidget::closeEvent(QCloseEvent* event)
 {
     qDebug() << "closeEvent wurde aufgerufen!";
     event->accept();  
-    
+    SerialHandler* usb_port = new SerialHandler;
+    try
+    {
+        usb_port->find_lordyphon_port();
+        usb_port->open_lordyphon_port();
+        usb_port->quit_message();
+        usb_port->close_usb_port();
+    }
+    catch (exception& e)
+    {
+        if (usb_port->lordyphon_port_is_open())
+        {
+            usb_port->close_usb_port();
+        }
+        
+        exit(0);
+    }
+   
+
     exit(0);
 }
+
+
 
 void LordyLink::check_manufacturer_ID() 
 {

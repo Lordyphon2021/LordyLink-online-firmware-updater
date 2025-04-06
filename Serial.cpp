@@ -18,14 +18,16 @@
 //I chose only to read known message sizes ( setReadBufferSize(expected size) ) for reliable results
 
 
-SerialHandler::SerialHandler(QObject* parent): QObject(parent){
+SerialHandler::SerialHandler(QObject* parent): QObject(parent)
+{
 	lordyphon_port = new QSerialPort(this);
 	lordyphon_port->setReadBufferSize(10);
 	QObject::connect(lordyphon_port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
 
 //FINAL IDENTIFICATION INSTEAD OF CHECKING VENDOR ID		
-bool SerialHandler::lordyphon_handshake() {
+bool SerialHandler::lordyphon_handshake() 
+{
 
 	while (!lordyphon_port->isOpen())
 		;  //wait till port is open (might take a couple of ms)
@@ -39,7 +41,8 @@ bool SerialHandler::lordyphon_handshake() {
 	return false;
 }
 
-void SerialHandler::quit_message() {
+void SerialHandler::quit_message() 
+{
 
 	while (!lordyphon_port->isOpen())
 		;  //wait till port is open (might take a couple of ms)
@@ -50,7 +53,8 @@ void SerialHandler::quit_message() {
 }
 
 //CHECK WHETHER LORDYPHON IS IN UPDATE MODE
-bool SerialHandler::lordyphon_update_call() {
+bool SerialHandler::lordyphon_update_call() 
+{
 
 	while (!lordyphon_port->isOpen())
 		; //wait until open
@@ -77,7 +81,8 @@ bool SerialHandler::lordyphon_update_call() {
 	}
 }
 
-bool SerialHandler::find_lordyphon_port(){
+bool SerialHandler::find_lordyphon_port()
+{
 	
 	try {
 		port_index = 0;
@@ -110,7 +115,8 @@ bool SerialHandler::find_lordyphon_port(){
 	}
 }
 
-bool SerialHandler::check_with_manufacturer_ID() {
+bool SerialHandler::check_with_manufacturer_ID() 
+{
 
 	size_t check_index = 0;
 	
@@ -152,11 +158,13 @@ bool SerialHandler::clear_buffer() { return lordyphon_port->clear(); }
 void SerialHandler::close_usb_port(){ lordyphon_port->close(); }
 
 //ADJUST BUFFERSIZE TO MATCH EXPECTED MESSAGE SIZE
-void SerialHandler::set_buffer_size(qint64 size)const{
+void SerialHandler::set_buffer_size(qint64 size)const
+{
 	lordyphon_port->setReadBufferSize(size);
 }
 
-bool SerialHandler::write_serial_data(const QByteArray& tx_data) {
+bool SerialHandler::write_serial_data(const QByteArray& tx_data) 
+{
 	if (lordyphon_port->isOpen()) {
 		lordyphon_port->write(tx_data);
 		
@@ -170,19 +178,21 @@ bool SerialHandler::write_serial_data(const QByteArray& tx_data) {
 //TIMEOUT -1 => WAITS FOREVER
 //EMITS SIGNAL TO onReadyRead() WHEN IT'S DONE
 
-bool SerialHandler::wait_for_ready_read(int timeout)const {
+bool SerialHandler::wait_for_ready_read(int timeout)const 
+{
 	return lordyphon_port->waitForReadyRead(timeout);
 }
 
 //CATCHES SIGNAL OF wait_for_ready_read, READS BUFFER SIZE
-void SerialHandler::onReadyRead(){
+void SerialHandler::onReadyRead()
+{
 	input_buffer = lordyphon_port->read(lordyphon_port->readBufferSize());
 }
 
 
 //CHECK IF OPEN
-bool SerialHandler::lordyphon_port_is_open(){
-	
+bool SerialHandler::lordyphon_port_is_open()
+{
 	if(lordyphon_port->isOpen())
 		return true;
 	

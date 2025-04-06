@@ -558,7 +558,7 @@ void Worker::send_eeprom_content(){
                     }
                     else 
                     {
-                        usb_port_send_thread.write_serial_data(call_lordyphon.abort2);
+                        usb_port_send_thread.write_serial_data(call_lordyphon.abort);
 
                         usb_port_send_thread.close_usb_port();
                         emit setLabel("aborting....");
