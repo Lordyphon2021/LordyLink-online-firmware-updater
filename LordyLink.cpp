@@ -26,22 +26,20 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
     //setup gui
 
     ui.setupUi(this);
-
     
     // Stylesheet anwenden
 
     ui.delete_set_pushButton->setStyleSheet(
-        // Heller Beige-Hintergrund (Vintage-Look)
         "QPushButton {"
-        "    background-color: lightblue;"    // Dunklerer Hintergrund für Buttons
-        "    color: white;"                 // Weißer Text
-        "    border: 2px steelblue;"    // Dunklerer Rand für Buttons
-        "    border-radius: 3px;"           // Abgerundete Ecken für Buttons
+        "    background-color: white;"    
+        "    color: lightblue;"                 // Weißer Text
+        "    border: 1px solid steelblue;"    // Dunklerer Rand für Buttons
+        "    border-radius: 9px;"           // Abgerundete Ecken für Buttons
         "    padding: 8px;"
-
         "}"
         "QPushButton:hover {"
-        "    background-color: steelblue;"    // Hover-Effekt für Buttons
+        "    background-color: lightcoral;" 
+        "    color: white; " 
         "}"
         "QPushButton:pressed {"
         "    background-color: #5a4e35;"    // Drück-Effekt für Buttons
@@ -49,91 +47,96 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
     );
     
     ui.sendSetButton->setStyleSheet(
-              // Heller Beige-Hintergrund (Vintage-Look)
         "QPushButton {"
-        "    background-color: lightblue;"    // Dunklerer Hintergrund für Buttons
-        "    color: white;"                 // Weißer Text
-        "    border: 2px steelblue;"    // Dunklerer Rand für Buttons
-        "    border-radius: 3px;"           // Abgerundete Ecken für Buttons
+        "    background-color: white;"   
+        "    color: lightblue;"               
+        "    border: 1px solid steelblue;"   
+        "    border-radius: 9px;"           
         "    padding: 8px;"
-       
         "}"
         "QPushButton:hover {"
-        "    background-color: steelblue;"    // Hover-Effekt für Buttons
+        "    background-color: steelblue;" 
+        "    color: white;"
         "}"
         "QPushButton:pressed {"
-        "    background-color: #5a4e35;"    // Drück-Effekt für Buttons
+        "    background-color: #5a4e35;"    
         "}"
     );
 
     ui.saveSetButton->setStyleSheet(
-        // Heller Beige-Hintergrund (Vintage-Look)
         "QPushButton {"
-        "    background-color: lightblue;"    // Dunklerer Hintergrund für Buttons
-        "    color: white;"                 // Weißer Text
-        "    border: 2px steelblue;"    // Dunklerer Rand für Buttons
-        "    border-radius: 3px;"           // Abgerundete Ecken für Buttons
+        "    background-color: white;"   
+        "    color: lightblue;"               
+        "    border: 1px solid steelblue;"   
+        "    border-radius: 9px;"           
         "    padding: 8px;"
-
         "}"
         "QPushButton:hover {"
-        "    background-color: steelblue;"    // Hover-Effekt für Buttons
+        "    background-color: steelblue;"
+        "    color: white;"
         "}"
         "QPushButton:pressed {"
-        "    background-color: #5a4e35;"    // Drück-Effekt für Buttons
+        "    background-color: #5a4e35;"  
         "}"
     );
 
     ui.Q_UpdateLordyphonButton->setStyleSheet(
-        // Heller Beige-Hintergrund (Vintage-Look)
         "QPushButton {"
-        "    background-color: lightblue;"    // Dunklerer Hintergrund für Buttons
-        "    color: white;"                 // Weißer Text
-        "    border: 2px solid steelblue;"    // Dunklerer Rand für Buttons
-        "    border-radius: 3px;"           // Abgerundete Ecken für Buttons
+        "    background-color: lightblue;"   
+        "    color: steelblue;"                
+        "    border: 1px solid steelblue;"   
+        "    border-radius: 9px;"         
         "    padding: 8px;"
-
         "}"
         "QPushButton:disabled {"
-        "    background-color: #b0bec5;"  // Graue Farbe für inaktive Buttons
-        "    color: #9e9e9e;"              // Graue Schriftfarbe
+        "    background-color: #b0bec5;"  
+        "    color: #9e9e9e;"             
         "}"
         "QPushButton:hover {"
-        "    background-color: steelblue;"    // Hover-Effekt für Buttons
+        "    background-color: steelblue;"  
+        "    color: white;"
         "}"
         "QPushButton:pressed {"
-        "    background-color: #5a4e35;"    // Drück-Effekt für Buttons
+        "    background-color: #5a4e35;"  
         "}"
     );
    
-   
     
-    //setup menuBar
+    // setup menuBar
     QAction* about_triggered = new QAction("about", this);
     QMenu* menu = menuBar()->addMenu("&info");
     menu->addAction(about_triggered);
     connect(about_triggered, SIGNAL(triggered()), this, SLOT(onAboutTriggered()));
-    //hide update button on startup
+    // hide update button on startup
     ui.Q_UpdateLordyphonButton->setDisabled(true);
-    //create model for set files
+    // create model for set files
     model = new QStandardItemModel();
 
-    //create directories for sets, logs and firmware if they don't exist already
+    // create directories for sets, logs and firmware if they don't exist already
     QDir sets(QDir::homePath() + "/LordyLink/Sets");
     if (!sets.exists())
+    {
         sets.mkpath(".");
+    } 
 
     QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
     if (!firmware.exists())
+    {
         firmware.mkpath(".");
+    }
 
     QDir log(QDir::homePath() + "/LordyLink/log");
     if (!log.exists())
+    {
         log.mkpath(".");
+    }
+       
 
     QDir download_dir(QDir::homePath() + "/LordyLink/downloads");
     if (!download_dir.exists())
+    {
         download_dir.mkpath(".");
+    } 
 
     // read sets from directory
     home = QDir::homePath() + "/LordyLink/Sets";
@@ -143,6 +146,7 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
     file_cleanup();  //delete downloads, firmware versions and empty set files on startup
 
     
+    // setup scrollbar 
     QScrollBar* verticalScrollBar = ui.dirView->verticalScrollBar();
     
     verticalScrollBar->setStyleSheet("QScrollBar:vertical {"
@@ -327,7 +331,6 @@ void LordyLink::OnUpdateButton()
                     connect(update_worker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
                     connect(update_worker, SIGNAL(setAbortedThreadFlag()), this, SLOT(OnsetAbortedThreadFlag()));
                     connect(update_worker, SIGNAL(clearAbortedThreadFlag()), this, SLOT(OnclearAbortedThreadFlag()));
-
                     //during threads "update", "getSet" and "sendSet" all pushbuttons are deactivated
                     connect(update_worker, SIGNAL(activateButtons()), this, SLOT(OnActivateButtons()));
                     connect(update_worker, SIGNAL(activateButtons()), this, SLOT(hotplugtimer_on()));
@@ -340,14 +343,15 @@ void LordyLink::OnUpdateButton()
                     update_mode = true;
                     update_thread->start();
                 }
-
             }
             else 
             //lordyphon is not in update mode
             { 
-                show_messagebox("please activate update mode (hold stop button and press rec for 2 sec)");
+                
                 ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
                 ui.hardware_connected_label->setText("Lordyphon updater off");
+                delay(1000);
+                show_messagebox("please activate update mode (hold stop button and press rec for 2 sec)");
                 update_mode = false;
                 
                 if(usb_port->clear_buffer())
@@ -359,9 +363,9 @@ void LordyLink::OnUpdateButton()
     }
     catch (exception& e) 
     {
-        show_messagebox(e.what());
         ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
         ui.hardware_connected_label->setText("Lordyphon disconnected");
+        show_messagebox(e.what());
     }
 }
  
@@ -374,7 +378,9 @@ void LordyLink::OnUpdateButton()
 void LordyLink::OnGetSetButton()
 {  
     if (ui.Q_UpdateLordyphonButton->isEnabled())
+    {
         ui.Q_UpdateLordyphonButton->setDisabled(true);
+    }
 
     checkConnection();
         
@@ -429,22 +435,23 @@ void LordyLink::OnGetSetButton()
     }
     catch (exception& e)
     {
-        show_messagebox(e.what());
+        
         ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
         ui.hardware_connected_label->setText("Lordyphon disconnected    ");
+        show_messagebox(e.what());
     }
 }
 
 //this method sends a selected set in a new thread to lordyphon and overwrites the internal memory.
 //user is made aware that this operation is destructive.
-
 void LordyLink::OnSendSetButton()
 {
-
     checkConnection();
 
     if (ui.Q_UpdateLordyphonButton->isEnabled())
+    {
         ui.Q_UpdateLordyphonButton->setDisabled(true);
+    }
 
     if (lordyphon_connected == true)
     {
@@ -463,12 +470,16 @@ void LordyLink::OnSendSetButton()
                 ui.hardware_connected_label->setText("Lordyphon connected");
 
                 //file selection must be valid
-                if (selected_set != "") {
+                if (selected_set != "") 
+                {
+                    //user dialog
                     QtSendDialog* send_dialog = new QtSendDialog;
                     send_dialog->show();
                     int send_dialog_code = send_dialog->exec();
+                    
                     //user is sure
-                    if (send_dialog_code == QDialog::Accepted) {
+                    if (send_dialog_code == QDialog::Accepted) 
+                    {
                         ui.QInstallProgressBar->reset();
                         //hand path to selected item to constructor
                         Worker* sendSetWorker = new Worker(selected_set);
@@ -497,9 +508,8 @@ void LordyLink::OnSendSetButton()
 
                         sendSetThread->start();
                     }
-
-                } //end: if (selected_set != "") 
-                else //selection is not valid
+                } 
+                else 
                 {
                     show_messagebox("please select a set!     ");
                 }
@@ -521,8 +531,7 @@ void LordyLink::OnSendSetButton()
     {
         show_messagebox("lordyphon not found");
     }
-}
-    
+} 
 
 
 //slot method implementations
@@ -551,8 +560,8 @@ void LordyLink::onAboutTriggered()
 }
 
 //this message box is controlled from worker methods
-void LordyLink::OnRemoteMessageBox(QString message){
-    
+void LordyLink::OnRemoteMessageBox(QString message)
+{
     QFont font("Lucida Typewriter", 8, QFont::Bold);
     QMessageBox fromRemote;
     fromRemote.setFont(font);
@@ -562,8 +571,8 @@ void LordyLink::OnRemoteMessageBox(QString message){
 
 
 //enable all buttons in main window, hide abort button
-void LordyLink::OnActivateButtons(){
-    
+void LordyLink::OnActivateButtons()
+{
     qDebug() << "activate Buttons";
     ui.abort_pushButton->hide();
 
@@ -581,43 +590,62 @@ void LordyLink::OnActivateButtons(){
     delay(200);
     ui.QInstallProgressBar->hide();
     ui.QInstallLabel->hide();
-
-    
 }
 
 //deactivate main window buttons, show abort button
-void LordyLink::OnDeactivateButtons(){
-    
+void LordyLink::OnDeactivateButtons()
+{
     ui.abort_pushButton->show();
     qDebug() << "deactivate Buttons";
     
     if (ui.QInstallProgressBar->isHidden())
+    {
         ui.QInstallProgressBar->show();
+    }
+    
     if (ui.QInstallLabel->isHidden())
+    {
         ui.QInstallLabel->show();
+    }
+        
     if (ui.Q_UpdateLordyphonButton->isEnabled())
+    {
         ui.Q_UpdateLordyphonButton->setDisabled(true);
+    }
+        
     if (ui.saveSetButton->isEnabled())
+    {
         ui.saveSetButton->setDisabled(true);
+    }
+       
     if (ui.sendSetButton->isEnabled())
+    {
         ui.sendSetButton->setDisabled(true);
+    }
+       
     if (ui.delete_set_pushButton->isEnabled())
+    {
         ui.delete_set_pushButton->setDisabled(true);
-   
+    }
 }
 
 
 //add new set to QTableView
-void LordyLink::addNewSet(QString filename){
-    
+void LordyLink::addNewSet(QString filename)
+{
     QStandardItem* itemname = new QStandardItem(filename);
+
     itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
     itemname->setBackground(QColor(Qt::transparent));
+    
     model->appendRow(QList<QStandardItem*>() << itemname);
     model->setHeaderData(0, Qt::Horizontal, QObject::tr("saved sets: "));
+    
     //setup column size for better looks
     for (int col = 0; col < model->rowCount(); col++)
+    {
         ui.dirView->setColumnWidth(col, 930);
+    }
  }
 
 
@@ -635,7 +663,10 @@ void LordyLink::renameEnd(QStandardItem* item)
     QString newname = QDir::homePath() + "/LordyLink/Sets/" + item->text();
     
     if (!newname.contains(".txt"))
+    {
         newname += ".txt";
+    }
+        
     QFile::rename(QDir::homePath() + "/LordyLink/Sets/" + oldName , newname);  //set new name
 }
 
@@ -643,18 +674,16 @@ void LordyLink::renameEnd(QStandardItem* item)
 //store selected setname in member variable
 void LordyLink::selectItemToSend(const QModelIndex mindex)
 {
-    
     selected_set = ui.dirView->model()->index(mindex.row(), 0).data().toString();
 }
 
 void LordyLink::selectItemToDelete(const QModelIndex mindex) 
 {
-
     to_delete = ui.dirView->model()->index(mindex.row(), 0).data().toString();
 }
 
-void LordyLink::deleteSet() {
-
+void LordyLink::deleteSet() 
+{
     if(to_delete != "")
     {
         DeleteDialog* delete_dialog = new DeleteDialog;
@@ -681,6 +710,7 @@ void LordyLink::deleteSet() {
                 itemname->setBackground(QColor(Qt::transparent));
                 model->appendRow(QList<QStandardItem*>() << itemname);
             }
+            
             //connect qtableview with model
             ui.dirView->setModel(model);
 
@@ -699,8 +729,8 @@ void LordyLink::deleteSet() {
 
 
 //download firmware_versions.txt from ftp_server, set off by QTimer and in CTOR
-void LordyLink::try_download() {
-   
+void LordyLink::try_download() 
+{
     //set up dir
     QDir down= QDir::homePath() + "/LordyLink/downloads";
     QDir firm = QDir::homePath() + "/LordyLink/Firmware";
@@ -713,29 +743,27 @@ void LordyLink::try_download() {
     
     
     
-    if (download_done == false && ( down.isEmpty() || firmware_versions.size() % firmware_size != 0 ) ) { //this bool is set via signal
+    if (download_done == false && ( down.isEmpty() || firmware_versions.size() % firmware_size != 0 ) ) //this bool is set via signal
+    { 
         ui.connection_label->setText("connecting to server");
         ui.Q_UpdateLordyphonButton->setDisabled(true); //button inactive until file is downloaded and extracted
         
         QString ftp_location = "ftp://stefandeisenberger86881@ftp.lordyphon.com/firmware_versions/firmware_versions.txt";
         QString to_downloaded_file= QDir::homePath() + "/LordyLink/downloads/firmware_versions.txt";
        
-        //if (down.isEmpty()) {
-            download_from_ftp->download(ftp_location, to_downloaded_file);
-            if (downloader_message.isEmpty())
-            {
-                ui.connection_label->setText("connecting to server");
-            }  
-            else 
-            {
-                ui.connection_label->setText(downloader_message);
-                downloader_message.clear();
-            }
-
-       // }
-       // ui.connection_label->setText(downloader_message);
+        download_from_ftp->download(ftp_location, to_downloaded_file);
+        if (downloader_message.isEmpty())
+        {
+            ui.connection_label->setText("connecting to server");
+        }  
+        else 
+        {
+            ui.connection_label->setText(downloader_message);
+            downloader_message.clear();
+        }
     }
-    else if(download_done == true && firmware_versions.size() % firmware_size == 0){
+    else if(download_done == true && firmware_versions.size() % firmware_size == 0)
+    {
         //file is in folder "downloads" now, and has the correct size 
         ui.connection_label->setText("downloading...");
         delay(1000);
@@ -758,32 +786,33 @@ void LordyLink::try_download() {
         download_done = false;
         ui.Q_UpdateLordyphonButton->setEnabled(true);
     }
-    else if (firmware_versions.size() % firmware_size != 0) {  //handle incomplete downloads
+    else if (firmware_versions.size() % firmware_size != 0) //handle incomplete downloads
+    {  
         ui.connection_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
         ui.connection_label->setText("download incomplete");
         download_done = false;
     }
-
-
 }
 
 
-void LordyLink::hotplugtimer_on() {
-
+void LordyLink::hotplugtimer_on()
+{
     qDebug() << " hotplugtimer on";
     delay(500);
    
-    if(!hot_plug_timer->isActive())
+    if (!hot_plug_timer->isActive())
+    {
         hot_plug_timer->start(2000);
-
+    } 
 }
 
 
-void LordyLink::hotplugtimer_off() {
-
+void LordyLink::hotplugtimer_off() 
+{
     qDebug() << "hotplugtimer off";
     
-    if (hot_plug_timer->isActive()) {
+    if (hot_plug_timer->isActive()) 
+    {
         hot_plug_timer->stop();
         delay(500);
     }
@@ -804,10 +833,11 @@ void LordyLink::check_for_lordyphon()
     }
 }
 
+//EXIT APP IF MAIN WINDOW WAS CLOSED 
 void QWidget::closeEvent(QCloseEvent* event) 
 {
     qDebug() << "closeEvent wurde aufgerufen!";
-    event->accept();  // Das Fenster wird geschlossen
+    event->accept();  
     
     exit(0);
 }
@@ -851,9 +881,10 @@ void LordyLink::checkConnection()
                 else
                 {
                     // (mssge str, button text, quit button on/off)
-                    show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
                     ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
                     ui.hardware_connected_label->setText("Lordyhon USB mode off");
+                    show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
+                  
 
                     if (usb_port->clear_buffer())
                     {
@@ -866,9 +897,10 @@ void LordyLink::checkConnection()
             }
             else
             {
-                show_messagebox("Lordyphon not connected", "Proceed", true);
+                
                 ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
                 ui.hardware_connected_label->setText("Lordyphon not connected");
+                show_messagebox("Lordyphon not connected", "Proceed", true);
                 lordyphon_connected = false;
             }
 
