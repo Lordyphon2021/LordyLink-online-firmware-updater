@@ -197,7 +197,9 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
     }
    
     //set background foto
+   
     QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpg");
+    qDebug() <<  QCoreApplication::applicationDirPath() + "/lordylink_background.jpg";
     bkgnd = bkgnd.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     bkgnd = bkgnd.scaled(this->size());
     QPalette palette;
