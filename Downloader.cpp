@@ -3,18 +3,18 @@
 
 
 
-Downloader::Downloader(QObject* parent):QObject(parent){
-    
+Downloader::Downloader(QObject* parent):QObject(parent)
+{
     connect(&manager, &QNetworkAccessManager::finished, this, &Downloader::finished);
 }
 
-
-void Downloader::download(QString location, QString path){ //location and path via CTOR
-
+//location and path via CTOR
+void Downloader::download(QString location, QString path)
+{ 
     file.setFileName(path); //download destination
     
-    if (!file.open(QIODevice::WriteOnly)){
-       qDebug() << file.errorString();
+    if (!file.open(QIODevice::WriteOnly))
+    {
        return;
     }
     
@@ -30,44 +30,44 @@ void Downloader::download(QString location, QString path){ //location and path v
     emit download_status(false);
 }
 
-void Downloader::readyRead(){
-    
+void Downloader::readyRead()
+{
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
    
-    if (reply){
+    if (reply)
+    {
         QByteArray data = reply->readAll();
         file.write(data); // download data to file
-        
     }
-    else {
-        qDebug() << "readyread error";
+    else 
+    {
         emit download_status_msg("read error");
     }
+
     emit download_status(false);
 }
 
-void Downloader::finished(QNetworkReply* reply){
+void Downloader::finished(QNetworkReply* reply)
+{
    
     if (file.size() == 0) {
         emit download_status(false);
         emit download_status_msg("offline");
-        qDebug() << "download unsuccessful";
     }
     else 
     {
         emit download_status(true);
-        qDebug() << "download success";
     }
+
     file.close();
     reply->close();
-    
 }
 
 
 void Downloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal){
     
-    if (bytesTotal <= 0) {
-        
+    if (bytesTotal <= 0) 
+    {
         qDebug() << "no data received... ";
         emit download_status_msg("no data received...");
         file.close();
@@ -77,16 +77,15 @@ void Downloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal){
     }
 }
 
-void Downloader::error(QNetworkReply::NetworkError code){
-   
-    qDebug() << "error" << code;
+void Downloader::error(QNetworkReply::NetworkError code)
+{
     QString errorcode = code;
     emit download_status(false);
     emit download_status_msg(errorcode);
 }
 
-void Downloader::wire(QNetworkReply* reply){
-    
+void Downloader::wire(QNetworkReply* reply)
+{
     connect(reply, &QNetworkReply::readyRead, this, &Downloader::readyRead);
     connect(reply, &QNetworkReply::downloadProgress, this, &Downloader::downloadProgress);
     connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &Downloader::error);

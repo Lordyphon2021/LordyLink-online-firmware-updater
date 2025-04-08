@@ -2,7 +2,8 @@
 
 #include <QByteArray>
 
-struct LordyphonCall {
+struct LordyphonCall 
+{
 	const QByteArray hand_shake_tx_phrase = "!who_is_there?   "; //HANDSHAKE CALL
 	const QByteArray update_tx_phrase = "update";	//UPDATE MODE CALL
 	const QByteArray hexfile_send_complete = "w";
@@ -18,7 +19,8 @@ struct LordyphonCall {
 };
 
 
-struct LordyphonResponse {
+struct LordyphonResponse 
+{
 	const QByteArray hand_shake_rx_phrase = "lordy";  //HANDSHAKE RESPONSE
 	const QByteArray update_rx_phrase_y = "sure";	 //UPDATE MODE RESPONSE
 	const QByteArray update_rx_phrase_n = "nope";	 //UPDATE MODE RESPONSE

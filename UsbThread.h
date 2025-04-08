@@ -26,7 +26,8 @@ class USBThread : public QThread
 
 };
 
-class Worker : public QObject {
+class Worker : public QObject 
+{
 	Q_OBJECT
 
 public:

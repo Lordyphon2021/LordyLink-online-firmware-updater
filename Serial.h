@@ -13,7 +13,7 @@
 
 class SerialHandler : public QObject
 {
-	Q_OBJECT
+Q_OBJECT
 		
 public:
 	
@@ -31,8 +31,7 @@ public:
 	bool clear_buffer();
 	bool check_with_manufacturer_ID();
 	void quit_message();
-	QByteArray& getInputBuffer(){ return input_buffer; }
-	
+	inline QByteArray& getInputBuffer(){ return input_buffer; }
 	
 signals:
 	
@@ -49,6 +48,5 @@ private:
 	size_t port_index = 0;
 	LordyphonCall lordyphon_call;
 	LordyphonResponse lordyphon_response;
-	bool aborted = false;
 
 };

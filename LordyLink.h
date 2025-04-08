@@ -42,8 +42,8 @@ private:
 public:
     LordyLink(QWidget *parent = Q_NULLPTR);
     
-    ~LordyLink() {
-        
+    ~LordyLink() 
+    {
         file_cleanup();  //delete downloads, firmware versions and empty set files
         usb_port->quit_message();
         usb_port->close_usb_port();
@@ -130,7 +130,8 @@ private:
             messagebox.exec();
     }
 
-    class AboutDialog : public QDialog {
+    class AboutDialog : public QDialog 
+    {
         public:
             AboutDialog(QWidget* parent = nullptr) : QDialog(parent) {
                 setWindowTitle("About");
@@ -154,14 +155,17 @@ private:
             }
     };
 
-    inline void delay(int millisecondsWait){
+    inline void delay(int millisecondsWait)
+    {
         QEventLoop loop;
         QTimer t;
         t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
         t.start(millisecondsWait);
         loop.exec();
     }
-    void file_cleanup() {
+
+    void file_cleanup() 
+    {
         //remove downloads
         QDir firmware(QDir::homePath() + "/LordyLink/Firmware");
         firmware.setNameFilters(QStringList() << "*.*");
@@ -180,19 +184,21 @@ private:
         set_path.setNameFilters(QStringList() << "*.*");
 
 
-        foreach(QString setfile, set_path.entryList()) {
+        foreach(QString setfile, set_path.entryList()) 
+        {
             QFile tempfile(set_path.absoluteFilePath(setfile));
             tempfile.open((QIODevice::ReadWrite | QIODevice::Text));
 
-            if (tempfile.size() == 0) {
+            if (tempfile.size() == 0) 
+            {
                 tempfile.close();
                 tempfile.remove();
-
             }
             else
+            {
                 tempfile.close();
+            }  
         }
-
     }
 };
 

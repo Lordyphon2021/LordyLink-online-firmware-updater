@@ -28,48 +28,71 @@ SerialHandler::SerialHandler(QObject* parent): QObject(parent)
 //FINAL IDENTIFICATION INSTEAD OF CHECKING VENDOR ID		
 bool SerialHandler::lordyphon_handshake() 
 {
+	bool retVal = false;
+	try
+	{
+		if (lordyphon_port_is_open())
+		{
+			write_serial_data(lordyphon_call.hand_shake_tx_phrase); //call
+			wait_for_ready_read(2000);
+			
+			if (input_buffer == lordyphon_response.hand_shake_rx_phrase) //check response
+			{
+				retVal = true;
+			}
+		}
+	}
+	catch (QException& e)
+	{
+		qDebug() << e.what();
+	}
 
-	while (!lordyphon_port->isOpen())
-		;  //wait till port is open (might take a couple of ms)
-
-	write_serial_data(lordyphon_call.hand_shake_tx_phrase); //call
-	wait_for_ready_read(2000);
-	qDebug() << input_buffer << endl;
-	if (input_buffer == lordyphon_response.hand_shake_rx_phrase) //check response
-		return true;
-
-	return false;
+	return retVal;
 }
 
 void SerialHandler::quit_message() 
 {
-
-	while (!lordyphon_port->isOpen())
-		;  //wait till port is open (might take a couple of ms)
-
-	write_serial_data(lordyphon_call.lordylink_quit); //call
-	lordyphon_port->close();
-	
+	try
+	{
+		if (lordyphon_port_is_open())
+		{
+			write_serial_data(lordyphon_call.lordylink_quit); //call
+			lordyphon_port->close();
+		}
+	}
+	catch (QException& e)
+	{
+		qDebug() << e.what();
+	}
 }
 
 //CHECK WHETHER LORDYPHON IS IN UPDATE MODE
 bool SerialHandler::lordyphon_update_call() 
 {
-
-	while (!lordyphon_port->isOpen())
-		; //wait until open
-
-	write_serial_data(lordyphon_call.update_tx_phrase);
-	wait_for_ready_read(1000);
+	bool retVal = false;
+	
+	try
+	{
+		if (lordyphon_port_is_open())
+		{
+			write_serial_data(lordyphon_call.update_tx_phrase);
+			wait_for_ready_read(1000);
+			lordyphon_port->close();
+		}
+	}
+	catch (QException& e)
+	{
+		qDebug() << e.what();
+	}
 
 	if (input_buffer == lordyphon_response.update_rx_phrase_y)
 	{
 		input_buffer = "";
-		return true;
+		retVal = true;
 	}
 	else if (input_buffer == lordyphon_response.update_rx_phrase_n)
 	{
-		return false;
+		retVal = false;
 	}
 	else 
 	{
@@ -77,19 +100,22 @@ bool SerialHandler::lordyphon_update_call()
 		error.setText("Activate USB-Mode on Lordyphon (press global + looper button)");
 		error.exec();
 
-		return false;
+		retVal = false;
 	}
+
+	return retVal;
 }
 
 bool SerialHandler::find_lordyphon_port()
 {
+	bool retVal = false;
 	
-	try {
+	try 
+	{
 		port_index = 0;
 		//go through all available USB ports...
-		foreach(const QSerialPortInfo& info, QSerialPortInfo::availablePorts()){
-			
-			qDebug() << info.manufacturer() << endl;
+		foreach(const QSerialPortInfo& info, QSerialPortInfo::availablePorts())
+		{
 			//this in't enough for identification, I have no vendor ID yet, any FTDI based devices will be found here...
 			if (info.manufacturer() == "FTDI") {		
 				//handshake will confirm lordyphon ID
@@ -98,44 +124,47 @@ bool SerialHandler::find_lordyphon_port()
 					open_lordyphon_port();
 					lordyphon_port->write("!");
 					QString test = lordyphon_port->readAll();
-					qDebug() << test << endl;
 					lordyphon_port->close();			
 					
-						return true; 
-				
+					retVal = true; 
+					break;
 			}
 			++port_index;  // lordyphon usb port number stored here...
-			
 		}
-		return false;
 	}
-	catch (QException& e) {
+	catch (QException& e) 
+	{
 		qDebug() << e.what();
-		return false;
 	}
+
+	return retVal;
 }
 
 bool SerialHandler::check_with_manufacturer_ID() 
 {
-
 	size_t check_index = 0;
+	bool retVal = false;
 	
-	foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts()) {
+	foreach(const QSerialPortInfo & info, QSerialPortInfo::availablePorts())
+	{
 		//check if lordyphon is still on the same usb port
-		if (info.manufacturer() == "FTDI" && port_index == check_index) {  
-			
-			qDebug() << " manufacturer ID found at same index";
-			return true;
+		if (info.manufacturer() == "FTDI" && port_index == check_index) 
+		{ 
+			retVal = true;
+			break;
 		}
 		++check_index;
 	}
-	qDebug() << " index not correct, searching port again";
-	find_lordyphon_port();  //otherwise check again with handshakes
-	return false;
+
+	return retVal;
 }
 
 bool SerialHandler::open_lordyphon_port()// open connection with correct port name
 {
+	bool retVal = false;
+
+	try
+	{
 		//set parameters
 		lordyphon_port->setPortName(lordyphon_portname);
 		lordyphon_port->open(QIODevice::OpenMode(QIODevice::ReadWrite));
@@ -145,17 +174,31 @@ bool SerialHandler::open_lordyphon_port()// open connection with correct port na
 		lordyphon_port->setStopBits(QSerialPort::StopBits::OneStop);
 		lordyphon_port->setFlowControl(QSerialPort::FlowControl::NoFlowControl);
 
-		if (lordyphon_port->isOpen())
-			return true;
+		while (!lordyphon_port->isOpen())
+		{ 
+			; 
+		}
 
-		return false;
+		retVal = true;
+	}
+	catch (QException& e)
+	{
+		qDebug() << e.what();
+	}
 
+	return retVal;
 }
 	
-bool SerialHandler::clear_buffer() { return lordyphon_port->clear(); } 
+bool SerialHandler::clear_buffer() 
+{ 
+	return lordyphon_port->clear(); 
+} 
 
 //CLOSE PORT AFTER ACTION
-void SerialHandler::close_usb_port(){ lordyphon_port->close(); }
+void SerialHandler::close_usb_port()
+{ 
+	lordyphon_port->close(); 
+}
 
 //ADJUST BUFFERSIZE TO MATCH EXPECTED MESSAGE SIZE
 void SerialHandler::set_buffer_size(qint64 size)const
@@ -165,13 +208,26 @@ void SerialHandler::set_buffer_size(qint64 size)const
 
 bool SerialHandler::write_serial_data(const QByteArray& tx_data) 
 {
-	if (lordyphon_port->isOpen()) {
-		lordyphon_port->write(tx_data);
-		
-		if(lordyphon_port->waitForBytesWritten())
-			return true;
+	bool retVal = false;
+	
+	try
+	{
+		if (lordyphon_port->isOpen())
+		{
+			lordyphon_port->write(tx_data);
+
+			if(lordyphon_port->waitForBytesWritten())
+			{
+				retVal = true;
+			}
+		}
 	}
-	return false;
+	catch (QException& e)
+	{
+		qDebug() << e.what();
+	}
+	
+	return retVal;
 }
 
 //BLOCKING FUNCTION, WAITS UNTIL BUFFER IS FULL OR UNTIL TIMEOUT (MS)
@@ -193,10 +249,21 @@ void SerialHandler::onReadyRead()
 //CHECK IF OPEN
 bool SerialHandler::lordyphon_port_is_open()
 {
-	if(lordyphon_port->isOpen())
-		return true;
+	bool retVal = false;
+
+	try
+	{
+		if (lordyphon_port->isOpen())
+		{
+			retVal = true;
+		}
+	}
+	catch (QException& e)
+	{
+		qDebug() << e.what();
+	}
 	
-	return false;
+	return retVal;;
 }
 
 

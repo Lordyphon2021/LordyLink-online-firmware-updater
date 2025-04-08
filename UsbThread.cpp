@@ -100,7 +100,6 @@ void Worker::update()
                     tx_data = hex_parser.get_hex_record(index);  
                     //SEND RECORD TO USB
                     usb_port_update_thread.write_serial_data(tx_data); 
-                    //qDebug() << "index nr. " << index << " data: " << tx_data.toHex();
                     //LOGFILE OUTPUT
                     out << "record nr. " << index << "  " << (tx_data.toHex()) << '\n';  
                 }
@@ -138,8 +137,7 @@ void Worker::update()
                 else 
                 {
                     // INCOMING CONFIRMATION MESSAGE IS CORRUPTED, ASK AGAIN FOR CHECKSUM STATUS, CONTROLLER WILL SEND EITHER "ok" or "er"
-                    usb_port_update_thread.write_serial_data(call_lordyphon.get_checksum_status);     
-                    //qDebug() << checksum_status;
+                    usb_port_update_thread.write_serial_data(call_lordyphon.get_checksum_status);  
                     emit setLabel("rx error, checking status... ");
                     out << "---------------RX ERROR AT INDEX---------------------- " << index << '\n'; //LOGFILE
                     ++rx_error_ctr;         //IF MESSAGE ISNT READABLE FOR MORE THAN 8 TIMES, CONNECTION MUST BE LOST
@@ -326,12 +324,6 @@ void Worker::get_eeprom_content()
                         return;
                     }
                     
-                    //debugging output
-                    if (ready_read_timeout_ctr > 0)
-                    {
-                        qDebug() << "timeout counter: " << ready_read_timeout_ctr;
-                    } 
-                    
                     //HOT PLUG DETECTION INSTEAD OF TIMER IN THREAD
                     if (!usb_port_get_thread.wait_for_ready_read(300))
                     {
@@ -414,7 +406,6 @@ void Worker::get_eeprom_content()
         else 
         {
             emit remoteMessageBox("communication error, please try again!   ");
-            qDebug() << "error, message not recognized";
         }
 
         //END THREAD
@@ -470,13 +461,8 @@ void Worker::send_eeprom_content(){
     try
     { 
         usb_port_send_thread.set_buffer_size(100);
-
-        if (!usb_port_send_thread.clear_buffer())
-        {
-            qDebug() << "buffer not empty";  
-        } 
-
-        qDebug() << "in send set thread: " << selected_set;
+        usb_port_send_thread.clear_buffer();
+       
         QString set_dir;
         set_dir = QDir::homePath() + "/LordyLink/Sets/";
 
@@ -504,7 +490,6 @@ void Worker::send_eeprom_content(){
             //LORDYPHON TRANSPORT STOP
             if (response == lordyphon_response.play_mode_is_off) 
             {  
-                qDebug() << " lordyphon confirms playmode off";
                 size_t index = 0;
                 delay(200);
                 usb_port_send_thread.write_serial_data(call_lordyphon.begin_tansfer);
@@ -523,11 +508,6 @@ void Worker::send_eeprom_content(){
                     checksum_vec += temp_record; // SUM UP ALL BYTES FOR CHECKSUM CALCULATION
                     usb_port_send_thread.write_serial_data(temp_record);  //SEND RECORD TO LORDYPHON
                     usb_port_send_thread.set_buffer_size(3);   //EXPECTED CONFIRMATION MESSAGE SIZE
-
-                    if (ready_read_timeout_ctr > 0)
-                    {
-                        qDebug() << "timeout counter: " << ready_read_timeout_ctr;
-                    }
 
                     if (!usb_port_send_thread.wait_for_ready_read(2000))
                     {
@@ -616,7 +596,7 @@ void Worker::send_eeprom_content(){
                     emit remoteMessageBox("data transfer incomplete, please try again");
 
                 }
-            }//end: if (response == "doit") {  //PLAY MODE IS OFF
+            }//end: if (response == "doit")   //PLAY MODE IS OFF
             else if (response == lordyphon_response.play_mode_is_on) 
             {  
                 emit remoteMessageBox("lordyphon memory busy, press stop button");
@@ -624,9 +604,8 @@ void Worker::send_eeprom_content(){
             else 
             {
                 emit remoteMessageBox("communication error, please try again!   ");
-                qDebug() << "error, message not recognized";
             }
-        } //end: if (eeprom_parser->parse_eeprom()) {
+        } //end: if (eeprom_parser->parse_eeprom()) 
         else
         {
             emit remoteMessageBox("file not found");

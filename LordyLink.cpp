@@ -179,7 +179,6 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
     //show sets in QTableView
     foreach(QString filename, txtfiles) 
     {
-        qDebug() << filename;
         QStandardItem* itemname = new QStandardItem(filename);
         itemname->setBackground(QColor(Qt::transparent));
         itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
@@ -200,8 +199,6 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
     //set background foto
     QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpg");
     bkgnd = bkgnd.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    //QPixmap bkgnd(QCoreApplication::applicationDirPath() + "/lordylink_background.jpg");
-    //qDebug() << QCoreApplication::applicationDirPath();
     bkgnd = bkgnd.scaled(this->size());
     QPalette palette;
     palette.setBrush(QPalette::Window, bkgnd);
@@ -573,19 +570,28 @@ void LordyLink::OnRemoteMessageBox(QString message)
 //enable all buttons in main window, hide abort button
 void LordyLink::OnActivateButtons()
 {
-    qDebug() << "activate Buttons";
     ui.abort_pushButton->hide();
-
     delay(2000);
     
-    if(!ui.Q_UpdateLordyphonButton->isEnabled())
-        ui.Q_UpdateLordyphonButton->setEnabled(true); 
-    if (!ui.saveSetButton->isEnabled())                 
+    if (!ui.Q_UpdateLordyphonButton->isEnabled())
+    {
+        ui.Q_UpdateLordyphonButton->setEnabled(true);
+    }
+      
+    if (!ui.saveSetButton->isEnabled())
+    {
         ui.saveSetButton->setEnabled(true);
+    }
+       
     if (!ui.sendSetButton->isEnabled())
+    {
         ui.sendSetButton->setEnabled(true);
+    }
+       
     if (!ui.delete_set_pushButton->isEnabled())
+    {
         ui.delete_set_pushButton->setEnabled(true);
+    } 
     
     delay(200);
     ui.QInstallProgressBar->hide();
@@ -596,7 +602,6 @@ void LordyLink::OnActivateButtons()
 void LordyLink::OnDeactivateButtons()
 {
     ui.abort_pushButton->show();
-    qDebug() << "deactivate Buttons";
     
     if (ui.QInstallProgressBar->isHidden())
     {
@@ -653,7 +658,6 @@ void LordyLink::addNewSet(QString filename)
 void LordyLink::renameStart(const QModelIndex mindex)
 {
     oldName = ui.dirView->model()->index(mindex.row(), 0).data().toString();
-    qDebug() << "DoubleClicked: " << oldName;
 }
 
 
@@ -704,7 +708,6 @@ void LordyLink::deleteSet()
 
             foreach(QString filename, txtfiles) 
             {
-                qDebug() << filename;
                 QStandardItem* itemname = new QStandardItem(filename);
                 itemname->setFlags(itemname->flags() | Qt::ItemIsEditable);
                 itemname->setBackground(QColor(Qt::transparent));
@@ -797,7 +800,6 @@ void LordyLink::try_download()
 
 void LordyLink::hotplugtimer_on()
 {
-    qDebug() << " hotplugtimer on";
     delay(500);
    
     if (!hot_plug_timer->isActive())
@@ -809,7 +811,6 @@ void LordyLink::hotplugtimer_on()
 
 void LordyLink::hotplugtimer_off() 
 {
-    qDebug() << "hotplugtimer off";
     
     if (hot_plug_timer->isActive()) 
     {
@@ -836,13 +837,17 @@ void LordyLink::check_for_lordyphon()
 //EXIT APP IF MAIN WINDOW WAS CLOSED 
 void QWidget::closeEvent(QCloseEvent* event) 
 {
-    qDebug() << "closeEvent wurde aufgerufen!";
     event->accept();  
     SerialHandler* usb_port = new SerialHandler;
+    
     try
     {
         usb_port->find_lordyphon_port();
-        usb_port->open_lordyphon_port();
+        if (!usb_port->lordyphon_port_is_open())
+        {
+            usb_port->open_lordyphon_port();
+        }
+        
         usb_port->quit_message();
         usb_port->close_usb_port();
     }
@@ -855,7 +860,6 @@ void QWidget::closeEvent(QCloseEvent* event)
         
         exit(0);
     }
-   
 
     exit(0);
 }
@@ -885,7 +889,13 @@ void LordyLink::checkConnection()
         {
             if (usb_port->find_lordyphon_port())
             {
-                usb_port->open_lordyphon_port();
+                if (!usb_port->lordyphon_port_is_open())
+                {
+                    if (!usb_port->open_lordyphon_port())
+                    {
+                        show_messagebox("USB error!", "Proceed", true);
+                    }
+                }
                 
                 if (usb_port->lordyphon_handshake() == true || usb_port->lordyphon_update_call() == true)
                 {

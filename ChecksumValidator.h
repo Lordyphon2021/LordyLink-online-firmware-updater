@@ -7,7 +7,8 @@
 //this helper class accepts extracted elements of intel hexfile 
 //or any QByteArray and its corresponding checksum.
 
-class ChecksumValidator {
+class ChecksumValidator 
+{
 
 private:
 
@@ -19,16 +20,20 @@ private:
 	
 public:
 	// data vec: complete record without checksum
-	void set_Data(const QByteArray& _data_vec, char _checksum_from_file){
+	void set_Data(const QByteArray& _data_vec, char _checksum_from_file)
+	{
 		data_vec = _data_vec;
 		checksum_from_file = _checksum_from_file;
 	}
-	void set_Data(const QByteArray& _data_vec, uint16_t _checksum_from_lordyphon){
+
+	void set_Data(const QByteArray& _data_vec, uint16_t _checksum_from_lordyphon)
+	{
 		data_vec = _data_vec;
 		checksum_from_lordyphon = _checksum_from_lordyphon;
 	}
 
-	bool is_valid(){
+	bool is_valid()
+	{
 		
 		if (data_vec.at(0) == ':') {  // is hexfile
 			
@@ -39,13 +44,13 @@ public:
 			//qDebug() << "local checksum: " << checksum8_calculated;
 			return (checksum_from_file == checksum8_calculated);
 		}
-		else {						// is eeprom data
+		else 
+		{						// is eeprom data
 
 			for (auto i : data_vec)
+			{
 				checksum16_calculated += static_cast<unsigned char>(i);  //qbytearray returns signed char, need unsigned for correct value
-		
-			qDebug() << "checksum from lordyphon: " << checksum_from_lordyphon;
-			qDebug() << "local checksum: " << checksum16_calculated;
+			}
 			
 			return(checksum_from_lordyphon == checksum16_calculated);
 		}
