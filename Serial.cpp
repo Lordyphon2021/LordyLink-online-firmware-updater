@@ -77,8 +77,8 @@ bool SerialHandler::lordyphon_update_call()
 		{
 			write_serial_data(lordyphon_call.update_tx_phrase);
 			wait_for_ready_read(1000);
-			lordyphon_port->close();
 		}
+
 	}
 	catch (QException& e)
 	{
@@ -117,16 +117,21 @@ bool SerialHandler::find_lordyphon_port()
 		foreach(const QSerialPortInfo& info, QSerialPortInfo::availablePorts())
 		{
 			//this in't enough for identification, I have no vendor ID yet, any FTDI based devices will be found here...
-			if (info.manufacturer() == "FTDI") {		
+			if (info.manufacturer() == "FTDI") 
+			{		
 				//handshake will confirm lordyphon ID
 				lordyphon_portname = info.portName(); 
-					//try handshakes on each FTDI port to identify lordyphon
+				//try handshakes on each FTDI port to identify lordyphon
+				if (!lordyphon_port_is_open())
+				{
 					open_lordyphon_port();
-					lordyphon_port->write("!");
-					QString test = lordyphon_port->readAll();
-					lordyphon_port->close();			
+				}
+
+				lordyphon_port->write("!");
+				QString test = lordyphon_port->readAll();
+				lordyphon_port->close();
+				retVal = true; 
 					
-					retVal = true; 
 					break;
 			}
 			++port_index;  // lordyphon usb port number stored here...
@@ -136,8 +141,11 @@ bool SerialHandler::find_lordyphon_port()
 	{
 		qDebug() << e.what();
 	}
-
+	
 	return retVal;
+
+
+
 }
 
 bool SerialHandler::check_with_manufacturer_ID() 
@@ -263,7 +271,7 @@ bool SerialHandler::lordyphon_port_is_open()
 		qDebug() << e.what();
 	}
 	
-	return retVal;;
+	return retVal;
 }
 
 
