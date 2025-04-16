@@ -136,7 +136,15 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
     if (!download_dir.exists())
     {
         download_dir.mkpath(".");
-    } 
+    }
+
+    QDir appdata_dir(QDir::homePath() + "/LordyLink/AppData");
+    if (!appdata_dir.exists())
+    {
+        appdata_dir.mkpath(".");
+    }
+
+
 
     // read sets from directory
     home = QDir::homePath() + "/LordyLink/Sets";
@@ -242,7 +250,8 @@ LordyLink::LordyLink(QWidget* parent) : QMainWindow(parent)
     //create serial port
     usb_port = new SerialHandler;
     
-    checkConnection();
+    //first check file with last connected usb port
+    checkConnection(true);
     
     //hotplug detection
     if (lordyphon_connected == true)
@@ -276,7 +285,7 @@ void LordyLink::OnUpdateButton()
         return;
     }
 
-    checkConnection();
+    checkConnection(true);
 
     try
     {
@@ -305,10 +314,12 @@ void LordyLink::OnUpdateButton()
 
                 int update_dialog_code = update_dialog->exec(); //evaluate dialog result
 
-                if (update_dialog_code == QDialog::Accepted) {  //if update is confirmed, new thread is created
+                //if update is confirmed, new thread is created
+                if (update_dialog_code == QDialog::Accepted) 
+                {  
                    //assemble path string with selected firmware version from dialog
                     QString path_to_selected_firmware = QDir::homePath() + "/LordyLink/Firmware/" + firmware_path;
-                    Worker* update_worker = new Worker(path_to_selected_firmware, true); //the boolean is a dummy to have a dedicated ctor for this
+                    Worker* update_worker = new Worker(last_port, path_to_selected_firmware, true); //the boolean is a dummy to have a dedicated ctor for this
                     USBThread* update_thread = new USBThread;
                     //setup gui feedback
                     ui.QInstallLabel->show();
@@ -381,7 +392,7 @@ void LordyLink::OnGetSetButton()
         ui.Q_UpdateLordyphonButton->setDisabled(true);
     }
 
-    checkConnection();
+    checkConnection(true);
         
     try
     {
@@ -398,7 +409,7 @@ void LordyLink::OnGetSetButton()
 
                 ui.QInstallProgressBar->reset();
                 ui.hardware_connected_label->setText("Lordyphon connected");
-                Worker* getSetWorker = new Worker;
+                Worker* getSetWorker = new Worker(last_port);
                 USBThread* getSetThread = new USBThread;
 
                 //update GUI
@@ -445,7 +456,7 @@ void LordyLink::OnGetSetButton()
 //user is made aware that this operation is destructive.
 void LordyLink::OnSendSetButton()
 {
-    checkConnection();
+    checkConnection(true);
 
     if (ui.Q_UpdateLordyphonButton->isEnabled())
     {
@@ -481,7 +492,7 @@ void LordyLink::OnSendSetButton()
                     {
                         ui.QInstallProgressBar->reset();
                         //hand path to selected item to constructor
-                        Worker* sendSetWorker = new Worker(selected_set);
+                        Worker* sendSetWorker = new Worker(last_port, selected_set);
 
                         USBThread* sendSetThread = new USBThread;
                         //update GUI
@@ -566,6 +577,14 @@ void LordyLink::OnRemoteMessageBox(QString message)
     fromRemote.setFont(font);
     fromRemote.setText(message);
     fromRemote.exec();
+}
+
+void LordyLink::OnLordyphonConnected(bool state)
+{
+    if (state == true)
+    {
+        found_counter++;
+    }
 }
 
 
@@ -883,65 +902,171 @@ void LordyLink::check_manufacturer_ID()
     }
 }
 
+void LordyLink::OnSetPortname(QString portname) 
+{ 
+    lordyphon_portname = portname; 
+    QFile port_file;
+
+    port_file.setFileName(QDir::homePath() + "/LordyLink/AppData/port.txt");
+    port_file.open(QIODevice::ReadWrite | QIODevice::Text);
+
+    QTextStream out(&port_file);
+
+    out << portname;
+
+}
+
 void LordyLink::checkConnection()
 {
-    try
+    
+    try 
     {
-        do
+        foreach(const QSerialPortInfo& info, QSerialPortInfo::availablePorts())
         {
-            if (usb_port->find_lordyphon_port())
+            thread_crt++;
+            qDebug() << "Number of available USB Ports: " << thread_crt;
+
+            Worker* portScanWorker = new Worker(thread_crt, info);
+            USBThread* getLordyphonPort = new USBThread;
+
+            portScanWorker->moveToThread(getLordyphonPort);
+
+            connect(getLordyphonPort, &QThread::started, portScanWorker, &Worker::get_usb_port);
+            connect(portScanWorker, &Worker::finished, getLordyphonPort, &QThread::quit);
+            connect(portScanWorker, &Worker::finished, portScanWorker, &Worker::deleteLater);
+            connect(getLordyphonPort, &QThread::finished, getLordyphonPort, &QThread::deleteLater);
+            connect(portScanWorker,  SIGNAL(setLabel(QString)), this, SLOT(OnsetLabel(QString)));
+            connect(portScanWorker, SIGNAL(remoteMessageBox(QString)), this, SLOT(OnRemoteMessageBox(QString)));
+            connect(portScanWorker,  SIGNAL(LordyphonConnected(bool)), this, SLOT(OnLordyphonConnected(bool)));
+            connect(portScanWorker, SIGNAL(SetPortname(QString)), this, SLOT(OnSetPortname(QString)));
+            getLordyphonPort->start();
+        }
+        
+        delay(2000);
+        
+        if (LordyphonConnected() == true)
+        {
+            qDebug() << "setting port: " << lordyphon_portname;
+            usb_port->setLordyphonPort(lordyphon_portname);
+            last_port = lordyphon_portname;
+            
+            if (!usb_port->open_lordyphon_port())
             {
-                if (!usb_port->lordyphon_port_is_open())
-                {
-                    if (!usb_port->open_lordyphon_port())
-                    {
-                        show_messagebox("USB error!", "Proceed", true);
-                    }
-                }
-                
-                if (usb_port->lordyphon_handshake() == true || usb_port->lordyphon_update_call() == true)
-                {
-                    lordyphon_connected = true;
-                    ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
-                    ui.hardware_connected_label->setText("Lordyphon connected");
+                show_messagebox("USB error!", "Proceed", true);
+            }
 
-                    if (usb_port->clear_buffer())
-                    {
-                        usb_port->close_usb_port();
-                    }
-                }
-                else
-                {
-                    // (mssge str, button text, quit button on/off)
-                    ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
-                    ui.hardware_connected_label->setText("Lordyhon USB mode off");
-                    show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
-                  
+            if (usb_port->lordyphon_handshake() == true || usb_port->lordyphon_update_call() == true)
+            {
+                lordyphon_connected = true;
+                ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
+                ui.hardware_connected_label->setText("Lordyphon connected");
 
-                    if (usb_port->clear_buffer())
-                    {
-                        usb_port->close_usb_port();
-                    }
-                    
-                    lordyphon_connected = false;
-                    delay(3000);
+                if (usb_port->clear_buffer())
+                {
+                    usb_port->close_usb_port();
                 }
             }
             else
             {
-                
+                // (mssge str, button text, quit button on/off)
+                ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
+                ui.hardware_connected_label->setText("Lordyhon USB mode off");
+                show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
+
+
+                if (usb_port->clear_buffer())
+                {
+                    usb_port->close_usb_port();
+                }
+
+                lordyphon_connected = false;
+                delay(3000);
+            }
+            /*
+            else
+            {
+
                 ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
                 ui.hardware_connected_label->setText("Lordyphon not connected");
                 show_messagebox("Lordyphon not connected", "Proceed", true);
                 lordyphon_connected = false;
             }
-
-        } while (lordyphon_connected == false);
+            */
+        }
+        else
+        {
+            qDebug() << "Lordyphon not found";
+        }
     }
     catch (exception& e)
     {
         lordyphon_connected = false;
         show_messagebox(e.what());
     }
+    
 }
+
+void LordyLink::checkConnection(bool dummy)
+{
+    QFile port_file;
+
+    port_file.setFileName(QDir::homePath() + "/LordyLink/AppData/port.txt");
+    
+    if (port_file.exists())
+    { 
+        port_file.open(QIODevice::ReadOnly | QIODevice::Text);
+        QTextStream in(&port_file);
+        last_port = in.readLine();
+        qDebug() << "lordyphon last seen on " << last_port;
+        usb_port->setLordyphonPort(last_port);
+        port_file.close();
+
+        if (!usb_port->open_lordyphon_port())
+        {
+            show_messagebox("USB error!", "Proceed", true);
+        }
+
+        if (usb_port->lordyphon_handshake() == true || usb_port->lordyphon_update_call() == true)
+        {
+            lordyphon_connected = true;
+            ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
+            ui.hardware_connected_label->setText("Lordyphon connected");
+
+            qDebug() << "handshake ok";
+            if (usb_port->clear_buffer())
+            {
+                qDebug() << "closing port";
+                usb_port->close_usb_port();
+            }
+        }
+        else
+        {
+            // (mssge str, button text, quit button on/off)
+            ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
+            ui.hardware_connected_label->setText("Lordyhon USB mode off");
+            show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
+
+
+            if (usb_port->clear_buffer())
+            {
+                qDebug() << "closing port";
+                usb_port->close_usb_port();
+            }
+
+            lordyphon_connected = false;
+        }
+    }
+    else
+    {
+        qDebug() << "file doesnt exist";
+        checkConnection();
+    }
+
+    
+    
+    
+   
+}
+   
+
 

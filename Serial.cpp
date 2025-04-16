@@ -132,7 +132,7 @@ bool SerialHandler::find_lordyphon_port()
 				lordyphon_port->close();
 				retVal = true; 
 					
-					break;
+				break;
 			}
 			++port_index;  // lordyphon usb port number stored here...
 		}

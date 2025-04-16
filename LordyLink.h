@@ -29,6 +29,8 @@
 #include <QModelIndex>
 #include <QDesktopServices>
 #include <QTextBrowser> 
+#include <QList>
+
 
 
 
@@ -50,6 +52,7 @@ public:
     }
     
     Ui::LordyLinkClass ui;
+    uint8_t thread_crt = 0;
     
 signals:
 
@@ -58,6 +61,10 @@ public slots:
     void OnUpdateButton();
     void OnGetSetButton();
     void OnSendSetButton();
+    void OnLordyphonConnected(bool state);
+    void OnSetPortname(QString portname);
+   
+    
     //Set QTableView
     void addNewSet(QString filename);
     void renameStart(const QModelIndex);
@@ -86,6 +93,10 @@ public slots:
     void on_download_status_message(QString msg) { downloader_message = msg; }
     void onAboutTriggered();
     void checkConnection();
+    void checkConnection(bool);
+
+    bool LordyphonConnected() { return found_counter == 1; }
+ 
     
 
 private:
@@ -105,6 +116,9 @@ private:
     QString downloader_message;
 
     bool lordyphon_connected = false;
+    QString lordyphon_portname = "";
+    QString last_port = "";
+    uint8_t found_counter = 0;
     bool update_mode = false;
     bool download_done= false;
     const int firmware_size = 188459;
@@ -172,7 +186,10 @@ private:
         //firmware.setFilter(QDir::Files);
 
         foreach(QString firmwareFile, firmware.entryList())
+        {
             firmware.remove(firmwareFile);
+        }
+           
 
         //cleanup empty files from crashes
 

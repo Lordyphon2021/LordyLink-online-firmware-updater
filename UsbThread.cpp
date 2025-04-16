@@ -25,9 +25,13 @@ void Worker::update()
     
     //hotplug timer deactivated in threads, check if lordyphon is still connected
     SerialHandler usb_port_update_thread;
-    usb_port_update_thread.find_lordyphon_port();  
-    usb_port_update_thread.open_lordyphon_port();
-    usb_port_update_thread.lordyphon_handshake();
+  
+    usb_port_update_thread.setLordyphonPort(usb_com_port);
+    
+    if (!usb_port_update_thread.lordyphon_port_is_open())
+    {
+        usb_port_update_thread.open_lordyphon_port();
+    }
     
     //SET BUFFER FOR KNOWN LENGTH OF EXPECTED "OK" or "ER" + '\0' CHARACTER
     usb_port_update_thread.set_buffer_size(3);
@@ -226,28 +230,13 @@ void Worker::get_eeprom_content()
 
     ready_read_timeout_ctr = 0;
     
-   
-    //CHECK IF LORDYPHON IS STILL CONNECTED
-    if (!usb_port_get_thread.find_lordyphon_port()) 
-    {
-        emit setLabel("lordyphon disconnected!");
-        mutex.unlock();
-        emit activateButtons();
-        emit finished();
-    }
+    usb_port_get_thread.setLordyphonPort(usb_com_port);
+    qDebug() << "port is " << usb_com_port;
         
     //OPEN USB PORT
     if (!usb_port_get_thread.lordyphon_port_is_open())
     {
         usb_port_get_thread.open_lordyphon_port();
-    }
-
-    if (!usb_port_get_thread.lordyphon_handshake()) 
-    {
-        emit setLabel("connection error");
-        emit activateButtons();
-        mutex.unlock();
-        emit finished();
     }
 
     try
@@ -428,6 +417,7 @@ void Worker::get_eeprom_content()
 }
 
 
+
 //SEND SET TO LORDYPHON METHOD
 //COMMUNICATION LORDYLINK TO LORDYPHON ONLY WORKS PROPERLY IF DATA CHUNKS ARE RATHER SMALL,
 //OTHERWISE THE MICROCONTROLLER GETS OVERWHELMED AND RESETS ITSELF. 
@@ -440,23 +430,19 @@ void Worker::send_eeprom_content(){
     QMutex mutex;
     mutex.lock();
 
-    SerialHandler usb_port_send_thread;
     ready_read_timeout_ctr = 0;
 
-    emit setLabel("sending set");
-
-    if (!usb_port_send_thread.find_lordyphon_port()) 
-    {
-        emit remoteMessageBox("lordyphon disconnected!");
-        emit activateButtons();
-        mutex.unlock();
-        emit finished();
-    }
+    SerialHandler usb_port_send_thread;
+    usb_port_send_thread.setLordyphonPort(usb_com_port);
+    qDebug() << "port is " << usb_com_port;
+    
 
     if (!usb_port_send_thread.lordyphon_port_is_open())
     {
         usb_port_send_thread.open_lordyphon_port();
     }
+
+    emit setLabel("sending set");
            
     try
     { 
@@ -625,6 +611,77 @@ void Worker::send_eeprom_content(){
         emit finished();
         emit remoteMessageBox(e.what());
     }
+}
+
+void Worker::get_usb_port()
+{
+    QMutex mutex;
+    mutex.lock();
+    qDebug() << "Thread" << thread_number;
+
+    QTimer* timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, []() 
+        {
+            try 
+            { 
+                throw std::runtime_error("Timer went boom!");
+            }
+            catch (const std::exception& ex) 
+            {
+                qDebug() << "Exception im Timeout-Slot:" << ex.what();
+                // ggf. Fehler weiterreichen über Signal
+            }
+        }
+    );
+    timer->start(2000);
+
+    if (port_info.manufacturer() == "FTDI")
+    {
+        SerialHandler usb_port;
+        QString lordyphon_portname = port_info.portName();
+        usb_port.setLordyphonPort(lordyphon_portname);
+        qDebug() << "in thread " << thread_number << "port name: " << lordyphon_portname;
+        
+        try
+        {
+            usb_port.open_lordyphon_port();
+
+            if (usb_port.lordyphon_handshake() == true || usb_port.lordyphon_update_call() == true)
+            {
+                    
+                qDebug() << "lordyphon found on:" << lordyphon_portname;
+                emit LordyphonConnected(true);
+                emit SetPortname(lordyphon_portname);
+                
+            }
+            else
+            {
+                qDebug() << "lordyphon not found on:" << lordyphon_portname;
+                emit LordyphonConnected(false);
+            }
+
+            usb_port.close_usb_port();
+            
+        }
+        catch (exception& e)
+        {
+            qDebug() << e.what();
+
+            if (usb_port.lordyphon_port_is_open())
+            {
+                usb_port.close_usb_port();
+            }
+        }
+
+        emit finished();
+        mutex.unlock();
+    }
+    else
+    {
+        emit finished();
+        mutex.unlock();
+    }
+    qDebug() << "leaving thread ";
 }
 
 void USBThread::run()

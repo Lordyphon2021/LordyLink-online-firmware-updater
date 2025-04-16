@@ -6,6 +6,9 @@
 #include<QListWidget>
 #include <QMessageBox>
 #include <QBuffer>
+#include <QThread>
+
+#include <qmutex.h>
 #include "LordyphonMessageStrings.h"
 #include <exception>
 
@@ -32,8 +35,12 @@ public:
 	bool check_with_manufacturer_ID();
 	void quit_message();
 	inline QByteArray& getInputBuffer(){ return input_buffer; }
+	void setLordyphonPort(QString port_name) { lordyphon_portname = port_name; }
+	bool isLordyphonPortEmpty() { return lordyphon_portname.isEmpty(); }
+
 	
 signals:
+	
 	
 public slots:
 
@@ -42,11 +49,12 @@ public slots:
 private:
 	
 	QSerialPort* lordyphon_port;
-	QString lordyphon_portname;
+	QString lordyphon_portname = "";
 	QByteArray input_buffer = 0;
 	QSerialPortInfo save_info;
 	size_t port_index = 0;
 	LordyphonCall lordyphon_call;
 	LordyphonResponse lordyphon_response;
+	bool lordyphon_found = false;
 
 };

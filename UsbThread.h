@@ -31,9 +31,17 @@ class Worker : public QObject
 	Q_OBJECT
 
 public:
-	Worker() {} // default for get set
-	Worker(QString path) :selected_set(path) {}  //ctor for send set
-	Worker(QString path, bool) : selected_firmware(path) {}  //ctor for firmware update, bool is a dummy
+	Worker(QString com_port) : usb_com_port(com_port) {} // default for get set 
+	Worker(QString com_port, QString path) :usb_com_port(com_port), selected_set(path) {}  //ctor for send set
+	
+	Worker(uint8_t thread_no, const QSerialPortInfo& info)
+		 :thread_number(thread_no), port_info(info)
+	{} 
+	
+	//ctor for firmware update, bool is a dummy
+	Worker(QString com_port, QString path, bool) : usb_com_port(com_port), selected_firmware(path) {}
+	
+	
 
 public slots:
 
@@ -41,6 +49,8 @@ public slots:
 	void update();
 	void get_eeprom_content();
 	void send_eeprom_content();
+	void get_usb_port();
+
 	
 signals:
 	//GUI update
@@ -51,6 +61,9 @@ signals:
 	void activateButtons();
 	void deactivateButtons();
 	void deactivateAbortButton();
+	void LordyphonConnected(bool);
+	void SetPortname(QString);
+	
 	
 	// pass to QTableview
 	void newItem(QString);
@@ -66,9 +79,13 @@ private:
 	//Lordyphon message strings
 	LordyphonCall call_lordyphon;
 	LordyphonResponse lordyphon_response;
+	uint8_t thread_number = 0;
+	QSerialPortInfo port_info;
+	QString usb_com_port;
           
     //timing
-	inline void delay(int millisecondsWait){
+	inline void delay(int millisecondsWait)
+	{
 		QEventLoop loop;
 		QTimer t;
 		t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
