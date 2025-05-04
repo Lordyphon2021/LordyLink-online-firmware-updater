@@ -1013,7 +1013,7 @@ void LordyLink::checkConnection(bool dummy)
     port_file.setFileName(QDir::homePath() + "/LordyLink/AppData/port.txt");
     
     if (port_file.exists())
-    { 
+    {
         port_file.open(QIODevice::ReadOnly | QIODevice::Text);
         QTextStream in(&port_file);
         last_port = in.readLine();
@@ -1021,39 +1021,50 @@ void LordyLink::checkConnection(bool dummy)
         usb_port->setLordyphonPort(last_port);
         port_file.close();
 
-        if (!usb_port->open_lordyphon_port())
+        try
         {
-            show_messagebox("USB error!", "Proceed", true);
-        }
 
-        if (usb_port->lordyphon_handshake() == true || usb_port->lordyphon_update_call() == true)
-        {
-            lordyphon_connected = true;
-            ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
-            ui.hardware_connected_label->setText("Lordyphon connected");
-
-            qDebug() << "handshake ok";
-            if (usb_port->clear_buffer())
+            if (!usb_port->open_lordyphon_port())
             {
-                qDebug() << "closing port";
-                usb_port->close_usb_port();
-            }
-        }
-        else
-        {
-            // (mssge str, button text, quit button on/off)
-            ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
-            ui.hardware_connected_label->setText("Lordyhon USB mode off");
-            show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
-
-
-            if (usb_port->clear_buffer())
-            {
-                qDebug() << "closing port";
-                usb_port->close_usb_port();
+                show_messagebox("USB error!", "Proceed", true);
             }
 
+            if (usb_port->lordyphon_handshake() == true || usb_port->lordyphon_update_call() == true)
+            {
+                lordyphon_connected = true;
+                ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightblue; }");
+                ui.hardware_connected_label->setText("Lordyphon connected");
+
+                qDebug() << "handshake ok";
+                if (usb_port->clear_buffer())
+                {
+                    qDebug() << "closing port";
+                    usb_port->close_usb_port();
+                }
+            }
+            else
+            {
+                // (mssge str, button text, quit button on/off)
+                ui.hardware_connected_label->setStyleSheet("QLabel { background-color : none; color : lightcoral; }");
+                ui.hardware_connected_label->setText("Lordyhon USB mode off");
+                show_messagebox("Activate USB on lordyphon ( Press global and looper button)", "Proceed", true);
+
+
+                if (usb_port->clear_buffer())
+                {
+                    qDebug() << "closing port";
+                    usb_port->close_usb_port();
+                }
+
+                lordyphon_connected = false;
+                checkConnection();
+            }
+        }
+        catch (exception& e)
+        {
             lordyphon_connected = false;
+            show_messagebox(e.what());
+            qDebug() << "what the fuck is going on";
         }
     }
     else
@@ -1061,11 +1072,6 @@ void LordyLink::checkConnection(bool dummy)
         qDebug() << "file doesnt exist";
         checkConnection();
     }
-
-    
-    
-    
-   
 }
    
 

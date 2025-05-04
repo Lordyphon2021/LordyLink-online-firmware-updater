@@ -37,6 +37,7 @@ public:
 	inline QByteArray& getInputBuffer(){ return input_buffer; }
 	void setLordyphonPort(QString port_name) { lordyphon_portname = port_name; }
 	bool isLordyphonPortEmpty() { return lordyphon_portname.isEmpty(); }
+	bool isReadable() { return lordyphon_port->isReadable(); }
 
 	
 signals:

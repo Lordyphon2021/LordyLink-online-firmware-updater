@@ -122,7 +122,7 @@ private:
     bool update_mode = false;
     bool download_done= false;
     const int firmware_size = 188459;
-    bool aborted = false;
+    bool aborted = false; 
 
     
    
