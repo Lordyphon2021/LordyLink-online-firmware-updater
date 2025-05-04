@@ -16,6 +16,7 @@ struct LordyphonCall
 	const QByteArray abort = "A";
 	const QByteArray abort2 = "^";
 	const QByteArray lordylink_quit = "t";
+	const QByteArray reboot_lordyphon = "@";
 };
 
 

@@ -409,6 +409,7 @@ void Worker::get_eeprom_content()
         }
 
         //END THREAD
+        usb_port_get_thread.write_serial_data(call_lordyphon.reboot_lordyphon);
         usb_port_get_thread.clear_buffer();
         usb_port_get_thread.close_usb_port();
         emit activateButtons();
